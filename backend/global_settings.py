@@ -11,4 +11,4 @@ def init():
 
     # A list that contains all the active scenes on the server.
     global global_scenes
-    global_scenes = []
+    global_scenes = {}

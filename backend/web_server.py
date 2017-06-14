@@ -6,8 +6,7 @@ The web server class. This will host a web server at a given port.
 # conda install cherrypy
 import cherrypy
 
-from backend.web_server_class import APIEnd
-import backend.data_backend as fem_mesh
+from backend.web_server_class import APIEndPoint
 import backend.global_settings as global_settings
 
 
@@ -48,7 +47,7 @@ class Web_Server:
 
         # Load the server class for displaying fem data
         cherrypy.tree.mount(
-            APIEnd(mesh_directory=self.data_directory), '/', self.conf)
+            APIEndPoint(data_directory=self.data_directory), '/', self.conf)
 
         # Start the server
         cherrypy.engine.start()

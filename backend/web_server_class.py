@@ -9,6 +9,11 @@ import os
 import re
 import json
 
+import hashlib
+import time
+
+import logging
+
 import numpy as np
 
 # conda install cherrypy
@@ -18,29 +23,75 @@ import backend.data_backend as fem_mesh
 import backend.global_settings as global_settings
 
 
-class APIEnd:
+class APIEndPoint:
     """
     Handle the data for fem-gl.
     """
 
-    def __init__(self, mesh_directory):
-        self.mesh_directory = mesh_directory
+    def __init__(self, data_directory):
+        self.data_directory = data_directory
+
+        # Storage for all timesteps
         self.timestep_list = []
 
     @cherrypy.expose
-    def index(self):
+    @cherrypy.tools.allow(methods=['POST'])
+    def version(self):
         """
-        Just serve the static dir.
+        Return a jsoned string with version number. Maybe more later?
         """
-        pass
+        return json.dumps({'program': 'calculix_clone',
+                           'version': '1-alpha'})
 
     @cherrypy.expose
+    @cherrypy.tools.allow(methods=['POST'])
+    def get_scenelist(self):
+        """
+        Return a list of scenes.
+        """
+        return json.dumps(global_settings.global_scenes)
+
+    @cherrypy.expose
+    @cherrypy.tools.allow(methods=['POST'])
+    def create_scene(self):
+        """
+        Create a new scene.
+        """
+        # Create a unique identifier for our scene -- ignoring that google
+        # managed to create a collision of sha1 sums.
+        identifier = hashlib.sha1(str(time.time()).encode('utf-8')).hexdigest()
+
+        scene_prototype = {
+            'metadata': {},
+            'objects': {}
+        }
+        global_settings.global_scenes[identifier] = scene_prototype
+        return json.dumps(global_settings.global_scenes)
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.allow(methods=['POST'])
+    def delete_scene(self):
+        """
+        Delete a scene.
+        """
+
+        # Parse JSON
+        json_input = cherrypy.request.json
+        print(json_input)
+        scene_hash = json_input['scene_hash']
+
+        global_settings.global_scenes.pop(scene_hash)
+        return json.dumps(global_settings.global_scenes)
+
+    @cherrypy.expose
+    @cherrypy.tools.allow(methods=['POST'])
     def get_object_list(self):
         """
         Return a list of folders that potentially hold FEM data on
         catching 'get_object_list'
 
-        Check all the files we find in self.mesh_directory, check if it's a
+        Check all the files we find in self.data_directory, check if it's a
         directory, if it's a directory check if there is a directory called
         'fo' in there. If that's the case we add it to the list we return
         in the end.
@@ -48,12 +99,12 @@ class APIEnd:
         Returns a json file.
         """
 
-        files_in_mesh_dir = os.listdir(self.mesh_directory)
+        files_in_data_dir = os.listdir(self.data_directory)
 
         data_folders = []
 
-        for file_name in files_in_mesh_dir:
-            abs_file_path = os.path.join(self.mesh_directory, file_name)
+        for file_name in files_in_data_dir:
+            abs_file_path = os.path.join(self.data_directory, file_name)
             if os.path.isdir(abs_file_path):
                 file_output_dir = os.path.join(abs_file_path, 'fo')
                 if os.path.isdir(file_output_dir):
@@ -62,6 +113,7 @@ class APIEnd:
         return json.dumps({'data_folders': data_folders})
 
     @cherrypy.expose
+    @cherrypy.tools.allow(methods=['POST'])
     @cherrypy.tools.json_in()
     def get_object_properties(self):
         """
@@ -80,7 +132,7 @@ class APIEnd:
         json_input = cherrypy.request.json
         object_name = json_input['object_name']
 
-        object_directory = os.path.join(self.mesh_directory, object_name, 'fo')
+        object_directory = os.path.join(self.data_directory, object_name, 'fo')
 
         # Get the smallest timestep.
         dirs_in_fo = os.listdir(object_directory)
@@ -128,7 +180,7 @@ class APIEnd:
         Returns a list of lists.
         """
 
-        object_directory = os.path.join(self.mesh_directory, object_name, 'fo')
+        object_directory = os.path.join(self.data_directory, object_name, 'fo')
 
         object_timesteps = []
         sorted_timesteps = []
@@ -144,6 +196,7 @@ class APIEnd:
         return sorted_timesteps
 
     @cherrypy.expose
+    @cherrypy.tools.allow(methods=['POST'])
     @cherrypy.tools.json_in()
     def get_object_timesteps(self):
         """
@@ -166,6 +219,7 @@ class APIEnd:
         return json.dumps({'object_timesteps': sorted_timesteps})
 
     @cherrypy.expose
+    @cherrypy.tools.allow(methods=['POST'])
     @cherrypy.tools.json_in()
     def get_timestep_before(self):
         """
@@ -189,6 +243,7 @@ class APIEnd:
             return json.dumps({'previous_timestep': sorted_timesteps[object_index - 1]})
 
     @cherrypy.expose
+    @cherrypy.tools.allow(methods=['POST'])
     @cherrypy.tools.json_in()
     def get_timestep_after(self):
         """
@@ -214,6 +269,7 @@ class APIEnd:
             return json.dumps({'next_timestep': sorted_timesteps[object_index + 1]})
 
     @cherrypy.expose
+    @cherrypy.tools.allow(methods=['POST'])
     @cherrypy.tools.json_in()
     def mesher_init(self):
         """
@@ -224,7 +280,7 @@ class APIEnd:
         nodepath = json_input['nodepath']
         elementpath = json_input['elementpath']
 
-        os.chdir(self.mesh_directory)
+        os.chdir(self.data_directory)
         self.mesh_index = fem_mesh.UnpackMesh(
             node_path=nodepath,
             element_path=elementpath
@@ -239,6 +295,7 @@ class APIEnd:
                            'surface_metadata': surface_metadata.tolist()})
 
     @cherrypy.expose
+    @cherrypy.tools.allow(methods=['POST'])
     @cherrypy.tools.json_in()
     def get_timestep_data(self):
         """
@@ -260,6 +317,7 @@ class APIEnd:
         return json.dumps({'timestep_data': output_data})
 
     @cherrypy.expose
+    @cherrypy.tools.allow(methods=['POST'])
     @cherrypy.tools.json_in()
     def requestTimestepData(self):
         """
