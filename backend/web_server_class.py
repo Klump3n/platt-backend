@@ -23,16 +23,93 @@ import backend.data_backend as fem_mesh
 import backend.global_settings as global_settings
 
 
-class APIEndPoint:
+class ServerRoot:
     """
     Handle the data for fem-gl.
     """
 
+    # def __init__(self, data_directory):
+    #     self.data_directory = data_directory
+
+    #     # Storage for all timesteps
+    #     self.timestep_list = []
+
+
+    @cherrypy.expose
+    def index(self):
+        """
+        The scene administration page. This is intended to expose the other
+        methods in this class.
+        """
+        return ('This page will at some point contain a command and control ' +
+                'panel for our simulation data and scenes.')
+
+class ServerScenes(object):
+    """
+    Display scenes on the server.
+    """
+
+    @cherrypy.expose
+    def index(self):
+        """
+        The scene administration page. This is intended to expose the other
+        methods in this class.
+        """
+        pass
+
+    # def _cp_dispatch(self, vpath):
+    #     """
+    #     Dispatch different things based on the URL that we use.
+    #     """
+
+    #     # If we dont add anything to the url we just display a scene selection
+    #     # dialogue
+    #     if len(vpath) == 0:
+    #         return self.selector
+
+    #     # If we are calling this with arguments
+    #     else:
+
+    #         # If we cant find the hash
+    #         if vpath[0] not in global_settings.global_scenes:
+    #             if len(vpath) == 1:
+    #                 # cherrypy.request.params['parameter'] = vpath.pop(0)
+    #                 return self.selector
+
+    #         # If the first argument is a scene hash
+    #         if vpath[0] in global_settings.global_scenes:
+
+    #             # Pop the first argument from the stack
+    #             cherrypy.request.params['scene_hash'] = vpath.pop(0)
+
+    #             # If we only have a scene hash then there are no more args left
+    #             if len(vpath == 0):
+    #                 return self.scene
+
+    #             # If we have more than one argument. I.e. want a terminal or get
+    #             # or set some parameters for the scene, then we still have more
+    #             # than zero arguments
+    #             if len(vpath > 0):
+
+    #                 # If we want a terminal
+    #                 if vpath[0] == 'terminal':
+    #                     # # This is not necessary
+    #                     # cherrypy.request.params['terminal'] = vpath.pop(0)
+    #                     return self.terminal
+
+    #                 # Maybe we just want to get or set some parameter
+    #                 else:
+    #                     cherrypy.request.params['parameter'] = vpath.pop(0)
+    #                     return self.scene
+
+
+class ServerAPI(object):
+    """
+    Expose an API to control the server.
+    """
+
     def __init__(self, data_directory):
         self.data_directory = data_directory
-
-        # Storage for all timesteps
-        self.timestep_list = []
 
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['POST'])
@@ -40,6 +117,7 @@ class APIEndPoint:
         """
         Return a jsoned string with version number. Maybe more later?
         """
+        # print('hey')
         return json.dumps({'program': 'calculix_clone',
                            'version': '1-alpha'})
 
@@ -83,6 +161,18 @@ class APIEndPoint:
 
         global_settings.global_scenes.pop(scene_hash)
         return json.dumps(global_settings.global_scenes)
+
+
+class SceneDisplay(object):
+    """
+    Display a scene.
+    """
+
+    def _cp_dispatch(self, vpath):
+        """
+        Take apart the url.
+        """
+        return vpath
 
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['POST'])
@@ -331,3 +421,9 @@ class APIEndPoint:
         timestep = json_input['timestep']
 
         pass
+
+class SceneTerminal(object):
+    """
+    A web terminal class, tbc.
+    """
+    pass

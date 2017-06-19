@@ -70,7 +70,7 @@ class Terminal(cmd.Cmd):
 
         # Call the about page of the host
         response = self.post_json_string(api_call='version')
-
+        print(response)
         # Check if we see what we want to see
         expected_program_response = AGENT
 

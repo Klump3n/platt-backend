@@ -3,10 +3,12 @@
 The web server class. This will host a web server at a given port.
 """
 
+import os
+
 # conda install cherrypy
 import cherrypy
 
-from backend.web_server_class import APIEndPoint
+from backend.web_server_class import ServerRoot, ServerScenes, ServerAPI
 import backend.global_settings as global_settings
 
 
@@ -20,12 +22,25 @@ class Web_Server:
         Initialise the webserver.
         """
 
+        control_path = os.path.join(frontend_directory, 'control')
+        display_path = os.path.join(frontend_directory, 'display')
+
+        print(control_path, display_path)
         self.conf = {
             '/': {
                 'tools.gzip.on': True,
                 'tools.staticdir.on': True,
-                'tools.staticdir.dir': frontend_directory,
+                'tools.staticdir.dir': control_path,
                 'tools.staticdir.index': 'index.html'
+            },
+            '/scenes': {
+                'tools.gzip.on': True,
+                'tools.staticdir.on': True,
+                'tools.staticdir.dir': display_path,
+                'tools.staticdir.index': 'index.html'
+            },
+            '/api': {
+                'tools.gzip.on': True
             }
         }
         self.port = port
@@ -42,12 +57,18 @@ class Web_Server:
 
         # Set the port
         cherrypy.config.update(
-            {'server.socket_port': self.port}
+            {'server.socket_port': self.port,
+             'server.socket_host': '0.0.0.0'
+            }
         )
 
         # Load the server class for displaying fem data
         cherrypy.tree.mount(
-            APIEndPoint(data_directory=self.data_directory), '/', self.conf)
+            ServerRoot(), '/', self.conf)
+        cherrypy.tree.mount(
+            ServerScenes(), '/scenes', self.conf)
+        cherrypy.tree.mount(
+            ServerAPI(data_directory=self.data_directory), '/api', self.conf)
 
         # Start the server
         cherrypy.engine.start()
