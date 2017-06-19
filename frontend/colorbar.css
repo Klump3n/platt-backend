@@ -1,0 +1,44 @@
+.colorbar_container_outer {
+    font-family: monospace;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: fixed;
+    top: 0px;
+    right: 5px;
+    height: 100%;
+    width: auto;
+}
+
+.colorbar_container_inner {
+    left: 0px;
+    width: auto;
+    height: auto;
+    box-shadow: 0 0 1px #FFFFFF, 0 0 2px #FFFFFF, 0 0 5px #FFFFFF, 0 0 25px #FFFFFF;
+}
+
+.colorbar_field {
+    right: 0px;
+    z-index: 1;
+    opacity: 1;
+    width: 20px;
+    height: 20px;
+}
+
+.colorbar_text {
+    z-index: 1;
+    position: relative;
+    text-align:right;
+    right: 55px;
+    top: -8px;
+    width: 50px;
+    height: 16px;
+    line-height: 20px;
+    white-space: nowrap;
+
+    /* White border around text. */
+    /* text-shadow: -1px 0 white, 0 1px white, 1px 0 white, 0 -1px white; */
+
+    /* Soft shadows around text. */
+    text-shadow: 0 0 1px #FFFFFF, 0 0 2px #FFFFFF, 0 0 5px #FFFFFF, 0 0 25px #FFFFFF;
+}

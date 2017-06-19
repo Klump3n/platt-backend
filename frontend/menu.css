@@ -1,0 +1,229 @@
+/* remove the border */
+body {
+	  border: 0;
+    background-color: white;
+}
+
+/* Canvas has no margins */
+html, body {
+    margin: 0;
+}
+
+/* make the canvas the size of the viewport */
+canvas {
+    width: 100vw;
+    height: 100vh;
+	  display: block;
+}
+
+.main_container {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    width: auto;
+    height: auto;
+    max-height: 600px;          /* maybe set by js to window height*/
+    font-family: monospace;
+}
+
+.add_objects_button_container {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+.add_objects_button {
+    cursor: pointer;
+    position: relative;
+    left: 0px;
+    top: 0px;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    vertical-align: middle;
+    color: white;
+    background-color: navy;
+    font-size: 250%;
+    font-weight: bolder;
+}
+
+.add_objects_menu_container {
+    visibility: hidden;
+
+    position: absolute;
+    top: 0px;
+    left: calc(100% + 2px);
+
+    z-index: 1;
+
+    max-width: 150px;
+    width: auto;
+
+    height: auto;
+    max-height: 100px;
+
+    overflow-y: auto;
+
+    background-color: yellow;
+}
+
+.add_objects_menu {
+    padding: 2px;
+    margin-right: 10px;
+
+    white-space: nowrap;
+}
+
+.add_objects_menu {
+    cursor: pointer;
+}
+
+.objects_container {
+    display: table-column;
+    position: absolute;
+    top: 32px;
+    /* top: calc(100% + 2px); */ /* later */
+    left: 0px;
+    /* width: auto; */
+    height: auto;
+    background-color: pink;
+}
+
+.object_padding {
+    padding: 2px;
+    max-width: 150px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.object {
+    cursor: auto;
+    display: inline-block;      /*div not wider than it must*/
+    background-color: red;
+}
+
+.object_functions {
+    position: relative;
+    background-color: green;
+    padding-left: 2px;
+    padding-right: 2px;
+    margin-bottom: 2px;
+    left: 10px;
+    width: 100%;
+    height: auto;
+}
+
+.object_heading {
+    cursor: pointer;
+    white-space: nowrap;
+    padding: 3px;
+}
+
+.object_timestep_container {
+    position: relative;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    height: auto;
+    min-width: 80px;            /*edit this if we need more space for the timesteps*/
+    max-width: 120px;
+    width: 100%;
+    background-color: yellow;
+}
+
+.object_timestep_heading {
+    cursor: auto;
+    text-align: center;
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+.object_timestep_controls {
+    position: relative;
+    display: flex;              /*reduce space between controls*/
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+.object_timestep_previous {
+    cursor: pointer;
+    position: relative;
+    display: inline-block;
+    width: 15px;
+    text-align: center;
+
+    background-color: pink;
+}
+
+.object_timestep_current {
+    cursor: pointer;
+    position: relative;
+    display: inline-block;
+    width: calc(100% - 30px);
+    text-align: center;
+
+    background-color: pink;
+}
+
+.object_timestep_next {
+    cursor: pointer;
+    position: relative;
+    display: inline-block;
+    width: 15px;
+    text-align: center;
+
+    background-color: pink;
+}
+
+/* Absolute to .object_timestep_current */
+.object_timestep_menu_padding_container {
+    visibility: hidden;
+    position: absolute;
+    top: -25px;
+    left: calc(100% + 3px);
+    z-index: 1;
+    padding-left: 3px;
+    padding-right: 3px;
+    max-height: 80px;
+    width: auto;
+    height: auto;
+    overflow-y: auto;
+}
+
+.object_timestep_menu {
+    background-color: green;
+
+    height: auto;
+    width: 40px;
+}
+
+.object_timestep_item {
+    cursor: pointer;
+}
+.object_property_container {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    background-color: yellow;
+    position: relative;
+}
+
+.object_property {
+    cursor: pointer;
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+.object_controls_container
+{
+    padding-top: 2px;
+    padding-bottom: 2px;
+    position: relative;
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+.object_controls_delete_object {
+    cursor: pointer;
+    white-space: nowrap;
+    color: red;
+}
+
