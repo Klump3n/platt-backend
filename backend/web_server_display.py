@@ -47,7 +47,6 @@ class ServerScenesDispatcher:
 
         return 'No scene selected.'
 
-    # Dismantle the URL
     def _cp_dispatch(self, vpath):
         """
         This looks at the url we call. If the first node is a valid scene_hash
@@ -55,14 +54,16 @@ class ServerScenesDispatcher:
         we generate an error message.
         """
 
-        # If the first argument is a scene hash
+        # If the first argument is a scene hash ...
         if vpath[0] in global_settings.global_scenes:
 
-            # Pop the first argument from the stack
+            # ... pop the first argument from the stack,
             cherrypy.request.params['scene_hash'] = vpath.pop(0)
             return self.ServerDisplayScene
+
+        # otherwise ...
         else:
-            # Otherwise generate an error message
+            # ... generate an error message
             return self.error
 
     @cherrypy.expose
