@@ -88,8 +88,8 @@ class Terminal(cmd.Cmd):
         """
 
         try:
-            api_call = 'api/' + api_call
-            url = 'http://{}:{}/{}'.format(self.host, self.port, api_call)
+            api_call = api_call
+            url = 'http://{}:{}/api/{}'.format(self.host, self.port, api_call)
             response = requests.post(
                 url=url,
                 json=data,
@@ -159,7 +159,7 @@ class Terminal(cmd.Cmd):
 
         #
         # Function definitions for the valid actions on scenes.
-        def list_scenes(just=None):
+        def scenes_list(just=None):
             """
             List one, several or all scenes.
             """
@@ -181,7 +181,7 @@ class Terminal(cmd.Cmd):
                     print(scene)
                     return
 
-            api_call = 'get_scenelist'
+            api_call = 'scenes_list'
             data = ''
             answer = self.post_json_string(api_call=api_call, data=data)
 
@@ -200,35 +200,39 @@ class Terminal(cmd.Cmd):
 
             return None
 
-        def create_scene():
+        def scenes_create():
             """
             Create a new scene.
             """
 
-            api_call = 'create_scene'
+            api_call = 'scenes_create'
             data = ''
-            answer = self.post_json_string(api_call=api_call, data=data)
-            print(answer)
+            response = self.post_json_string(api_call=api_call, data=data)
+
+            output = ('Created empty scene {}\n\n'.format(response['created']) +
+                      'It can be found at http://{}:{}/scenes/{}'.format(
+                          self.host, self.port, response['created']))
+            print(output)
 
             return None
 
-        def delete_scene(scene_hash):
+        def scenes_delete(scene_hash):
             """
             Delete a scene.
             """
 
-            api_call = 'delete_scene'
+            api_call = 'scenes_delete'
             data = {'scene_hash': scene_hash}
             self.post_json_string(api_call=api_call, data=data)
 
             return None
 
-        def select_scene():
+        def scenes_select():
             """
             Select a scene.
             """
 
-            api_call = 'select_scene'
+            api_call = 'scenes_select'
             data = ''
             answer = self.post_json_string(api_call=api_call, data=data)
 
@@ -237,21 +241,21 @@ class Terminal(cmd.Cmd):
         # If we want to list the available scenes
         if scenes_action == 'list':
             just = parsed_args.just
-            list_scenes(just=just)
+            scenes_list(just=just)
 
         # If we want to create a new and empty scene
         elif scenes_action == 'create':
-            create_scene()
+            scenes_create()
 
         # If we want to delete a scene
         elif scenes_action == 'delete':
             scene_hash = parsed_args.scene_hash
-            delete_scene(scene_hash)
+            scenes_delete(scene_hash)
 
         # If we want to select a scene to perform operations on it
         elif scenes_action == 'select':
             scene_hash = parsed_args.scene_hash
-            select_scene(scene_hash)
+            scenes_select(scene_hash)
 
         return None
 

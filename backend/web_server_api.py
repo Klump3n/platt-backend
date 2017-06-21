@@ -1,8 +1,6 @@
+#!/usr/bin/env python3
 """
-The web server class with all available RESTful api endpoints.
-
-For example: call the server on SERVER_ADRESS/get_object_list to get a list
-of the available objects in the data directory.
+The api.
 """
 
 import os
@@ -11,8 +9,6 @@ import json
 
 import hashlib
 import time
-
-import logging
 
 import numpy as np
 
@@ -23,28 +19,7 @@ import backend.data_backend as fem_mesh
 import backend.global_settings as global_settings
 
 
-class ServerRoot:
-    """
-    Handle the data for fem-gl.
-    """
-
-    @cherrypy.expose
-    def index(self):
-        """
-        The scene administration page.
-        """
-        return ('This page will at some point contain a command and control ' +
-                'panel for our simulation data and scenes.')
-
-class ServerScenes:
-    """
-    Display scenes on the server.
-    """
-
-    @cherrypy.expose
-    def index(self):
-        return
-
+@cherrypy.tools.allow(methods=['POST'])
 class ServerAPI:
     """
     Expose an API to control the server.
@@ -54,7 +29,6 @@ class ServerAPI:
         self.data_directory = data_directory
 
     @cherrypy.expose
-    @cherrypy.tools.allow(methods=['POST'])
     def connect_client(self):
         """
         Return a jsoned string with version number. Maybe more later?
@@ -64,19 +38,18 @@ class ServerAPI:
                            'version': '1-alpha'})
 
     @cherrypy.expose
-    @cherrypy.tools.allow(methods=['POST'])
-    def get_scenelist(self):
+    def scenes_list(self):
         """
         Return a list of scenes.
         """
         return json.dumps(global_settings.global_scenes)
 
     @cherrypy.expose
-    @cherrypy.tools.allow(methods=['POST'])
-    def create_scene(self):
+    def scenes_create(self):
         """
         Create a new scene.
         """
+
         # Create a unique identifier for our scene -- ignoring that google
         # managed to create a collision of sha1 sums.
         identifier = hashlib.sha1(str(time.time()).encode('utf-8')).hexdigest()
@@ -85,13 +58,13 @@ class ServerAPI:
             'metadata': {},
             'objects': {}
         }
+
         global_settings.global_scenes[identifier] = scene_prototype
         return json.dumps({'created': identifier})
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
-    @cherrypy.tools.allow(methods=['POST'])
-    def delete_scene(self):
+    def scenes_delete(self):
         """
         Delete a scene.
         """
@@ -102,10 +75,9 @@ class ServerAPI:
         scene_hash = json_input['scene_hash']
 
         global_settings.global_scenes.pop(scene_hash)
-        return json.dumps(global_settings.global_scenes)
+        return json.dumps({'deleted': scene_hash})
 
     @cherrypy.expose
-    @cherrypy.tools.allow(methods=['POST'])
     def get_object_list(self):
         """
         Return a list of folders that potentially hold FEM data on
@@ -133,7 +105,6 @@ class ServerAPI:
         return json.dumps({'data_folders': data_folders})
 
     @cherrypy.expose
-    @cherrypy.tools.allow(methods=['POST'])
     @cherrypy.tools.json_in()
     def get_object_properties(self):
         """
@@ -216,7 +187,6 @@ class ServerAPI:
         return sorted_timesteps
 
     @cherrypy.expose
-    @cherrypy.tools.allow(methods=['POST'])
     @cherrypy.tools.json_in()
     def get_object_timesteps(self):
         """
@@ -239,7 +209,6 @@ class ServerAPI:
         return json.dumps({'object_timesteps': sorted_timesteps})
 
     @cherrypy.expose
-    @cherrypy.tools.allow(methods=['POST'])
     @cherrypy.tools.json_in()
     def get_timestep_before(self):
         """
@@ -263,7 +232,6 @@ class ServerAPI:
             return json.dumps({'previous_timestep': sorted_timesteps[object_index - 1]})
 
     @cherrypy.expose
-    @cherrypy.tools.allow(methods=['POST'])
     @cherrypy.tools.json_in()
     def get_timestep_after(self):
         """
@@ -289,7 +257,6 @@ class ServerAPI:
             return json.dumps({'next_timestep': sorted_timesteps[object_index + 1]})
 
     @cherrypy.expose
-    @cherrypy.tools.allow(methods=['POST'])
     @cherrypy.tools.json_in()
     def mesher_init(self):
         """
@@ -315,7 +282,6 @@ class ServerAPI:
                            'surface_metadata': surface_metadata.tolist()})
 
     @cherrypy.expose
-    @cherrypy.tools.allow(methods=['POST'])
     @cherrypy.tools.json_in()
     def get_timestep_data(self):
         """
@@ -337,7 +303,6 @@ class ServerAPI:
         return json.dumps({'timestep_data': output_data})
 
     @cherrypy.expose
-    @cherrypy.tools.allow(methods=['POST'])
     @cherrypy.tools.json_in()
     def requestTimestepData(self):
         """
@@ -351,49 +316,4 @@ class ServerAPI:
         timestep = json_input['timestep']
 
         pass
-
-    # def _cp_dispatch(self, vpath):
-    #     """
-    #     Dispatch different things based on the URL that we use.
-    #     """
-
-    #     # If we dont add anything to the url we just display a scene selection
-    #     # dialogue
-    #     if len(vpath) == 0:
-    #         return self.selector
-
-    #     # If we are calling this with arguments
-    #     else:
-
-    #         # If we cant find the hash
-    #         if vpath[0] not in global_settings.global_scenes:
-    #             if len(vpath) == 1:
-    #                 # cherrypy.request.params['parameter'] = vpath.pop(0)
-    #                 return self.selector
-
-    #         # If the first argument is a scene hash
-    #         if vpath[0] in global_settings.global_scenes:
-
-    #             # Pop the first argument from the stack
-    #             cherrypy.request.params['scene_hash'] = vpath.pop(0)
-
-    #             # If we only have a scene hash then there are no more args left
-    #             if len(vpath == 0):
-    #                 return self.scene
-
-    #             # If we have more than one argument. I.e. want a terminal or get
-    #             # or set some parameters for the scene, then we still have more
-    #             # than zero arguments
-    #             if len(vpath > 0):
-
-    #                 # If we want a terminal
-    #                 if vpath[0] == 'terminal':
-    #                     # # This is not necessary
-    #                     # cherrypy.request.params['terminal'] = vpath.pop(0)
-    #                     return self.terminal
-
-    #                 # Maybe we just want to get or set some parameter
-    #                 else:
-    #                     cherrypy.request.params['parameter'] = vpath.pop(0)
-    #                     return self.scene
 

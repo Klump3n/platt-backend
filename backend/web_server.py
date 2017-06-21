@@ -8,7 +8,8 @@ import os
 # conda install cherrypy
 import cherrypy
 
-from backend.web_server_class import ServerRoot, ServerScenes, ServerAPI
+from backend.web_server_display import ServerRoot, ServerScenesDispatcher
+from backend.web_server_api import ServerAPI
 import backend.global_settings as global_settings
 
 
@@ -37,9 +38,10 @@ class Web_Server:
         self.scenes_conf = {
             '/': {
                 'tools.gzip.on': True,
+                # 'tools.staticdir.debug' : True,
                 'tools.staticdir.on': True,
-                'tools.staticdir.dir': display_path,
-                'tools.staticdir.index': 'index.html'
+                'tools.staticdir.dir': display_path
+                # No default file
             }
         }
 
@@ -72,7 +74,7 @@ class Web_Server:
         cherrypy.tree.mount(
             ServerRoot(), '/', self.root_conf)
         cherrypy.tree.mount(
-            ServerScenes(), '/scenes', self.scenes_conf)
+            ServerScenesDispatcher(), '/scenes', self.scenes_conf)
         cherrypy.tree.mount(
             ServerAPI(data_directory=self.data_directory), '/api', self.api_conf)
 
