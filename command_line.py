@@ -69,12 +69,13 @@ class Terminal(cmd.Cmd):
         """
 
         # Call the about page of the host
-        response = self.post_json_string(api_call='version')
-        print(response)
+        response = self.post_json_string(api_call='connect_client')
+
         # Check if we see what we want to see
         expected_program_response = AGENT
 
         is_compatible = response['program'] == expected_program_response
+        print('Host is compatible.')
         return is_compatible
 
 
@@ -87,6 +88,7 @@ class Terminal(cmd.Cmd):
         """
 
         try:
+            api_call = 'api/' + api_call
             url = 'http://{}:{}/{}'.format(self.host, self.port, api_call)
             response = requests.post(
                 url=url,
@@ -182,7 +184,7 @@ class Terminal(cmd.Cmd):
             api_call = 'get_scenelist'
             data = ''
             answer = self.post_json_string(api_call=api_call, data=data)
-            print(answer, just)
+
             # If there are no scenes to display on the server
             if answer == {}:
                 print('There are no scenes to display.')
@@ -205,7 +207,8 @@ class Terminal(cmd.Cmd):
 
             api_call = 'create_scene'
             data = ''
-            self.post_json_string(api_call=api_call, data=data)
+            answer = self.post_json_string(api_call=api_call, data=data)
+            print(answer)
 
             return None
 

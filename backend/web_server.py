@@ -25,24 +25,30 @@ class Web_Server:
         control_path = os.path.join(frontend_directory, 'control')
         display_path = os.path.join(frontend_directory, 'display')
 
-        print(control_path, display_path)
-        self.conf = {
+        self.root_conf = {
             '/': {
                 'tools.gzip.on': True,
                 'tools.staticdir.on': True,
                 'tools.staticdir.dir': control_path,
                 'tools.staticdir.index': 'index.html'
-            },
-            '/scenes': {
+            }
+        }
+
+        self.scenes_conf = {
+            '/': {
                 'tools.gzip.on': True,
                 'tools.staticdir.on': True,
                 'tools.staticdir.dir': display_path,
                 'tools.staticdir.index': 'index.html'
-            },
-            '/api': {
+            }
+        }
+
+        self.api_conf = {
+            '/': {
                 'tools.gzip.on': True
             }
         }
+
         self.port = port
         self.data_directory = data_directory
 
@@ -64,11 +70,11 @@ class Web_Server:
 
         # Load the server class for displaying fem data
         cherrypy.tree.mount(
-            ServerRoot(), '/', self.conf)
+            ServerRoot(), '/', self.root_conf)
         cherrypy.tree.mount(
-            ServerScenes(), '/scenes', self.conf)
+            ServerScenes(), '/scenes', self.scenes_conf)
         cherrypy.tree.mount(
-            ServerAPI(data_directory=self.data_directory), '/api', self.conf)
+            ServerAPI(data_directory=self.data_directory), '/api', self.api_conf)
 
         # Start the server
         cherrypy.engine.start()
