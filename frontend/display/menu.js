@@ -12,7 +12,7 @@ function main() {
     function open_objects_menu() {
 
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', '/get_object_list', true);
+        xhr.open('POST', '/api/get_object_list', true);
         xhr.send();
         xhr.onload = function() {
             var temp_json = JSON.parse(xhr.responseText);
@@ -106,7 +106,7 @@ function main() {
         // Load the timesteps via XHR. Do this every time to be able to
         // update the menu.
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', '/get_object_timesteps', true);
+        xhr.open('POST', '/api/get_object_timesteps', true);
         xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         xhr.send(JSON.stringify({'object_name': object_name}));
         xhr.onload = function() {
@@ -137,7 +137,7 @@ function main() {
         object_current_timestep.innerHTML = timestep;
 
         // FIXME
-        var field = 'temperatures';
+        var field = 'nt11';
 
         updateFragmentShaderData(object_name, field, timestep);
     }
@@ -150,7 +150,7 @@ function main() {
         var current_timestep = object_current_timestep.innerHTML;
 
         var previousTimestepPromise = postJSONPromise(
-            'get_timestep_before',
+            'api/get_timestep_before',
             {'current_timestep': current_timestep, 'object_name': object_name}
         );
         // var previousTimestepPromise = postDataPromise(
@@ -162,7 +162,7 @@ function main() {
             if (current_timestep != previous_timestep) {
 
                 // FIXME
-                var field = 'temperatures';
+                var field = 'nt11';
 
                 updateFragmentShaderData(object_name, field, previous_timestep);
                 object_current_timestep.innerHTML = previous_timestep;
@@ -178,7 +178,7 @@ function main() {
         var current_timestep = object_current_timestep.innerHTML;
 
         var nextTimestepPromise = postJSONPromise(
-            'get_timestep_after',
+            'api/get_timestep_after',
             {'current_timestep': current_timestep, 'object_name': object_name}
         );
         // var nextTimestepPromise = postDataPromise(
@@ -190,7 +190,7 @@ function main() {
             if (current_timestep != next_timestep) {
 
                 // FIXME
-                var field = 'temperatures';
+                var field = 'nt11';
 
                 updateFragmentShaderData(object_name, field, next_timestep);
                 object_current_timestep.innerHTML = next_timestep;
@@ -276,7 +276,7 @@ function main() {
         var xhr = new XMLHttpRequest();
         // xhr.open('POST', '/get_object_properties?object_name='+object_name, true);
         // xhr.send();
-        xhr.open('POST', '/get_object_properties', true);
+        xhr.open('POST', '/api/get_object_properties', true);
         xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         xhr.send(JSON.stringify({'object_name': object_name}));
 
@@ -299,11 +299,14 @@ function main() {
                 object_property_container.appendChild(object_property);
             }
 
-            var nodepath = object_name + '/fo/' + initial_timestep + '/mesh/case.nodes.bin';
-            var elementpath = object_name + '/fo/' + initial_timestep + '/mesh/case.dc3d8.bin';
+            var nodepath = object_name + '/fo/' + initial_timestep + '/nodes.bin';
+            var elementpath = object_name + '/fo/' + initial_timestep + '/elements.dc3d8.bin';
+
+            // var nodepath = object_name + '/fo/' + initial_timestep + '/mesh/case.nodes.bin';
+            // var elementpath = object_name + '/fo/' + initial_timestep + '/mesh/case.dc3d8.bin';
 
             // FIXME
-            var field = 'temperatures';
+            var field = 'nt11';
 
             updateVertexShaderData(
                 object_name=object_name,

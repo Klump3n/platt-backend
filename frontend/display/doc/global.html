@@ -92,139 +92,6 @@
     
 
     
-        <h3 class="subsection-title">Members</h3>
-
-        
-            
-<h4 class="name" id="projectionMatrix"><span class="type-signature"></span>projectionMatrix<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    Calculate the perspective matrix.
-</div>
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="setView.js.html">setView.js</a>, <a href="setView.js.html#line75">line 75</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="worldState"><span class="type-signature"></span>worldState<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    this.worldState gives the state of the coordinate system.
-Matrix organisation is as follows
-w0 w4 w8  w12 -- x-axis, 3 coordinates and 1 translation
-w1 w5 w9  w13 -- y-axis, 3 coordinates and 1 translation
-w2 w6 w10 w14 -- z-axis, 3 coordinates and 1 translation
-w3 w7 w11 w15
-</div>
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="setView.js.html">setView.js</a>, <a href="setView.js.html#line155">line 155</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-    
 
     
         <h3 class="subsection-title">Methods</h3>
@@ -234,16 +101,516 @@ w3 w7 w11 w15
 
     
 
-    <h4 class="name" id="ModelMatrix"><span class="type-signature"></span>ModelMatrix<span class="signature">(gl, fovIn, aspectIn, zNearIn, zFarIn)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="addColorbar"><span class="type-signature"></span>addColorbar<span class="signature">(Tmin, Tmax)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Creates an object which holds the modelView matrix, viewMatrix and
-projectionMatrix. Has functions to manipulate the modelView matrix,
-viewMatrix (indirectly via the camera matrix) and projectionMatrix.
+    Add a colourbar to the canvas.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>Tmin</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">float</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The lowest temperature.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>Tmax</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">float</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The highest temperature.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="colorbar.js.html">colorbar.js</a>, <a href="colorbar.js.html#line6">line 6</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="expandDataWithIndices"><span class="type-signature"></span>expandDataWithIndices<span class="signature">(indices, data, chunksize)</span><span class="type-signature"> &rarr; {array}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Expand the unique vertex data to a complete set of tetraeders.
+
+The vertex data that is transferred between server and client is compressed
+-- in the sense that we send each vertex only once, even if it is present in
+more that one tetraeder.
+Given such a compressed dataset and a dataset which maps the unique vertices
+to a complete list of tetraeders (some index data), we expand the unique
+vertex list to a complete list of tetraeders.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>indices</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The index data.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The compressed vertex data.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>chunksize</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The amount of data points per vertex. For (say) a
+temperature field this would be 1 (temperature per vertex), for actual
+tetraeders this would be 3 (locations in 3D space, therefore 1 for each
+coordinate).</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="main.js.html">main.js</a>, <a href="main.js.html#line264">line 264</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    expanded_data - A complete list of tetraeders.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">array</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="generateBarycentricCoordinatesFromIndices"><span class="type-signature"></span>generateBarycentricCoordinatesFromIndices<span class="signature">(indices)</span><span class="type-signature"> &rarr; {array}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Generate barycentric coordinates for a wireframe overlay.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>indices</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Index data used for the wireframe</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="main.js.html">main.js</a>, <a href="main.js.html#line299">line 299</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    barycentric_coordinates The barycentric coordinates
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">array</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="glRoutine"><span class="type-signature"></span>glRoutine<span class="signature">(gl, vs, fs)</span><span class="type-signature"> &rarr; {undefined}</span></h4>
+
+    
+
+
+
+<div class="description">
+    This is the main WebGL routine. It is called when we have established a
+context (i.e. loaded a canvas) and have loaded our shaders.
 </div>
 
 
@@ -285,7 +652,7 @@ viewMatrix (indirectly via the camera matrix) and projectionMatrix.
             <td class="type">
             
                 
-<span class="param-type">HTML5_canvas</span>
+<span class="param-type">context</span>
 
 
             
@@ -295,20 +662,20 @@ viewMatrix (indirectly via the camera matrix) and projectionMatrix.
 
             
 
-            <td class="description last">The HTML canvas element.</td>
+            <td class="description last">The WebGL2 context.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>fovIn</code></td>
+                <td class="name"><code>vs</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">float</span>
+<span class="param-type">string</span>
 
 
             
@@ -318,21 +685,20 @@ viewMatrix (indirectly via the camera matrix) and projectionMatrix.
 
             
 
-            <td class="description last">[OPTIONAL] Field Of View -- The angle with which
-we perceive objects.</td>
+            <td class="description last">The vertex shader.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>aspectIn</code></td>
+                <td class="name"><code>fs</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">float</span>
+<span class="param-type">string</span>
 
 
             
@@ -342,55 +708,7 @@ we perceive objects.</td>
 
             
 
-            <td class="description last">[OPTIONAL] Aspect ratio of the canvas.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>zNearIn</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">float</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">[OPTIONAL] The closest distance at which we
-can see objects in our frustum.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>zFarIn</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">float</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">[OPTIONAL] - The furthest distance at which we
-can see objects in our frustum.</td>
+            <td class="description last">The fragment shader.</td>
         </tr>
 
     
@@ -431,7 +749,7 @@ can see objects in our frustum.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="setView.js.html">setView.js</a>, <a href="setView.js.html#line42">line 42</a>
+        <a href="main.js.html">main.js</a>, <a href="main.js.html#line73">line 73</a>
     </li></ul></dd>
     
 
@@ -458,920 +776,7 @@ can see objects in our frustum.</td>
 
         
 <div class="param-desc">
-    Nothing.
-</div>
-
-
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="placeCamera"><span class="type-signature"></span>placeCamera<span class="signature">(viewerPosition, targetPosition, upVector)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    Creates a viewMatrix by inverting the camera matrix,
-then updates the modelView.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>viewerPosition</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">vec3</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The position of the viewer.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>targetPosition</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">vec3</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The position of the target.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>upVector</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">vec3</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">A vector that points upwards.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="setView.js.html">setView.js</a>, <a href="setView.js.html#line85">line 85</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="scaleWorld"><span class="type-signature"></span>scaleWorld<span class="signature">(scalingFactor)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    Scale the world up by a given factor.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>scalingFactor</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">float</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="setView.js.html">setView.js</a>, <a href="setView.js.html#line128">line 128</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="setFrustum"><span class="type-signature"></span>setFrustum<span class="signature">(fovIn, aspectIn, zNearIn, zFarIn)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    Create the frustum of our view.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>fovIn</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">float</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">[OPTIONAL] Field Of View -- The angle with which
-we perceive objects.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>aspectIn</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">float</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">[OPTIONAL] Aspect ratio of the canvas.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>zNearIn</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">float</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">[OPTIONAL] The closest distance at which we
-can see objects in our frustum.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>zFarIn</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">float</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">[OPTIONAL] - The furthest distance at which we
-can see objects in our frustum.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="setView.js.html">setView.js</a>, <a href="setView.js.html#line65">line 65</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="translateWorld"><span class="type-signature"></span>translateWorld<span class="signature">(translate)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    Translates the world by a given vector.
-Actually only shifts the coordinate system?
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>translate</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">vec3</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="setView.js.html">setView.js</a>, <a href="setView.js.html#line118">line 118</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="updateCamera"><span class="type-signature"></span>updateCamera<span class="signature">(viewerPosition, targetPosition, upVector)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    Update the viewer position.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>viewerPosition</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">vec3</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The position of the viewer.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>targetPosition</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">vec3</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The position of the target.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>upVector</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">vec3</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">A vector that points upwards.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="setView.js.html">setView.js</a>, <a href="setView.js.html#line108">line 108</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="updateView"><span class="type-signature"></span>updateView<span class="signature">()</span><span class="type-signature"> &rarr; {mat4}</span></h4>
-
-    
-
-
-
-<div class="description">
-    Update the modelView matrix.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="setView.js.html">setView.js</a>, <a href="setView.js.html#line140">line 140</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    The modelView matrix.
+    Nothing
 </div>
 
 
@@ -1382,7 +787,929 @@ Actually only shifts the coordinate system?
     </dt>
     <dd>
         
-<span class="param-type">mat4</span>
+<span class="param-type">undefined</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="grabCanvas"><span class="type-signature"></span>grabCanvas<span class="signature">(canvasElementName)</span><span class="type-signature"> &rarr; {context}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Try to find a HTML5 canvas element. If found, try to assign it a WebGL2
+context. If this fails throw an error, else return the context.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>canvasElementName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The HTML5 canvas element.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="main.js.html">main.js</a>, <a href="main.js.html#line40">line 40</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+<h5>Throws:</h5>
+
+        
+
+<dl>
+    <dt>
+        <div class="param-desc">
+        Error: No WebGL2
+        </div>
+    </dt>
+    <dd></dd>
+    <dt>
+        <dl>
+            <dt>
+                Type
+            </dt>
+            <dd>
+                
+<span class="param-type">error</span>
+
+
+            </dd>
+        </dl>
+    </dt>
+    <dd></dd>
+</dl>
+
+
+    
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    gl - The WebGL2 context.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">context</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="main"><span class="type-signature"></span>main<span class="signature">()</span><span class="type-signature"> &rarr; {undefined}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Entry point for the program.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="main.js.html">main.js</a>, <a href="main.js.html#line338">line 338</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Nothing
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">undefined</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="rescaleFieldValues"><span class="type-signature"></span>rescaleFieldValues<span class="signature">(originalField, minVal, maxVal)</span><span class="type-signature"> &rarr; {array}</span></h4>
+
+    
+
+
+
+<div class="description">
+    We scale a field so that the interval that we want to look at lies between 0
+and 1. Note: this function does NOT return a field with values that are
+strictly between 0 and 1. In the shader stage we simply set the colors of
+field values outside our scope to (e.g.) black.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>originalField</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The field we want to rescale.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>minVal</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The lowest field value we are interested in.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maxVal</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The largest field value we are interested in.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="main.js.html">main.js</a>, <a href="main.js.html#line324">line 324</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    rescaledField - The rescaled field.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">array</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="updateFragmentShaderData"><span class="type-signature"></span>updateFragmentShaderData<span class="signature">(object_name, field, timestep)</span><span class="type-signature"> &rarr; {undefined}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Update the data that is handled by the fragment shader. This means colour
+data that is usually loaded for each timestep. If we additionally want to
+change geometrical data we have to call updateVertexShaderData().
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>object_name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The object for which we want to change some data.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The dataset that gets updated.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>timestep</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The corresponding timestep.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="main.js.html">main.js</a>, <a href="main.js.html#line152">line 152</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Nothing
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">undefined</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="updateVertexShaderData"><span class="type-signature"></span>updateVertexShaderData<span class="signature">(object_name, field, nodepath, elementpath, timestep)</span><span class="type-signature"> &rarr; {undefined}</span></h4>
+
+    
+
+
+
+<div class="description">
+    Update the data that is handled by the vertex shader. This means geometrical
+data. This is usually loaded only once. If we want to change colour data we
+have to call updateFragmentShaderData().
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>object_name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The object for which we want to change some data.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The dataset that gets updated.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>nodepath</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The path to the node file.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>elementpath</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The path to the element file.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>timestep</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The corresponding timestep.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="main.js.html">main.js</a>, <a href="main.js.html#line191">line 191</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Nothing
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">undefined</span>
 
 
     </dd>
@@ -1408,13 +1735,13 @@ Actually only shifts the coordinate system?
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#ModelMatrix">ModelMatrix</a></li><li><a href="global.html#placeCamera">placeCamera</a></li><li><a href="global.html#projectionMatrix">projectionMatrix</a></li><li><a href="global.html#scaleWorld">scaleWorld</a></li><li><a href="global.html#setFrustum">setFrustum</a></li><li><a href="global.html#translateWorld">translateWorld</a></li><li><a href="global.html#updateCamera">updateCamera</a></li><li><a href="global.html#updateView">updateView</a></li><li><a href="global.html#worldState">worldState</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#addColorbar">addColorbar</a></li><li><a href="global.html#expandDataWithIndices">expandDataWithIndices</a></li><li><a href="global.html#generateBarycentricCoordinatesFromIndices">generateBarycentricCoordinatesFromIndices</a></li><li><a href="global.html#glRoutine">glRoutine</a></li><li><a href="global.html#grabCanvas">grabCanvas</a></li><li><a href="global.html#main">main</a></li><li><a href="global.html#rescaleFieldValues">rescaleFieldValues</a></li><li><a href="global.html#updateFragmentShaderData">updateFragmentShaderData</a></li><li><a href="global.html#updateVertexShaderData">updateVertexShaderData</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu Mar 23 2017 16:59:51 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Mon Jun 26 2017 16:19:45 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -1,0 +1,16 @@
+.overlay{
+    margin: auto;
+    position: absolute;
+    min-height: auto;
+    min-width: auto;
+    top: 40%; left: 30%;
+    bottom: auto; right: 30%;
+    background-color: rgba(0,0,0,0.5);
+    border-radius: 10px;
+    color: #FFF;
+    z-index:5;
+    padding: 10px;
+    text-align: center;
+    font-family: monospace;
+    white-space: nowrap;
+}

@@ -35,8 +35,14 @@ def start_backend(args):
     """
 
     # Settings for the server
-    frontend_dir = os.path.abspath('frontend')
     data_dir = os.path.abspath(args.data_dir)
+
+    working_dir = os.path.dirname(os.path.realpath(__file__))
+    frontend_dir = os.path.join(working_dir, 'frontend')
+
+    # Change working directory in case we are not there yet
+    os.chdir(working_dir)
+
     port = args.port
 
     # Welcome message

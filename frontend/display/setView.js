@@ -19,7 +19,8 @@
 
 /**
  * @fileOverview
- * Contains an object that sets the view matrix and keeps track of mouse-dragging events.
+ * Contains an object that sets the view matrix and keeps track of
+ * mouse-dragging events.
  * @name setView.js
  * @author Matthias Plock <matthias.plock@bam.de>
  * @license GLPv3
@@ -29,7 +30,7 @@
  * Creates an object which holds the modelView matrix, viewMatrix and
  * projectionMatrix. Has functions to manipulate the modelView matrix,
  * viewMatrix (indirectly via the camera matrix) and projectionMatrix.
- * @Param {HTML5_canvas} gl - The HTML canvas element.
+ * @Param {context} gl - The webGl2 context.
  * @param {float} fovIn - [OPTIONAL] Field Of View -- The angle with which
  * we perceive objects.
  * @param {float} aspectIn - [OPTIONAL] Aspect ratio of the canvas.
@@ -72,7 +73,8 @@ function ModelMatrix(gl, fovIn, aspectIn, zNearIn, zFarIn) {
         this.zFar = 2000 || zFarIn;
 
         /** Calculate the perspective matrix. */
-        this.projectionMatrix = twgl.m4.perspective(this.fov, this.aspect, this.zNear, this.zFar);
+        this.projectionMatrix = twgl.m4.perspective(
+            this.fov, this.aspect, this.zNear, this.zFar);
     };
 
     /**

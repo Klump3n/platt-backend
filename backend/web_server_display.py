@@ -5,12 +5,10 @@ For example: call the server on SERVER_ADRESS/get_object_list to get a list
 of the available objects in the data directory.
 """
 
-
-# conda install cherrypy
 import cherrypy
 
 import backend.global_settings as global_settings
-from backend.entry_pages import generate_entry_page
+from backend.static.gen_index import make_index
 
 
 class ServerRoot:
@@ -40,12 +38,16 @@ class ServerScenesDispatcher:
         self.ServerDisplayScene = ServerDisplayScene()
 
     @cherrypy.expose
-    def default(self):
+    def index(self):
         """
         If we simply call HOST:PORT/scenes(/) we will get this message.
         """
 
-        return 'No scene selected.'
+        return make_index(
+            scene_hash=None,
+            with_menu=False, with_colorbar=False,
+            overlay_message='No scene selected.'
+        )
 
     def _cp_dispatch(self, vpath):
         """
@@ -72,7 +74,11 @@ class ServerScenesDispatcher:
         In case the scene does not exist.
         """
 
-        return 'Sorry, this scene does not exist.'
+        return make_index(
+            scene_hash=None,
+            with_menu=False, with_colorbar=False,
+            overlay_message='Sorry, this scene does not exist.'
+        )
 
 
 class ServerDisplayScene:
@@ -85,4 +91,8 @@ class ServerDisplayScene:
     def default(self, scene_hash):
 
         # Return a prepared page
-        return generate_entry_page(scene_hash)
+        return make_index(
+            scene_hash=scene_hash,
+            with_menu=True, with_colorbar=True,
+            overlay_message=None
+        )
