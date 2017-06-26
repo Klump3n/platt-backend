@@ -70,7 +70,7 @@ function addColorbar(Tmin, Tmax) {
     // The first colorbar segment for every temperature above Tmax
     var div = document.createElement('div');
     div.setAttribute('class', 'colorbar_field');
-    div.setAttribute('style', 'background-color: #000000');
+    div.setAttribute('style', 'background-color: #FFFFFF');
     var divText = document.createElement('div');
     divText.setAttribute('class', 'colorbar_text');
     divText.innerHTML = '> '+ Tmax;
@@ -92,7 +92,7 @@ function addColorbar(Tmin, Tmax) {
     // The last colorbar segment
     div = document.createElement('div');
     div.setAttribute('class', 'colorbar_field');
-    div.setAttribute('style', 'background-color: #000000');
+    div.setAttribute('style', 'background-color: #FFFFFF');
     divText = document.createElement('div');
     divText.setAttribute('class', 'colorbar_text');
     divText.innerHTML = Tmin;

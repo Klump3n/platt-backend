@@ -21,8 +21,12 @@
     right: 0px;
     z-index: 1;
     opacity: 1;
-    width: 20px;
-    height: 20px;
+    border: .5px;
+    border-style: solid;
+    border-bottom-style: none;
+    border-color: black;
+    width: 18px;
+    height: 18px;
 }
 
 .colorbar_text {

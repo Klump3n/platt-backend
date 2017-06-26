@@ -39,7 +39,7 @@ out vec4 outColor;
 vec3 fragmentColour(in float temp) {
   /* Definition of color palette as per http://www.dhondt.de/ */
   if (temp < 0.0f) {
-    return vec3(0.0f, 0.0f, 0.0f);
+    return vec3(1.0f, 1.0f, 1.0f);
   }
   else if ((temp >= 0.000000f) && (temp < 0.047619f)) {
     return vec3(0.501961f, 0.000000f, 1.000000f);
@@ -105,7 +105,7 @@ vec3 fragmentColour(in float temp) {
     return vec3(0.749020f, 0.000000f, 0.000000f);
   }
   else {
-    return vec3(0.0f, 0.0f, 0.0f);
+    return vec3(1.0f, 1.0f, 1.0f);
   }
 }
 
