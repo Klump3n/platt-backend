@@ -26,8 +26,8 @@ def parse_commandline():
     parser.add_argument(
         # NOTE: the term behind 'required' gives either True or False depending
         # on whether --test is present in sys.argv or not. This is a small hack
-        # for the requirement of not wanting to supply --data-dir when we do a
-        # test.
+        # for not having to supply --data-dir when we do a test but still kind
+        # of setting it to required.
         '-d', '--data-dir', required='--test' not in sys.argv,
         help='The directory in which we want to look for simulation data.')
     parser.add_argument('--test', action='store_true',
