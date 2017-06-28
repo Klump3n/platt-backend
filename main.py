@@ -6,6 +6,7 @@ either 8008 or the supplied value.
 """
 
 import os
+import sys
 import argparse
 import backend.web_server as web_server
 
@@ -23,8 +24,14 @@ def parse_commandline():
         '-p', '--port', default=8008,
         help='The port for the web server.')
     parser.add_argument(
-        '-d', '--data-dir', required=True,
+        # NOTE: the term behind 'required' gives either True or False depending
+        # on whether --test is present in sys.argv or not. This is a small hack
+        # for the requirement of not wanting to supply --data-dir when we do a
+        # test.
+        '-d', '--data-dir', required='--test' not in sys.argv,
         help='The directory in which we want to look for simulation data.')
+    parser.add_argument('--test', action='store_true',
+                        help='Perform a unit test.')
     args = parser.parse_args()
 
     return args
@@ -72,6 +79,15 @@ if __name__ == '__main__':
 
     # Parse the command line arguments
     ARGS = parse_commandline()
+
+    # Perform a unit test
+    if ARGS.test:
+        import unittest
+        tests = unittest.TestLoader().discover('.')
+        unittest.runner.TextTestRunner(verbosity=2).run(tests)
+
+        sys.exit('Performed unittests -- exiting.')
+
     # Start the program
     start_backend(ARGS)
 
