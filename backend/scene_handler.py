@@ -4,157 +4,108 @@
 An instance for an empty scene.
 """
 
-import numpy as np
+import pathlib
+from scenes_scene_prototype import _ScenePrototype
 
-class SimulationObject:
+
+class SceneManager:
     """
-    Prototype for an object.
-    Holds geometrical data, orientation, etc.
-    """
-
-    def __init__(self, name):
-        """
-        Initialise an object.
-        """
-
-        if type(name) is not str:
-            raise TypeError('name must be str')
-        self._object_name = name
-
-        self._view_matrix = np.eye(4)  # 4D identity matrix
-        self._index_data_list = []
-        self._tetraeder_data_list = []
-        self._wireframe_data_list = []
-
-    def __del__(self):
-        """
-        Delete an object.
-        """
-
-        # Maybe do something with the space that is occupied by the tets or
-        # smth.. Like reorganise the arrays.
-        pass
-
-    def name(self):
-        """
-        Get or set the name of the object.
-        """
-
-        return self._object_name
-
-    def orientation(self, view_matrix=None):
-        """
-        Get (if modelViewMatrix == None) or set (if modelViewMatrix not == None)
-        the orientation of an object in the scene.
-        """
-
-        if view_matrix is not None:
-
-            # Check for numpy array and 4x4 shape for the view_matrix.
-            is_np_array = (type(view_matrix) is np.ndarray)
-            is_4x4 = (view_matrix.shape == self._view_matrix.shape)
-
-            if not is_np_array:
-                raise Exception('view_matrix is wrong type')
-            if not is_4x4:
-                raise Exception('view_matrix is not 4x4')
-
-
-            try:
-                self._view_matrix = view_matrix
-            except:
-                raise Exception('something happened while trying to set the '+
-                                'view_matrix')
-
-        return self._view_matrix
-
-    def index_data(self, data=None):
-        """
-        Get or set the index data.
-        """
-
-        if data is not None:
-            self._index_data_list = data
-
-        return self._index_data_list
-
-    def tetraeder_data(self, data=None):
-        """
-        Get or set the tetraeder data.
-        """
-
-        if data is not None:
-            self._tetraeder_data_list = data
-
-        return self._tetraeder_data_list
-
-    def wireframe_data(self, data=None):
-        """
-        Get or set the wireframe data.
-        """
-
-        if data is None:
-            self._wireframe_data_list = data
-
-        return self._wireframe_data_list
-
-
-class SimulationScene:
-    """
-    Holds all the objects in a scene and also the meta data.
+    Takes care of registering scenes.
     """
 
-    def __init__(self, name):
+    def __init__(
+            self,
+            data_dir=None
+    ):
         """
-        Initialise an empty scene.
-        """
+        Initialise the manager.
 
-        self._scene_name = name
-        self._object_list = {}
-
-    def __del__(self):
-        """
-        Delete the scene.
-        """
-        pass
-
-    def objects(self, add=None, remove=None):
-        """
-        Add and/or remove an object to/from the scene.
+        E.g. set an empty scene list.
         """
 
-        # Add an object
-        if add is not None:
-            if not add in self._object_list:
-                new_object = SimulationObject(add)
-                self._object_list[add] = new_object
-            else:
-                print('Object already present in scene.')
+        if not isinstance(data_dir, str):  # Yes, string.
+            raise TypeError('data_dir is {}, expected str'.format(
+                type(data_dir).__name__))
 
-        # Remove an object
-        if remove is not None:
-            try:
-                self._object_list.pop(remove)
-            except:
-                print('No such object in scene.')
+        # Set the data dir
+        self._data_dir = pathlib.Path(data_dir).absolute()
 
-        return self._object_list
+        self._scene_list = {}
 
-    def metadata(self, name=None):
+        return None
+
+    def get_scene_list(self):
         """
-        Set or get the metadata for the scene.
+        Return a dict with all the scenes in it.
+        """
+        return self._scene_list
+
+    def delete_scene(self, scene_id=None):
+        """
+        Delete a scene.
         """
 
-        if name is not None:
-            self._scene_name = name
+        if not isinstance(scene_id, str):
+            raise TypeError('scene_id is {}, expected str'.format(
+                type(scene_id).__name__))
 
-        return {
-            'name': self._scene_name
-        }
+        if scene_id in self._scene_list:
+            self._scene_list.pop(scene_id)
+        else:
+            print('No scene found to delete.')
 
+        return None
+
+    def new_scene(
+            self,
+            object_path=None
+    ):
+        """
+        Create a new scene with an object.
+        """
+
+        # Type checking for object path
+        if not isinstance(object_path, str):  # Yes, string.
+            raise TypeError('object_path is {}, expected str'.format(
+                type(object_path).__name__))
+
+        # Get a new instance of a scene
+        new_scene = _ScenePrototype(data_dir=self._data_dir)
+        scene_name = new_scene.name()
+
+        # Cast the path to a os.Pathlike object and add the object to the scene
+        object_path = pathlib.Path(object_path)
+        new_scene.add_object(object_path=object_path)
+
+        # Append to scene with object to the list
+        self._scene_list[scene_name] = new_scene
+
+        # Return the name of the new scene so we keep our sanity.
+        return scene_name
+
+    def scene(
+            self,
+            scene_id=None
+    ):
+        """
+        Return a scene object.
+        """
+
+
+        # See which index fits to the provided scene id
+        index = list(self._scene_list.keys()).index(scene_id)
+
+        # Get all the scene objects out of the _scene_list
+        scenes = list(self._scene_list.values())
+
+        return scenes[index]
 
 if __name__ == '__main__':
-    SimulationObject(12)
-    scene = SimulationScene('asdf')
-    objects = scene.objects(add='asdf')
-    print(type(objects.get('asdf')))
+    # The use case would later be to load this file in global variables,
+    # instantiating it once and then make that instance globally available.
+    # In this case: make manager globally available.
+    manager = SceneManager(data_dir='../example_data')
+    name_a = manager.new_scene(object_path='object a_no_symlinks')
+    name_b = manager.new_scene(object_path='object a_no_symlinks')
+
+    print(manager.scene(name_b).name())

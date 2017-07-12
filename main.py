@@ -86,7 +86,7 @@ if __name__ == '__main__':
         tests = unittest.TestLoader().discover('.')
         unittest.runner.TextTestRunner(verbosity=2).run(tests)
 
-        sys.exit('Performed unittests -- exiting.')
+        sys.exit('\nPerformed unittests -- exiting.')
 
     # Start the program
     start_backend(ARGS)
