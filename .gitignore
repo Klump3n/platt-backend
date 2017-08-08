@@ -1,2 +1,6 @@
 **__pycache__
 **_version.py
+example_data/numsim.napf.tiefziehversuch
+example_data/numsim.singlepass.s355j2
+example_data/object_a
+example_data/object\ a_no_symlinks
