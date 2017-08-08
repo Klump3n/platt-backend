@@ -8,17 +8,16 @@ import os
 import re
 import json
 
+import hashlib
+import time
+
 import numpy as np
 
 # conda install cherrypy
 import cherrypy
 
-from util.version import version
-
 import backend.data_backend as fem_mesh
-
-# This imports the scene manager and the data_directory
-import backend.global_settings as gloset
+import backend.global_settings as global_settings
 
 
 # We only want to allow people to POST to it.
@@ -28,49 +27,42 @@ class ServerAPI:
     Expose an API to control the server.
     """
 
+    def __init__(self, data_directory):
+        self.data_directory = data_directory
+
     @cherrypy.expose
     def connect_client(self):
         """
         Return a jsoned string with version number. Maybe more later?
         """
-
-        # Version of the package
-        version_dict = version(detail='long')
-        return json.dumps(version_dict)
-
-    @cherrypy.expose
-    def list_of_fem_data(self):
-        """
-        List the available fem simulation directories.
-        """
-
-        data_folders = gloset.scene_manager.get_femdata_dirs()
-        return json.dumps({'data_folders': data_folders})
+        # print('hey')
+        return json.dumps({'program': 'calculix_clone',
+                           'version': '1-alpha'})
 
     @cherrypy.expose
-    def scenes_infos(self):
+    def scenes_list(self):
         """
         Return a list of scenes.
         """
-        scenes = gloset.scene_manager.get_scene_infos()
-        return json.dumps(scenes)
+        return json.dumps(global_settings.global_scenes)
 
     @cherrypy.expose
-    @cherrypy.tools.json_in()
     def scenes_create(self):
         """
-        Create a new scene with an initial object. We expect a json string like
-        {'object_path': STRING_RELATIVE_TO_DATA_DIR_IN_GLOSET}
+        Create a new scene.
         """
 
-        # Parse JSON
-        json_input = cherrypy.request.json
-        object_path = json_input['object_path']
+        # Create a unique identifier for our scene -- ignoring that google
+        # managed to create a collision of sha1 sums.
+        identifier = hashlib.sha1(str(time.time()).encode('utf-8')).hexdigest()
 
-        scene_id = gloset.scene_manager.new_scene(object_path=object_path)
-        return json.dumps(
-            {'created': scene_id}
-        )
+        scene_prototype = {
+            'metadata': {},
+            'objects': {}
+        }
+
+        global_settings.global_scenes[identifier] = scene_prototype
+        return json.dumps({'created': identifier})
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -81,12 +73,38 @@ class ServerAPI:
 
         # Parse JSON
         json_input = cherrypy.request.json
-        # print(json_input)
+        print(json_input)
         scene_hash = json_input['scene_hash']
 
-        deleted_scene_hash = gloset.scene_manager.delete_scene(scene_hash)
+        global_settings.global_scenes.pop(scene_hash)
+        return json.dumps({'deleted': scene_hash})
 
-        return json.dumps({'deleted': deleted_scene_hash})
+    @cherrypy.expose
+    def get_object_list(self):
+        """
+        Return a list of folders that potentially hold FEM data on
+        catching 'get_object_list'
+
+        Check all the files we find in self.data_directory, check if it's a
+        directory, if it's a directory check if there is a directory called
+        'fo' in there. If that's the case we add it to the list we return
+        in the end.
+
+        Returns a json file.
+        """
+
+        files_in_data_dir = os.listdir(self.data_directory)
+
+        data_folders = []
+
+        for file_name in files_in_data_dir:
+            abs_file_path = os.path.join(self.data_directory, file_name)
+            if os.path.isdir(abs_file_path):
+                file_output_dir = os.path.join(abs_file_path, 'fo')
+                if os.path.isdir(file_output_dir):
+                    data_folders.append(file_name)
+
+        return json.dumps({'data_folders': data_folders})
 
     @cherrypy.expose
     @cherrypy.tools.json_in()

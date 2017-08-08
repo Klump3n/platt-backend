@@ -8,6 +8,7 @@ either 8008 or the supplied value.
 import os
 import sys
 import argparse
+from util.version import version
 import backend.web_server as web_server
 
 
@@ -41,6 +42,11 @@ def start_backend(args):
     Start the backend.
     """
 
+    # Get the version information
+    version_info = version()
+    program_name = version_info['program']
+    version_number = version_info['version']
+
     # Settings for the server
     data_dir = os.path.abspath(args.data_dir)
 
@@ -53,10 +59,13 @@ def start_backend(args):
     port = args.port
 
     # Welcome message
-    start_msg = 'Starting http server on port {port_text}\n\n'\
+    start_msg = '\nThis is {program_name} {version_number}\n'\
+                'Starting http server on port {port_text}\n\n'\
                 'Serving frontent from directory {frontend_dir_text}\n'\
                 'Will search for simulation data in directory {data_dir_text}'\
                 '\n'.format(
+                    program_name=program_name,
+                    version_number=version_number,
                     port_text=port,
                     frontend_dir_text=frontend_dir,
                     data_dir_text=data_dir)
@@ -73,7 +82,7 @@ def start_backend(args):
 # Start the program
 if __name__ == '__main__':
     """
-    This is called when (i.e. always) we start this file as a standalone
+    This is called when (e.g. always) we start this file as a standalone
     version.
     """
 
@@ -90,5 +99,3 @@ if __name__ == '__main__':
 
     # Start the program
     start_backend(ARGS)
-
-

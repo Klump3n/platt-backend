@@ -4,11 +4,15 @@
 A list of globally available variables.
 """
 
-def init():
+from backend.scenes_manager import SceneManager
+
+
+def init(data_dir):
     """
     Initialise the global variables.
     """
 
-    # A list that contains all the active scenes on the server.
-    global global_scenes
-    global_scenes = {}
+    # An object that contains all the scenes on the server and exposes methods
+    # to manipulate them and the objects that are contained.
+    global scene_manager
+    scene_manager = SceneManager(data_dir=data_dir)

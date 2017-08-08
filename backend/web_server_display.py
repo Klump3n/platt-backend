@@ -7,7 +7,7 @@ of the available objects in the data directory.
 
 import cherrypy
 
-import backend.global_settings as global_settings
+import backend.global_settings as gloset
 from backend.static.gen_index import make_index
 
 
@@ -22,8 +22,10 @@ class ServerRoot:
         The scene administration page.
         """
 
-        return ('This page will at some point contain a command and control ' +
-                'panel for our simulation data and scenes.')
+        return (
+            'This page will at some point contain a command and control ' +
+            'panel for our simulation data and scenes.'
+        )
 
 class ServerScenesDispatcher:
     """
@@ -57,7 +59,7 @@ class ServerScenesDispatcher:
         """
 
         # If the first argument is a scene hash ...
-        if vpath[0] in global_settings.global_scenes:
+        if vpath[0] in gloset.scene_manager.get_scene_infos():
 
             # ... pop the first argument from the stack,
             cherrypy.request.params['scene_hash'] = vpath.pop(0)
@@ -79,7 +81,6 @@ class ServerScenesDispatcher:
             with_menu=False, with_colorbar=False,
             overlay_message='Sorry, this scene does not exist.'
         )
-
 
 class ServerDisplayScene:
     """

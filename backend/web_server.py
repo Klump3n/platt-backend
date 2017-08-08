@@ -9,6 +9,7 @@ import os
 import cherrypy
 
 from backend.web_server_display import ServerRoot, ServerScenesDispatcher
+# from backend.old_web_server_api import OLDServerAPI
 from backend.web_server_api import ServerAPI
 import backend.global_settings as global_settings
 
@@ -41,7 +42,7 @@ class Web_Server:
                 # 'tools.staticdir.debug' : True,
                 'tools.staticdir.on': True,
                 'tools.staticdir.dir': display_path
-                # No default file
+                # No default file. The index file is provided by the dispatcher.
             }
         }
 
@@ -55,8 +56,8 @@ class Web_Server:
         self.data_directory = data_directory
 
         # Initialise the global variables. For later use just import the
-        # backend.global_settings and write to the global_scenes array.
-        global_settings.init()
+        # backend.global_settings and use the scene manager from there.
+        global_settings.init(data_dir=self.data_directory)
 
     def start(self):
         """
@@ -66,7 +67,7 @@ class Web_Server:
         # Set the port
         cherrypy.config.update(
             {'server.socket_port': self.port,
-             'server.socket_host': '0.0.0.0'
+             'server.socket_host': '0.0.0.0'  # Can be reached from everywhere
             }
         )
 
@@ -75,8 +76,10 @@ class Web_Server:
             ServerRoot(), '/', self.root_conf)
         cherrypy.tree.mount(
             ServerScenesDispatcher(), '/scenes', self.scenes_conf)
+        # cherrypy.tree.mount(
+        #     OLDServerAPI(data_directory=self.data_directory), '/api', self.api_conf)
         cherrypy.tree.mount(
-            ServerAPI(data_directory=self.data_directory), '/api', self.api_conf)
+            ServerAPI(), '/api', self.api_conf)
 
         # Start the server
         cherrypy.engine.start()

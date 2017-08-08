@@ -3,7 +3,7 @@
 import os
 import time
 import hashlib
-from scenes_object_prototype import _ObjectPrototype
+from backend.scenes_object_prototype import _ObjectPrototype
 
 
 class _ScenePrototype:
@@ -162,3 +162,13 @@ class _ScenePrototype:
 
         return self._scene_name
 
+
+    def object_list(self):
+        """
+        Returns a list of all the objects in this scene.
+        """
+        list_of_objects = sorted(self._object_list.keys())
+        if len(list_of_objects) == 0:
+            list_of_objects.append('This scene is empty.')
+
+        return list_of_objects

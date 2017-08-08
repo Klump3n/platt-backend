@@ -4,6 +4,8 @@ Get the version number of the program.
 """
 
 import subprocess
+from warnings import warn
+
 
 # Version template
 version_dict = {
@@ -41,7 +43,6 @@ def dirty_version_string():
 
     return version.decode('utf-8').splitlines()[0]
 
-
 def version(detail='dirty'):
     """
     Find the version number of the git repository.
@@ -59,10 +60,25 @@ def version(detail='dirty'):
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
         )
 
-        # If we don't get a returncode of 0 we are probably not in any git repo
+        # If we don't get a returncode of 0 we are probably not in any git repo.
+        # Maybe someone has taken all the files out of the repo and uses them
+        # without git..? Or maybe we are on windows?
         if p.returncode != 0:
-            # print('Not in any git repository.')
-            version = 'NoVer'
+
+            # Let's see if we can find a _version.py-file!
+            try:
+                with open('_version.py', 'r') as version_file:
+                    version = version_file.readline().splitlines()[0]
+
+                warning_message = ('We are probably not in a git repository. '\
+                                   'Falling back to reading the version '\
+                                   'string from file.')
+                warn(warning_message)
+
+            # Well, then just assign the NoVer version
+            except FileNotFoundError:
+                version = 'NoVer'
+
         # Else, we are in a repo
         else:
             if detail == 'short':
@@ -74,10 +90,23 @@ def version(detail='dirty'):
 
     # Maybe git is not installed or something else is happening
     except FileNotFoundError:
-        # print('Git not found.')
-        version = 'NoVer'
+
+        # Let's see if we can find a _version.py-file!
+        try:
+            with open('_version.py', 'r') as version_file:
+                version = version_file.readline().splitlines()[0]
+
+            warning_message = ('It seems that git is not installed. Falling '\
+                               'back to reading the version string from file.')
+            warn(warning_message)
+
+        # Well, then just assign the NoVer version
+        except FileNotFoundError:
+            version = 'NoVer'
+
+    # Write the version string to file for fallback use.
+    with open('_version.py', 'w') as version_file:
+        version_file.write('{}'.format(version))
 
     version_dict['version'] = version
-
     return version_dict
-
