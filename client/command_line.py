@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 Terminal-like interface for interacting with calculix-clone.
 """
