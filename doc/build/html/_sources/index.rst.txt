@@ -11,7 +11,7 @@ This is a program to display simulation data from finite difference calculations
 Usage
 =====
 
-Call the file ``main.py -h`` for a little help.
+Call ``main.py -h`` for a little help.
 
 With the provided example data in the programs main directory, a viable command
 would be ``main.py -d example_data``. This would start the backend, which in

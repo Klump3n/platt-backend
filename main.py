@@ -14,7 +14,7 @@ import backend.web_server as web_server
 
 def parse_commandline():
     """
-    Parse the command line and return the parsed arguments.
+    Parse the command line and return the parsed arguments in a namespace.
 
     Args:
      None: No parameters.
@@ -44,19 +44,20 @@ def parse_commandline():
     return args
 
 
-def start_backend(args):
+def start_backend(data_dir, port=8008):
     """
-    Start the backend with parameters parsed from the command line.
+    Start the backend on the provided port, serving simulation data from the
+    provided directory.
 
-    Extract the port and the directory that contains the simulation data from
-    the `args` namespace. Set the working directory to the program directory
-    and display a welcome message, containing the program name and version
-    along with the server port and the directories for the frontend and the
-    simulation data. Finally start an instance of the cherrypy ``Web_Server``
-    class.
+    Set the working directory to the program directory and display a welcome
+    message, containing the program name and version along with the server
+    port and the directories for the frontend and the simulation data. Finally,
+    start an instance of the cherrypy ``Web_Server`` class.
 
     Args:
-     args (namespace): The parsed command line arguments.
+     data_dir (string): The path to the simulation data, either relative to the
+      main.py file or absolute.
+     port (int, optional, defaults to `8008`): The port for the web server.
 
     Returns:
      None: Nothing
@@ -68,7 +69,7 @@ def start_backend(args):
     version_number = version_info['version']
 
     # Settings for the server
-    data_dir = os.path.abspath(args.data_dir)
+    data_dir = os.path.abspath(data_dir)
 
     working_dir = os.path.dirname(os.path.realpath(__file__))
     frontend_dir = os.path.join(working_dir, 'frontend')
@@ -76,7 +77,7 @@ def start_backend(args):
     # Change working directory in case we are not there yet
     os.chdir(working_dir)
 
-    port = args.port
+    # port = args.port
 
     # Welcome message
     start_msg = '\nThis is {program_name} {version_number}\n'\
@@ -119,8 +120,13 @@ def start_program():
     # Parse the command line arguments
     ARGS = parse_commandline()
 
+    # Extract the command line arguments
+    do_unittest = ARGS.test
+    port = ARGS.port
+    data_dir = ARGS.data_dir
+
     # Perform a unit test?
-    if ARGS.test:
+    if do_unittest:
         import unittest
         tests = unittest.TestLoader().discover('.')
         unittest.runner.TextTestRunner(verbosity=2).run(tests)
@@ -128,7 +134,7 @@ def start_program():
         sys.exit('\nPerformed unittests -- exiting.')
 
     # Start the program
-    start_backend(ARGS)
+    start_backend(data_dir, port)
 
     return None
 
