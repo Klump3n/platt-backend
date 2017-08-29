@@ -1,0 +1,226 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>backend.tests.tests_scene_handler &#8212; TBD alpha documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     'alpha',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for backend.tests.tests_scene_handler</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">A testcase for backend.scenes_scene_prototype and</span>
+<span class="sd">backend.scenes_object_prototype</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># NOTE: I am not really sure if it is beneficial to maintain a test suite on a</span>
+<span class="c1"># one man project.</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># Append the parent directory for importing the file.</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;..&#39;</span><span class="p">))</span>  <span class="c1"># Append the program root dir</span>
+<span class="kn">from</span> <span class="nn">backend.scenes_scene_prototype</span> <span class="k">import</span> <span class="n">_ScenePrototype</span>
+<span class="kn">from</span> <span class="nn">backend.scenes_object_prototype</span> <span class="k">import</span> <span class="n">_ObjectPrototype</span>
+
+
+<div class="viewcode-block" id="TestSimulationObject"><a class="viewcode-back" href="../../../backend.tests.html#backend.tests.tests_scene_handler.TestSimulationObject">[docs]</a><span class="k">class</span> <span class="nc">TestSimulationObject</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Unittest for SimulationObject.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestSimulationObject.setUp"><a class="viewcode-back" href="../../../backend.tests.html#backend.tests.tests_scene_handler.TestSimulationObject.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Instantiate the object</span>
+        <span class="n">test_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="s1">&#39;this/is/a/test&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">example_object</span> <span class="o">=</span> <span class="n">_ObjectPrototype</span><span class="p">(</span><span class="n">test_path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestSimulationObject.test_name_is_only_string"><a class="viewcode-back" href="../../../backend.tests.html#backend.tests.tests_scene_handler.TestSimulationObject.test_name_is_only_string">[docs]</a>    <span class="k">def</span> <span class="nf">test_name_is_only_string</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the object name can only be a string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
+            <span class="n">_ObjectPrototype</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestSimulationObject.test_object_name_is_equal"><a class="viewcode-back" href="../../../backend.tests.html#backend.tests.tests_scene_handler.TestSimulationObject.test_object_name_is_equal">[docs]</a>    <span class="k">def</span> <span class="nf">test_object_name_is_equal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test if the object name equals the assigned name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">example_object</span><span class="o">.</span><span class="n">name</span><span class="p">(),</span> <span class="s1">&#39;test&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestSimulationObject.test_default_orientation_is_unitary"><a class="viewcode-back" href="../../../backend.tests.html#backend.tests.tests_scene_handler.TestSimulationObject.test_default_orientation_is_unitary">[docs]</a>    <span class="k">def</span> <span class="nf">test_default_orientation_is_unitary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the default transformation matrix is a 4x4 unit matrix.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">example_object</span><span class="o">.</span><span class="n">orientation</span><span class="p">(),</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="TestSimulationObject.test_set_orientation"><a class="viewcode-back" href="../../../backend.tests.html#backend.tests.tests_scene_handler.TestSimulationObject.test_set_orientation">[docs]</a>    <span class="k">def</span> <span class="nf">test_set_orientation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the transformation matrix to something other than the unitary</span>
+<span class="sd">        matrix.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nparray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+            <span class="p">[[</span> <span class="mf">1.</span><span class="p">,</span>  <span class="mf">2.</span><span class="p">,</span>  <span class="mf">3.</span><span class="p">,</span>  <span class="mf">4.</span><span class="p">],</span>
+             <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.1</span><span class="p">,</span>  <span class="mf">0.2</span><span class="p">,</span>  <span class="mf">0.1</span><span class="p">],</span>
+             <span class="p">[</span> <span class="o">-</span><span class="mf">0.</span><span class="p">,</span>  <span class="o">-</span><span class="mf">1.</span><span class="p">,</span>  <span class="o">-</span><span class="mf">2.</span><span class="p">,</span>  <span class="o">-</span><span class="mf">3.</span><span class="p">],</span>
+             <span class="p">[</span> <span class="o">-</span><span class="mf">1.1</span><span class="p">,</span>  <span class="o">-.</span><span class="mi">1</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.</span><span class="p">]]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">example_object</span><span class="o">.</span><span class="n">orientation</span><span class="p">(</span><span class="n">nparray</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">example_object</span><span class="o">.</span><span class="n">orientation</span><span class="p">(),</span> <span class="n">nparray</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestSimulationObject.test_set_orientation_with_non_4x4_transform_exception"><a class="viewcode-back" href="../../../backend.tests.html#backend.tests.tests_scene_handler.TestSimulationObject.test_set_orientation_with_non_4x4_transform_exception">[docs]</a>    <span class="k">def</span> <span class="nf">test_set_orientation_with_non_4x4_transform_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check wether the orientation does not accept np arrays other that 4x4.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">testmatrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">example_object</span><span class="o">.</span><span class="n">orientation</span><span class="p">(</span><span class="n">testmatrix</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestSimulationObject.test_set_orientation_with_non_numpy_array_exception"><a class="viewcode-back" href="../../../backend.tests.html#backend.tests.tests_scene_handler.TestSimulationObject.test_set_orientation_with_non_numpy_array_exception">[docs]</a>    <span class="k">def</span> <span class="nf">test_set_orientation_with_non_numpy_array_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        See that anything but a numpy array raises an exception.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">testlist</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">[</span> <span class="mf">1.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">],</span>
+            <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">],</span>
+            <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">],</span>
+            <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.</span><span class="p">]</span>
+        <span class="p">]</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">example_object</span><span class="o">.</span><span class="n">orientation</span><span class="p">(</span><span class="n">testlist</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="TestSimulationScene"><a class="viewcode-back" href="../../../backend.tests.html#backend.tests.tests_scene_handler.TestSimulationScene">[docs]</a><span class="k">class</span> <span class="nc">TestSimulationScene</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Unittest for SimulationScene.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestSimulationScene.setUp"><a class="viewcode-back" href="../../../backend.tests.html#backend.tests.tests_scene_handler.TestSimulationScene.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Instantiate the scene and add an object</span>
+        <span class="n">test_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="s1">&#39;this/is/a/test&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">example_scene</span> <span class="o">=</span> <span class="n">_ScenePrototype</span><span class="p">(</span><span class="n">test_path</span><span class="p">)</span></div></div>
+
+    <span class="c1"># These tests do not work right now, I kind of know why but I also think</span>
+    <span class="c1"># that I should have documented their purpose waaaaay better.</span>
+
+    <span class="c1"># def test_scene_metadata(self):</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     Test if the scene metadata is as expected.</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+
+    <span class="c1">#     metadata = self.example_scene.metadata()</span>
+    <span class="c1">#     self.assertIs(type(metadata), dict)</span>
+    <span class="c1">#     self.assertTrue(&#39;name&#39; in metadata)</span>
+
+    <span class="c1"># def test_object_is_instance_of_SimulationObject(self):</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     Check if the object is an instance of the object class.</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+
+    <span class="c1">#     self.assertIsInstance(</span>
+    <span class="c1">#         self.example_scene.objects().get(&#39;example object&#39;),</span>
+    <span class="c1">#         _ObjectPrototype</span>
+    <span class="c1">#     )</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Testing as standalone program.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">unittest</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">TBD</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../backend.html">backend package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../frontend.html">frontend package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Matthias Plock.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

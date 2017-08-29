@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Generate a taylored index file.
+Contains functions for generating taylored index.html files.
 """
 
 # The main html body

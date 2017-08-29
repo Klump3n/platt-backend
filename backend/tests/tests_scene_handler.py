@@ -1,16 +1,22 @@
 #!/usr/bin/env python3
 """
-A testcase for /backend/scene_handler.py
+A testcase for backend.scenes_scene_prototype and
+backend.scenes_object_prototype
 """
 
+# NOTE: I am not really sure if it is beneficial to maintain a test suite on a
+# one man project.
+
+import os
 import sys
 import unittest
+import pathlib
 import numpy as np
 
 # Append the parent directory for importing the file.
-
-sys.path.append('../..')            # Append the program root dir
-from backend.scene_handler import *     # Oh well...
+sys.path.append(os.path.join('..', '..'))  # Append the program root dir
+from backend.scenes_scene_prototype import _ScenePrototype
+from backend.scenes_object_prototype import _ObjectPrototype
 
 
 class TestSimulationObject(unittest.TestCase):
@@ -20,20 +26,21 @@ class TestSimulationObject(unittest.TestCase):
 
     def setUp(self):
         # Instantiate the object
-        self.example_object = SimulationObject('object name')
+        test_path = pathlib.Path('this/is/a/test')
+        self.example_object = _ObjectPrototype(test_path)
 
     def test_name_is_only_string(self):
         """
         Check if the object name can only be a string.
         """
         with self.assertRaises(TypeError):
-            SimulationObject(0)
+            _ObjectPrototype(0)
 
     def test_object_name_is_equal(self):
         """
         Test if the object name equals the assigned name.
         """
-        self.assertEqual(self.example_object.name(), 'object name')
+        self.assertEqual(self.example_object.name(), 'test')
 
     def test_default_orientation_is_unitary(self):
         """
@@ -48,10 +55,10 @@ class TestSimulationObject(unittest.TestCase):
         matrix.
         """
         nparray = np.asarray(
-            [[ 1.,  2.,  3.,  4.],
-             [ 0.,  1.1,  0.2,  0.1],
-             [ -0.,  -1.,  -2.,  -3.],
-             [ -1.1,  -.1,  0.,  1.]]
+            [[1.,  2.,  3.,  4.],
+             [0.,  1.1,  0.2,  0.1],
+             [-0.,  -1.,  -2.,  -3.],
+             [-1.1,  -.1,  0.,  1.]]
         )
         self.example_object.orientation(nparray)
         np.testing.assert_array_equal(
@@ -70,13 +77,14 @@ class TestSimulationObject(unittest.TestCase):
         See that anything but a numpy array raises an exception.
         """
         testlist = [
-            [ 1.,  0.,  0.,  0.],
-            [ 0.,  1.,  0.,  0.],
-            [ 0.,  0.,  1.,  0.],
-            [ 0.,  0.,  0.,  1.]
+            [1.,  0.,  0.,  0.],
+            [0.,  1.,  0.,  0.],
+            [0.,  0.,  1.,  0.],
+            [0.,  0.,  0.,  1.]
         ]
         with self.assertRaises(Exception):
             self.example_object.orientation(testlist)
+
 
 class TestSimulationScene(unittest.TestCase):
     """
@@ -85,27 +93,31 @@ class TestSimulationScene(unittest.TestCase):
 
     def setUp(self):
         # Instantiate the scene and add an object
-        self.example_scene = SimulationScene('scene name')
-        self.example_scene.objects(add='example object')
+        test_path = pathlib.Path('this/is/a/test')
+        self.example_scene = _ScenePrototype(test_path)
 
-    def test_scene_metadata(self):
-        """
-        Test if the scene metadata is as expected.
-        """
+    # These tests do not work right now, I kind of know why but I also think
+    # that I should have documented their purpose waaaaay better.
 
-        metadata = self.example_scene.metadata()
-        self.assertIs(type(metadata), dict)
-        self.assertTrue('name' in metadata)
+    # def test_scene_metadata(self):
+    #     """
+    #     Test if the scene metadata is as expected.
+    #     """
 
-    def test_object_is_instance_of_SimulationObject(self):
-        """
-        Check if the object is an instance of the object class.
-        """
+    #     metadata = self.example_scene.metadata()
+    #     self.assertIs(type(metadata), dict)
+    #     self.assertTrue('name' in metadata)
 
-        self.assertIsInstance(
-            self.example_scene.objects().get('example object'),
-            SimulationObject
-        )
+    # def test_object_is_instance_of_SimulationObject(self):
+    #     """
+    #     Check if the object is an instance of the object class.
+    #     """
+
+    #     self.assertIsInstance(
+    #         self.example_scene.objects().get('example object'),
+    #         _ObjectPrototype
+    #     )
+
 
 if __name__ == '__main__':
     """

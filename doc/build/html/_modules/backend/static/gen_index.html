@@ -1,0 +1,259 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>backend.static.gen_index &#8212; TBD alpha documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     'alpha',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for backend.static.gen_index</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="c1"># Copyright (C) 2017 Matthias Plock &lt;matthias.plock@bam.de&gt;</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Generate a taylored index file.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># The main html body</span>
+<span class="n">HTML</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">&lt;!DOCTYPE html&gt;</span>
+<span class="s2">&lt;html lang=&quot;en&quot;&gt;</span>
+<span class="s2">  &lt;head&gt;</span>
+<span class="s2">    &lt;meta charset=&quot;utf-8&quot;&gt;</span>
+<span class="s2">    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;</span>
+<span class="s2">      &lt;title&gt;FemGL alpha&lt;/title&gt;</span>
+<span class="s2">      &lt;link rel=&quot;stylesheet&quot; href=&quot;main.css&quot; /&gt;</span>
+<span class="s2">      </span><span class="si">{html_css_overlay}</span><span class="s2"></span>
+<span class="s2">      </span><span class="si">{html_css_menu}</span><span class="s2"></span>
+<span class="s2">      </span><span class="si">{html_css_colorbar}</span><span class="s2"></span>
+<span class="s2">  &lt;/head&gt;</span>
+<span class="s2">  &lt;body&gt;</span>
+<span class="s2">    &lt;!-- The canvas element for displaying something via WebGL. Never</span>
+<span class="s2">	       tried anything else, maybe it also works in a &lt;p&gt;? --&gt;</span>
+<span class="s2">    &lt;canvas id=&quot;webGlCanvas&quot; data-scene-hash=&quot;</span><span class="si">{scene_hash}</span><span class="s2">&quot;&gt;&lt;/canvas&gt;</span>
+<span class="s2">    </span><span class="si">{html_body_overlay}</span><span class="s2"></span>
+<span class="s2">    </span><span class="si">{html_body_menu}</span><span class="s2"></span>
+<span class="s2">    </span><span class="si">{html_body_colorbar}</span><span class="s2"></span>
+<span class="s2">  &lt;/body&gt;</span>
+
+<span class="s2">  &lt;!-- Import twgl.js WebGL helper functions --&gt;</span>
+<span class="s2">  &lt;!-- &lt;script src=&quot;twgl-dist-3.x/twgl-full.min.js&quot;&gt;&lt;/script&gt; --&gt;</span>
+<span class="s2">  &lt;script src=&quot;twgl-dist-3.x/twgl-full.js&quot;&gt;&lt;/script&gt;</span>
+<span class="s2">  </span><span class="si">{html_script_menu}</span><span class="s2"></span>
+<span class="s2">  &lt;script src=&quot;loadData.js&quot;&gt;&lt;/script&gt;</span>
+<span class="s2">  &lt;script src=&quot;setView.js&quot;&gt;&lt;/script&gt;</span>
+<span class="s2">  </span><span class="si">{html_script_colorbar}</span><span class="s2"></span>
+<span class="s2">  &lt;script src=&quot;main.js&quot; onload=&quot;main()&quot;&gt;&lt;/script&gt;</span>
+<span class="s2">&lt;/html&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="c1"># The css entries for the menu, the colorbar and the overlay</span>
+<span class="n">CSS_OVERLAY</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">      &lt;link rel=&quot;stylesheet&quot; href=&quot;overlay.css&quot; /&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="n">CSS_MENU</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">      &lt;link rel=&quot;stylesheet&quot; href=&quot;menu.css&quot; /&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="n">CSS_COLORBAR</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">      &lt;link rel=&quot;stylesheet&quot; href=&quot;colorbar.css&quot; /&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="c1"># Divs for menu, colorbar and overlay</span>
+<span class="n">BODY_OVERLAY</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    &lt;div class=&quot;overlay&quot;&gt;</span><span class="si">{message}</span><span class="s2">&lt;/div&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="n">BODY_MENU</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    &lt;div class=&quot;main_container&quot;&gt;</span>
+<span class="s2">      &lt;div class=&quot;add_objects_button_container&quot;&gt;</span>
+<span class="s2">        &lt;div class=&quot;add_objects_button&quot; id=&quot;add_objects_button&quot;&gt;+&lt;/div&gt;</span>
+<span class="s2">        &lt;div class=&quot;add_objects_menu_container&quot; id=&quot;add_objects_menu_container&quot;&gt;</span>
+<span class="s2">            &lt;div class=&quot;add_objects_menu&quot; id=&quot;add_objects_menu&quot;&gt;&lt;/div&gt;</span>
+<span class="s2">        &lt;/div&gt;</span>
+<span class="s2">      &lt;/div&gt;</span>
+<span class="s2">      &lt;div class=&quot;objects_container&quot; id=&quot;objects_container&quot;&gt;&lt;/div&gt; &lt;!-- The menus will be dropped here. --&gt;</span>
+<span class="s2">    &lt;/div&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="n">BODY_COLORBAR</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    &lt;!-- Colorbar stuff --&gt;</span>
+<span class="s2">    &lt;div class=&quot;colorbar_container_outer&quot;&gt;</span>
+<span class="s2">      &lt;div class=&quot;colorbar_container_inner&quot;&gt;</span>
+<span class="s2">        &lt;div id=&quot;colorbar&quot;&gt;&lt;/div&gt;</span>
+<span class="s2">      &lt;/div&gt;</span>
+<span class="s2">    &lt;/div&gt;</span>
+<span class="s2">    &lt;!-- Colorbar stuff ends --&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="c1"># Scripts to load for menu and colorbar</span>
+<span class="n">SCRIPT_MENU</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">  &lt;script src=&quot;menu.js&quot; onload=&quot;main()&quot;&gt;&lt;/script&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="n">SCRIPT_COLORBAR</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">  &lt;script src=&quot;colorbar.js&quot;&gt;&lt;/script&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="make_index"><a class="viewcode-back" href="../../../backend.static.html#backend.static.gen_index.make_index">[docs]</a><span class="k">def</span> <span class="nf">make_index</span><span class="p">(</span>
+        <span class="n">scene_hash</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">with_menu</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">with_colorbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">overlay_message</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a string that we can return to the browser, so it knows what it has</span>
+<span class="sd">    to load.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Initialise strings</span>
+    <span class="n">css_overlay_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">css_menu_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">css_colorbar_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">body_overlay_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">body_menu_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">body_colorbar_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">script_menu_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">script_colorbar_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">overlay_message</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">css_overlay_string</span> <span class="o">=</span> <span class="n">CSS_OVERLAY</span>
+        <span class="n">body_overlay_string</span> <span class="o">=</span> <span class="n">BODY_OVERLAY</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">overlay_message</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">with_menu</span><span class="p">:</span>
+        <span class="n">css_menu_string</span> <span class="o">=</span> <span class="n">CSS_MENU</span>
+        <span class="n">body_menu_string</span> <span class="o">=</span> <span class="n">BODY_MENU</span>
+        <span class="n">script_menu_string</span> <span class="o">=</span> <span class="n">SCRIPT_MENU</span>
+
+    <span class="k">if</span> <span class="n">with_colorbar</span><span class="p">:</span>
+        <span class="n">css_colorbar_string</span> <span class="o">=</span> <span class="n">CSS_COLORBAR</span>
+        <span class="n">body_colorbar_string</span> <span class="o">=</span> <span class="n">BODY_COLORBAR</span>
+        <span class="n">script_colorbar_string</span> <span class="o">=</span> <span class="n">SCRIPT_COLORBAR</span>
+
+    <span class="c1"># Format the html string</span>
+    <span class="n">index_file</span> <span class="o">=</span> <span class="n">HTML</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">scene_hash</span><span class="o">=</span><span class="n">scene_hash</span><span class="p">,</span>
+
+        <span class="n">html_css_overlay</span><span class="o">=</span><span class="n">css_overlay_string</span><span class="p">,</span>
+        <span class="n">html_css_menu</span><span class="o">=</span><span class="n">css_menu_string</span><span class="p">,</span>
+        <span class="n">html_css_colorbar</span><span class="o">=</span><span class="n">css_colorbar_string</span><span class="p">,</span>
+
+        <span class="n">html_body_overlay</span><span class="o">=</span><span class="n">body_overlay_string</span><span class="p">,</span>
+        <span class="n">html_body_menu</span><span class="o">=</span><span class="n">body_menu_string</span><span class="p">,</span>
+        <span class="n">html_body_colorbar</span><span class="o">=</span><span class="n">body_colorbar_string</span><span class="p">,</span>
+
+        <span class="n">html_script_menu</span><span class="o">=</span><span class="n">script_menu_string</span><span class="p">,</span>
+        <span class="n">html_script_colorbar</span><span class="o">=</span><span class="n">script_colorbar_string</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">index_file</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    In case we want to test.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">make_index</span><span class="p">())</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">TBD</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../backend.html">backend package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../frontend.html">frontend package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Matthias Plock.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

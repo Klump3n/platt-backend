@@ -1,0 +1,26 @@
+backend\.static package
+=======================
+
+The purpose of this package is to generate a taylored index.html file.
+
+If the user calls ``http://HOST:PORT/scenes``
+
+Submodules
+----------
+
+backend\.static\.gen\_index module
+----------------------------------
+
+.. automodule:: backend.static.gen_index
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: backend.static
+    :members:
+    :undoc-members:
+    :show-inheritance:

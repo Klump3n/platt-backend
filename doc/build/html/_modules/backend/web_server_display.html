@@ -1,0 +1,201 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>backend.web_server_display &#8212; TBD alpha documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     'alpha',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for backend.web_server_display</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The web server class with all available RESTful api endpoints.</span>
+
+<span class="sd">For example: call the server on SERVER_ADRESS/get_object_list to get a list</span>
+<span class="sd">of the available objects in the data directory.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">cherrypy</span>
+
+<span class="kn">import</span> <span class="nn">backend.global_settings</span> <span class="k">as</span> <span class="nn">gloset</span>
+<span class="kn">from</span> <span class="nn">backend.static.gen_index</span> <span class="k">import</span> <span class="n">make_index</span>
+
+
+<div class="viewcode-block" id="ServerRoot"><a class="viewcode-back" href="../../backend.html#backend.web_server_display.ServerRoot">[docs]</a><span class="k">class</span> <span class="nc">ServerRoot</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Handle the data for fem-gl.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ServerRoot.index"><a class="viewcode-back" href="../../backend.html#backend.web_server_display.ServerRoot.index">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
+    <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The scene administration page.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s1">&#39;This page will at some point contain a command and control &#39;</span> <span class="o">+</span>
+            <span class="s1">&#39;panel for our simulation data and scenes.&#39;</span>
+        <span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="ServerScenesDispatcher"><a class="viewcode-back" href="../../backend.html#backend.web_server_display.ServerScenesDispatcher">[docs]</a><span class="k">class</span> <span class="nc">ServerScenesDispatcher</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Display scenes on the server.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialise the dispatcher.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ServerDisplayScene</span> <span class="o">=</span> <span class="n">ServerDisplayScene</span><span class="p">()</span>
+
+<div class="viewcode-block" id="ServerScenesDispatcher.index"><a class="viewcode-back" href="../../backend.html#backend.web_server_display.ServerScenesDispatcher.index">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
+    <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        If we simply call HOST:PORT/scenes(/) we will get this message.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">make_index</span><span class="p">(</span>
+            <span class="n">scene_hash</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">with_menu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">with_colorbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">overlay_message</span><span class="o">=</span><span class="s1">&#39;No scene selected.&#39;</span>
+        <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_cp_dispatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vpath</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This looks at the url we call. If the first node is a valid scene_hash</span>
+<span class="sd">        we generate an index.html file with this scene_hash encoded. Otherwise</span>
+<span class="sd">        we generate an error message.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># If the first argument is a scene hash ...</span>
+        <span class="k">if</span> <span class="n">vpath</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">gloset</span><span class="o">.</span><span class="n">scene_manager</span><span class="o">.</span><span class="n">get_scene_infos</span><span class="p">():</span>
+
+            <span class="c1"># ... pop the first argument from the stack,</span>
+            <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;scene_hash&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vpath</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ServerDisplayScene</span>
+
+        <span class="c1"># otherwise ...</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># ... generate an error message</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">error</span>
+
+<div class="viewcode-block" id="ServerScenesDispatcher.error"><a class="viewcode-back" href="../../backend.html#backend.web_server_display.ServerScenesDispatcher.error">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
+    <span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        In case the scene does not exist.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">make_index</span><span class="p">(</span>
+            <span class="n">scene_hash</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">with_menu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">with_colorbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">overlay_message</span><span class="o">=</span><span class="s1">&#39;Sorry, this scene does not exist.&#39;</span>
+        <span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="ServerDisplayScene"><a class="viewcode-back" href="../../backend.html#backend.web_server_display.ServerDisplayScene">[docs]</a><span class="k">class</span> <span class="nc">ServerDisplayScene</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This returns an individual index.html file with the scene_hash encoded</span>
+<span class="sd">    into it.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ServerDisplayScene.default"><a class="viewcode-back" href="../../backend.html#backend.web_server_display.ServerDisplayScene.default">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
+    <span class="k">def</span> <span class="nf">default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene_hash</span><span class="p">):</span>
+
+        <span class="c1"># Return a prepared page</span>
+        <span class="k">return</span> <span class="n">make_index</span><span class="p">(</span>
+            <span class="n">scene_hash</span><span class="o">=</span><span class="n">scene_hash</span><span class="p">,</span>
+            <span class="n">with_menu</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">with_colorbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">overlay_message</span><span class="o">=</span><span class="kc">None</span>
+        <span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">TBD</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../backend.html">backend package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../frontend.html">frontend package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Matthias Plock.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

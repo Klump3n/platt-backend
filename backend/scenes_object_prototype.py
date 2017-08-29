@@ -12,7 +12,8 @@ class _ObjectPrototype:
 
     def __init__(self, object_path):
         """
-        Initialise an object.
+        Initialise an object. We expect the path to some simulation data as an
+        input.
         """
 
         if not isinstance(object_path, os.PathLike):

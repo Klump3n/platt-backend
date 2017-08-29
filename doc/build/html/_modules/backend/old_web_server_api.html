@@ -1,0 +1,423 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>backend.old_web_server_api &#8212; TBD alpha documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     'alpha',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for backend.old_web_server_api</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The api.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># conda install cherrypy</span>
+<span class="kn">import</span> <span class="nn">cherrypy</span>
+
+<span class="kn">import</span> <span class="nn">backend.data_backend</span> <span class="k">as</span> <span class="nn">fem_mesh</span>
+<span class="kn">import</span> <span class="nn">backend.global_settings</span> <span class="k">as</span> <span class="nn">global_settings</span>
+
+
+<span class="c1"># We only want to allow people to POST to it.</span>
+<div class="viewcode-block" id="ServerAPI"><a class="viewcode-back" href="../../backend.html#backend.old_web_server_api.ServerAPI">[docs]</a><span class="nd">@cherrypy</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">allow</span><span class="p">(</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="k">class</span> <span class="nc">ServerAPI</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Expose an API to control the server.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_directory</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_directory</span> <span class="o">=</span> <span class="n">data_directory</span>
+
+<div class="viewcode-block" id="ServerAPI.connect_client"><a class="viewcode-back" href="../../backend.html#backend.old_web_server_api.ServerAPI.connect_client">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
+    <span class="k">def</span> <span class="nf">connect_client</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a jsoned string with version number. Maybe more later?</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># print(&#39;hey&#39;)</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s1">&#39;program&#39;</span><span class="p">:</span> <span class="s1">&#39;calculix_clone&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="s1">&#39;1-alpha&#39;</span><span class="p">})</span></div>
+
+<div class="viewcode-block" id="ServerAPI.scenes_list"><a class="viewcode-back" href="../../backend.html#backend.old_web_server_api.ServerAPI.scenes_list">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
+    <span class="k">def</span> <span class="nf">scenes_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a list of scenes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">global_settings</span><span class="o">.</span><span class="n">global_scenes</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ServerAPI.scenes_create"><a class="viewcode-back" href="../../backend.html#backend.old_web_server_api.ServerAPI.scenes_create">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
+    <span class="k">def</span> <span class="nf">scenes_create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a new scene.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Create a unique identifier for our scene -- ignoring that google</span>
+        <span class="c1"># managed to create a collision of sha1 sums.</span>
+        <span class="n">identifier</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha1</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+
+        <span class="n">scene_prototype</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;metadata&#39;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s1">&#39;objects&#39;</span><span class="p">:</span> <span class="p">{}</span>
+        <span class="p">}</span>
+
+        <span class="n">global_settings</span><span class="o">.</span><span class="n">global_scenes</span><span class="p">[</span><span class="n">identifier</span><span class="p">]</span> <span class="o">=</span> <span class="n">scene_prototype</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s1">&#39;created&#39;</span><span class="p">:</span> <span class="n">identifier</span><span class="p">})</span></div>
+
+<div class="viewcode-block" id="ServerAPI.scenes_delete"><a class="viewcode-back" href="../../backend.html#backend.old_web_server_api.ServerAPI.scenes_delete">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
+    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">json_in</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">scenes_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Delete a scene.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Parse JSON</span>
+        <span class="n">json_input</span> <span class="o">=</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">json</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">json_input</span><span class="p">)</span>
+        <span class="n">scene_hash</span> <span class="o">=</span> <span class="n">json_input</span><span class="p">[</span><span class="s1">&#39;scene_hash&#39;</span><span class="p">]</span>
+
+        <span class="n">global_settings</span><span class="o">.</span><span class="n">global_scenes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">scene_hash</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s1">&#39;deleted&#39;</span><span class="p">:</span> <span class="n">scene_hash</span><span class="p">})</span></div>
+
+<div class="viewcode-block" id="ServerAPI.get_object_list"><a class="viewcode-back" href="../../backend.html#backend.old_web_server_api.ServerAPI.get_object_list">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
+    <span class="k">def</span> <span class="nf">get_object_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a list of folders that potentially hold FEM data on</span>
+<span class="sd">        catching &#39;get_object_list&#39;</span>
+
+<span class="sd">        Check all the files we find in self.data_directory, check if it&#39;s a</span>
+<span class="sd">        directory, if it&#39;s a directory check if there is a directory called</span>
+<span class="sd">        &#39;fo&#39; in there. If that&#39;s the case we add it to the list we return</span>
+<span class="sd">        in the end.</span>
+
+<span class="sd">        Returns a json file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">files_in_data_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_directory</span><span class="p">)</span>
+
+        <span class="n">data_folders</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">file_name</span> <span class="ow">in</span> <span class="n">files_in_data_dir</span><span class="p">:</span>
+            <span class="n">abs_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_directory</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">abs_file_path</span><span class="p">):</span>
+                <span class="n">file_output_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">abs_file_path</span><span class="p">,</span> <span class="s1">&#39;fo&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">file_output_dir</span><span class="p">):</span>
+                    <span class="n">data_folders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s1">&#39;data_folders&#39;</span><span class="p">:</span> <span class="n">data_folders</span><span class="p">})</span></div>
+
+<div class="viewcode-block" id="ServerAPI.get_object_properties"><a class="viewcode-back" href="../../backend.html#backend.old_web_server_api.ServerAPI.get_object_properties">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
+    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">json_in</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get_object_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a list of properties for a given element on catching</span>
+<span class="sd">        &#39;get_object_properties&#39;</span>
+
+<span class="sd">        Go through all timestep folders and look in every ef- and nf-folder</span>
+<span class="sd">        for files. Append every file to an array, afterwards find the unique</span>
+<span class="sd">        files in that array. Append this list to a list containing an entry</span>
+<span class="sd">        for a simple wireframe (i.e. no field values, just the bare mesh).</span>
+
+<span class="sd">        Returns a json file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Parse JSON</span>
+        <span class="n">json_input</span> <span class="o">=</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">json</span>
+        <span class="n">object_name</span> <span class="o">=</span> <span class="n">json_input</span><span class="p">[</span><span class="s1">&#39;object_name&#39;</span><span class="p">]</span>
+
+        <span class="n">object_directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_directory</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span> <span class="s1">&#39;fo&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Get the smallest timestep.</span>
+        <span class="n">dirs_in_fo</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">object_directory</span><span class="p">)</span>
+
+        <span class="n">object_timesteps</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">timestep</span> <span class="ow">in</span> <span class="n">dirs_in_fo</span><span class="p">:</span>
+            <span class="n">timestep_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">object_directory</span><span class="p">,</span> <span class="n">timestep</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">timestep_path</span><span class="p">):</span>
+                <span class="n">object_timesteps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">timestep</span><span class="p">)</span>
+        <span class="n">object_timesteps</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">object_timesteps</span><span class="p">)</span>
+
+        <span class="n">initial_timestep</span> <span class="o">=</span> <span class="n">object_timesteps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Get all available properties.</span>
+        <span class="n">file_array</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">object_directory</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;no&#39;</span> <span class="ow">or</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;eo&#39;</span><span class="p">):</span>
+            <span class="c1"># if (os.path.basename(path) == &#39;nf&#39; or</span>
+            <span class="c1">#     os.path.basename(path) == &#39;ef&#39;):</span>
+                <span class="k">for</span> <span class="n">single_file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(.*)\.bin&#39;</span><span class="p">,</span> <span class="n">single_file</span><span class="p">):</span>
+                        <span class="n">file_array</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">single_file</span><span class="p">)</span>
+        <span class="n">unique_field_names</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">file_array</span><span class="p">)</span>
+
+        <span class="n">object_properties</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;wireframe&#39;</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="n">unique_field_names</span><span class="p">:</span>
+            <span class="c1"># Remove the .bin ending from the file.</span>
+            <span class="n">name_without_ending</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;(.*)\.bin&#39;</span><span class="p">,</span> <span class="n">field_name</span><span class="p">)</span><span class="o">.</span><span class="n">groups</span><span class="p">(</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">object_properties</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name_without_ending</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s1">&#39;object_properties&#39;</span><span class="p">:</span> <span class="n">object_properties</span><span class="p">,</span>
+                           <span class="s1">&#39;initial_timestep&#39;</span><span class="p">:</span> <span class="n">initial_timestep</span><span class="p">})</span></div>
+
+
+<div class="viewcode-block" id="ServerAPI.get_sorted_timesteps"><a class="viewcode-back" href="../../backend.html#backend.old_web_server_api.ServerAPI.get_sorted_timesteps">[docs]</a>    <span class="k">def</span> <span class="nf">get_sorted_timesteps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">object_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a sorted list of timesteps.</span>
+
+<span class="sd">        Go through all the folders in the object/fo folder. Every folder</span>
+<span class="sd">        here is a timestep.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns a list of lists.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">object_directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_directory</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span> <span class="s1">&#39;fo&#39;</span><span class="p">)</span>
+
+        <span class="n">object_timesteps</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">sorted_timesteps</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">dirs_in_fo</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">object_directory</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">timestep</span> <span class="ow">in</span> <span class="n">dirs_in_fo</span><span class="p">:</span>
+            <span class="n">timestep_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">object_directory</span><span class="p">,</span> <span class="n">timestep</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">timestep_path</span><span class="p">):</span>
+                <span class="n">object_timesteps</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">timestep</span><span class="p">),</span> <span class="n">timestep</span><span class="p">])</span>
+
+        <span class="n">sorted_timesteps</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">object_timesteps</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sorted_timesteps</span></div>
+
+<div class="viewcode-block" id="ServerAPI.get_object_timesteps"><a class="viewcode-back" href="../../backend.html#backend.old_web_server_api.ServerAPI.get_object_timesteps">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
+    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">json_in</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get_object_timesteps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a list of the available timesteps for a given element on</span>
+<span class="sd">        catching &#39;get_object_timesteps&#39;</span>
+
+<span class="sd">        Go through all the folders in the object/fo folder. Every folder</span>
+<span class="sd">        here is a timestep.</span>
+
+<span class="sd">        Returns a json file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">json_input</span> <span class="o">=</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">json</span>
+        <span class="n">object_name</span> <span class="o">=</span> <span class="n">json_input</span><span class="p">[</span><span class="s1">&#39;object_name&#39;</span><span class="p">]</span>
+
+        <span class="n">object_timesteps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sorted_timesteps</span><span class="p">(</span><span class="n">object_name</span><span class="p">)</span>
+        <span class="n">sorted_timesteps</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">timestep</span> <span class="ow">in</span> <span class="n">object_timesteps</span><span class="p">:</span>
+            <span class="n">sorted_timesteps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">timestep</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s1">&#39;object_timesteps&#39;</span><span class="p">:</span> <span class="n">sorted_timesteps</span><span class="p">})</span></div>
+
+<div class="viewcode-block" id="ServerAPI.get_timestep_before"><a class="viewcode-back" href="../../backend.html#backend.old_web_server_api.ServerAPI.get_timestep_before">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
+    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">json_in</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get_timestep_before</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Given a timestep, find the previous timestep.</span>
+
+<span class="sd">        Return the same timestep if there is no timestep before.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">json_input</span> <span class="o">=</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">json</span>
+        <span class="n">object_name</span> <span class="o">=</span> <span class="n">json_input</span><span class="p">[</span><span class="s1">&#39;object_name&#39;</span><span class="p">]</span>
+        <span class="n">current_timestep</span> <span class="o">=</span> <span class="n">json_input</span><span class="p">[</span><span class="s1">&#39;current_timestep&#39;</span><span class="p">]</span>
+
+        <span class="n">object_timesteps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sorted_timesteps</span><span class="p">(</span><span class="n">object_name</span><span class="p">)</span>
+        <span class="n">sorted_timesteps</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="n">object_timesteps</span><span class="p">:</span>
+            <span class="n">sorted_timesteps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">it</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">object_index</span> <span class="o">=</span> <span class="n">sorted_timesteps</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">current_timestep</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">object_index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s1">&#39;previous_timestep&#39;</span><span class="p">:</span> <span class="n">sorted_timesteps</span><span class="p">[</span><span class="mi">0</span><span class="p">]})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s1">&#39;previous_timestep&#39;</span><span class="p">:</span> <span class="n">sorted_timesteps</span><span class="p">[</span><span class="n">object_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]})</span></div>
+
+<div class="viewcode-block" id="ServerAPI.get_timestep_after"><a class="viewcode-back" href="../../backend.html#backend.old_web_server_api.ServerAPI.get_timestep_after">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
+    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">json_in</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get_timestep_after</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Given a timestep, find the next timestep.</span>
+
+<span class="sd">        Return the same timestep if there is no timestep after.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">json_input</span> <span class="o">=</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">json</span>
+        <span class="n">object_name</span> <span class="o">=</span> <span class="n">json_input</span><span class="p">[</span><span class="s1">&#39;object_name&#39;</span><span class="p">]</span>
+        <span class="n">current_timestep</span> <span class="o">=</span> <span class="n">json_input</span><span class="p">[</span><span class="s1">&#39;current_timestep&#39;</span><span class="p">]</span>
+
+        <span class="n">object_timesteps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sorted_timesteps</span><span class="p">(</span><span class="n">object_name</span><span class="p">)</span>
+        <span class="n">sorted_timesteps</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="n">object_timesteps</span><span class="p">:</span>
+            <span class="n">sorted_timesteps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">it</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">number_of_timesteps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sorted_timesteps</span><span class="p">)</span>
+        <span class="n">object_index</span> <span class="o">=</span> <span class="n">sorted_timesteps</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">current_timestep</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">object_index</span> <span class="o">==</span> <span class="n">number_of_timesteps</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s1">&#39;next_timestep&#39;</span><span class="p">:</span> <span class="n">sorted_timesteps</span><span class="p">[</span><span class="n">number_of_timesteps</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s1">&#39;next_timestep&#39;</span><span class="p">:</span> <span class="n">sorted_timesteps</span><span class="p">[</span><span class="n">object_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]})</span></div>
+
+<div class="viewcode-block" id="ServerAPI.mesher_init"><a class="viewcode-back" href="../../backend.html#backend.old_web_server_api.ServerAPI.mesher_init">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
+    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">json_in</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">mesher_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load the mesher class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">json_input</span> <span class="o">=</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">json</span>
+        <span class="n">nodepath</span> <span class="o">=</span> <span class="n">json_input</span><span class="p">[</span><span class="s1">&#39;nodepath&#39;</span><span class="p">]</span>
+        <span class="n">elementpath</span> <span class="o">=</span> <span class="n">json_input</span><span class="p">[</span><span class="s1">&#39;elementpath&#39;</span><span class="p">]</span>
+
+        <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_directory</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mesh_index</span> <span class="o">=</span> <span class="n">fem_mesh</span><span class="o">.</span><span class="n">UnpackMesh</span><span class="p">(</span>
+            <span class="n">node_path</span><span class="o">=</span><span class="n">nodepath</span><span class="p">,</span>
+            <span class="n">element_path</span><span class="o">=</span><span class="n">elementpath</span>
+        <span class="p">)</span>
+
+        <span class="n">surface_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh_index</span><span class="o">.</span><span class="n">return_unique_surface_nodes</span><span class="p">()</span>
+        <span class="n">surface_indexfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh_index</span><span class="o">.</span><span class="n">return_surface_indices</span><span class="p">()</span>
+        <span class="n">surface_metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh_index</span><span class="o">.</span><span class="n">return_metadata</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s1">&#39;surface_nodes&#39;</span><span class="p">:</span> <span class="n">surface_nodes</span><span class="p">,</span>
+                           <span class="s1">&#39;surface_indexfile&#39;</span><span class="p">:</span> <span class="n">surface_indexfile</span><span class="p">,</span>
+                           <span class="s1">&#39;surface_metadata&#39;</span><span class="p">:</span> <span class="n">surface_metadata</span><span class="o">.</span><span class="n">tolist</span><span class="p">()})</span></div>
+
+<div class="viewcode-block" id="ServerAPI.get_timestep_data"><a class="viewcode-back" href="../../backend.html#backend.old_web_server_api.ServerAPI.get_timestep_data">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
+    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">json_in</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">get_timestep_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        On getting a POST:get_some_data from the webserver we give</span>
+<span class="sd">        the required data back.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">json_input</span> <span class="o">=</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">json</span>
+        <span class="n">object_name</span> <span class="o">=</span> <span class="n">json_input</span><span class="p">[</span><span class="s1">&#39;object_name&#39;</span><span class="p">]</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="n">json_input</span><span class="p">[</span><span class="s1">&#39;field&#39;</span><span class="p">]</span>
+        <span class="n">timestep</span> <span class="o">=</span> <span class="n">json_input</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">]</span>
+
+        <span class="n">timestep_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh_index</span><span class="o">.</span><span class="n">return_data_for_unique_nodes</span><span class="p">(</span><span class="n">object_name</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">timestep</span><span class="p">)</span>
+
+        <span class="n">output_data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">datapoint</span> <span class="ow">in</span> <span class="n">timestep_data</span><span class="p">:</span>
+            <span class="n">output_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datapoint</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s1">&#39;timestep_data&#39;</span><span class="p">:</span> <span class="n">output_data</span><span class="p">})</span></div>
+
+<div class="viewcode-block" id="ServerAPI.requestTimestepData"><a class="viewcode-back" href="../../backend.html#backend.old_web_server_api.ServerAPI.requestTimestepData">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
+    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">json_in</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">requestTimestepData</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Deliver a JSON file to the caller containing an indexed list of</span>
+<span class="sd">        surface triangles, surface node data, corresponding index data and</span>
+<span class="sd">        also non-indexed wireframe data for the surface.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">json_input</span> <span class="o">=</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">json</span>
+        <span class="n">meshName</span> <span class="o">=</span> <span class="n">json_input</span><span class="p">[</span><span class="s1">&#39;meshName&#39;</span><span class="p">]</span>
+        <span class="n">timestep</span> <span class="o">=</span> <span class="n">json_input</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">]</span>
+
+        <span class="k">pass</span></div></div>
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">TBD</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../backend.html">backend package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../frontend.html">frontend package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Matthias Plock.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

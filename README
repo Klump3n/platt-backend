@@ -10,3 +10,9 @@ Now to get to this version, type
 git checkout 5e98ffb
 
 and you are on a compatible version.
+
+Package requirements are:
+
+cherrypy
+sphinx -- for server documentation
+sphinx-js -- for js documentation

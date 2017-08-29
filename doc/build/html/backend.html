@@ -1,0 +1,587 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>backend package &#8212; TBD alpha documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     'alpha',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="backend.static package" href="backend.static.html" />
+    <link rel="prev" title="Welcome to TBD’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="backend-package">
+<h1>backend package<a class="headerlink" href="#backend-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="backend.static.html">backend.static package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="backend.static.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="backend.static.html#module-backend.static.gen_index">backend.static.gen_index module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="backend.static.html#module-backend.static">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="backend.tests.html">backend.tests package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="backend.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="backend.tests.html#module-backend.tests.tests_scene_handler">backend.tests.tests_scene_handler module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="backend.tests.html#module-backend.tests">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-backend.data_backend">
+<span id="backend-data-backend-module"></span><h2>backend.data_backend module<a class="headerlink" href="#module-backend.data_backend" title="Permalink to this headline">¶</a></h2>
+<p>main.py</p>
+<p>Unpacks some binary files and finds the surface of the mesh. Right now this is
+limited to C3D8 file format.</p>
+<dl class="class">
+<dt id="backend.data_backend.UnpackMesh">
+<em class="property">class </em><code class="descclassname">backend.data_backend.</code><code class="descname">UnpackMesh</code><span class="sig-paren">(</span><em>node_path</em>, <em>element_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/data_backend.html#UnpackMesh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.data_backend.UnpackMesh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Unpacks mesh data from two binary files and does some magic to it.</p>
+<dl class="method">
+<dt id="backend.data_backend.UnpackMesh.add_timestep">
+<code class="descname">add_timestep</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/data_backend.html#UnpackMesh.add_timestep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.data_backend.UnpackMesh.add_timestep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper around the get_binary_data function.</p>
+<p>Makes adding a timestep less confusing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.data_backend.UnpackMesh.generate_surfaces_for_elements">
+<code class="descname">generate_surfaces_for_elements</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/data_backend.html#UnpackMesh.generate_surfaces_for_elements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.data_backend.UnpackMesh.generate_surfaces_for_elements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the outward faces of the mesh (in other words: the surface).
+Returns a numpy array with the surface faces.</p>
+<p>The mesh consists of cubic elements with corner nodes.
+Count the unique occurrences of each node. For each element generate
+the six (outward pointing) faces. Iterate over all the points of
+each face and add the occurrences (as previously generated) up.
+Faces at the corner will have a count of 9, faces at the border a
+count of 12 and faces in the middle of the plane a count of 16.
+(You might want to draw it on a piece of paper.)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.data_backend.UnpackMesh.generate_temperature_file">
+<code class="descname">generate_temperature_file</code><span class="sig-paren">(</span><em>timestep</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/data_backend.html#UnpackMesh.generate_temperature_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.data_backend.UnpackMesh.generate_temperature_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="backend.data_backend.UnpackMesh.generate_triangles_from_quads">
+<code class="descname">generate_triangles_from_quads</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/data_backend.html#UnpackMesh.generate_triangles_from_quads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.data_backend.UnpackMesh.generate_triangles_from_quads" title="Permalink to this definition">¶</a></dt>
+<dd><p>From our list of quads generate outward pointing triangles.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.data_backend.UnpackMesh.generate_unique_surface_triangles">
+<code class="descname">generate_unique_surface_triangles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/data_backend.html#UnpackMesh.generate_unique_surface_triangles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.data_backend.UnpackMesh.generate_unique_surface_triangles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate the unique surface triangles from all the surface_triangles.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.data_backend.UnpackMesh.get_binary_data">
+<code class="descname">get_binary_data</code><span class="sig-paren">(</span><em>path</em>, <em>do</em>, <em>what</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/data_backend.html#UnpackMesh.get_binary_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.data_backend.UnpackMesh.get_binary_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unpack binary data.</p>
+<p>Specifying the what to do will either unpack nodes or elements or
+add a timestep to self.timesteps.</p>
+<p>Open a file and read it as binary, unpack into an array in a specified
+format, cast the array to numpy and reshape it.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.data_backend.UnpackMesh.return_data_for_unique_nodes">
+<code class="descname">return_data_for_unique_nodes</code><span class="sig-paren">(</span><em>object_name</em>, <em>field</em>, <em>timestep</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/data_backend.html#UnpackMesh.return_data_for_unique_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.data_backend.UnpackMesh.return_data_for_unique_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the (i.e.) temperature data for unique nodes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.data_backend.UnpackMesh.return_metadata">
+<code class="descname">return_metadata</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/data_backend.html#UnpackMesh.return_metadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.data_backend.UnpackMesh.return_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the meta-data for the mesh.</p>
+<p>Size, etc.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.data_backend.UnpackMesh.return_surface_indices">
+<code class="descname">return_surface_indices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/data_backend.html#UnpackMesh.return_surface_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.data_backend.UnpackMesh.return_surface_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the indices for the OpenGL array triangles.</p>
+<p>If a node is already present by means of another triangle, we dont want
+to output it too. We dont want redundancy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.data_backend.UnpackMesh.return_unique_surface_nodes">
+<code class="descname">return_unique_surface_nodes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/data_backend.html#UnpackMesh.return_unique_surface_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.data_backend.UnpackMesh.return_unique_surface_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the unique surface triangles.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-backend.global_settings">
+<span id="backend-global-settings-module"></span><h2>backend.global_settings module<a class="headerlink" href="#module-backend.global_settings" title="Permalink to this headline">¶</a></h2>
+<p>A list of globally available variables.</p>
+<dl class="function">
+<dt id="backend.global_settings.init">
+<code class="descclassname">backend.global_settings.</code><code class="descname">init</code><span class="sig-paren">(</span><em>data_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/global_settings.html#init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.global_settings.init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialise the global variables.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-backend.old_web_server_api">
+<span id="backend-old-web-server-api-module"></span><h2>backend.old_web_server_api module<a class="headerlink" href="#module-backend.old_web_server_api" title="Permalink to this headline">¶</a></h2>
+<p>The api.</p>
+<dl class="class">
+<dt id="backend.old_web_server_api.ServerAPI">
+<em class="property">class </em><code class="descclassname">backend.old_web_server_api.</code><code class="descname">ServerAPI</code><span class="sig-paren">(</span><em>data_directory</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/old_web_server_api.html#ServerAPI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.old_web_server_api.ServerAPI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Expose an API to control the server.</p>
+<dl class="method">
+<dt id="backend.old_web_server_api.ServerAPI.connect_client">
+<code class="descname">connect_client</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/old_web_server_api.html#ServerAPI.connect_client"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.old_web_server_api.ServerAPI.connect_client" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a jsoned string with version number. Maybe more later?</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.old_web_server_api.ServerAPI.get_object_list">
+<code class="descname">get_object_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/old_web_server_api.html#ServerAPI.get_object_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.old_web_server_api.ServerAPI.get_object_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of folders that potentially hold FEM data on
+catching ‘get_object_list’</p>
+<p>Check all the files we find in self.data_directory, check if it’s a
+directory, if it’s a directory check if there is a directory called
+‘fo’ in there. If that’s the case we add it to the list we return
+in the end.</p>
+<p>Returns a json file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.old_web_server_api.ServerAPI.get_object_properties">
+<code class="descname">get_object_properties</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/old_web_server_api.html#ServerAPI.get_object_properties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.old_web_server_api.ServerAPI.get_object_properties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of properties for a given element on catching
+‘get_object_properties’</p>
+<p>Go through all timestep folders and look in every ef- and nf-folder
+for files. Append every file to an array, afterwards find the unique
+files in that array. Append this list to a list containing an entry
+for a simple wireframe (i.e. no field values, just the bare mesh).</p>
+<p>Returns a json file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.old_web_server_api.ServerAPI.get_object_timesteps">
+<code class="descname">get_object_timesteps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/old_web_server_api.html#ServerAPI.get_object_timesteps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.old_web_server_api.ServerAPI.get_object_timesteps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of the available timesteps for a given element on
+catching ‘get_object_timesteps’</p>
+<p>Go through all the folders in the object/fo folder. Every folder
+here is a timestep.</p>
+<p>Returns a json file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.old_web_server_api.ServerAPI.get_sorted_timesteps">
+<code class="descname">get_sorted_timesteps</code><span class="sig-paren">(</span><em>object_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/old_web_server_api.html#ServerAPI.get_sorted_timesteps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.old_web_server_api.ServerAPI.get_sorted_timesteps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a sorted list of timesteps.</p>
+<p>Go through all the folders in the object/fo folder. Every folder
+here is a timestep.</p>
+<p>Returns a list of lists.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.old_web_server_api.ServerAPI.get_timestep_after">
+<code class="descname">get_timestep_after</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/old_web_server_api.html#ServerAPI.get_timestep_after"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.old_web_server_api.ServerAPI.get_timestep_after" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a timestep, find the next timestep.</p>
+<p>Return the same timestep if there is no timestep after.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.old_web_server_api.ServerAPI.get_timestep_before">
+<code class="descname">get_timestep_before</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/old_web_server_api.html#ServerAPI.get_timestep_before"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.old_web_server_api.ServerAPI.get_timestep_before" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a timestep, find the previous timestep.</p>
+<p>Return the same timestep if there is no timestep before.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.old_web_server_api.ServerAPI.get_timestep_data">
+<code class="descname">get_timestep_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/old_web_server_api.html#ServerAPI.get_timestep_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.old_web_server_api.ServerAPI.get_timestep_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>On getting a POST:get_some_data from the webserver we give
+the required data back.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.old_web_server_api.ServerAPI.mesher_init">
+<code class="descname">mesher_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/old_web_server_api.html#ServerAPI.mesher_init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.old_web_server_api.ServerAPI.mesher_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the mesher class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.old_web_server_api.ServerAPI.requestTimestepData">
+<code class="descname">requestTimestepData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/old_web_server_api.html#ServerAPI.requestTimestepData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.old_web_server_api.ServerAPI.requestTimestepData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deliver a JSON file to the caller containing an indexed list of
+surface triangles, surface node data, corresponding index data and
+also non-indexed wireframe data for the surface.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.old_web_server_api.ServerAPI.scenes_create">
+<code class="descname">scenes_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/old_web_server_api.html#ServerAPI.scenes_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.old_web_server_api.ServerAPI.scenes_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new scene.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.old_web_server_api.ServerAPI.scenes_delete">
+<code class="descname">scenes_delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/old_web_server_api.html#ServerAPI.scenes_delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.old_web_server_api.ServerAPI.scenes_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a scene.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.old_web_server_api.ServerAPI.scenes_list">
+<code class="descname">scenes_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/old_web_server_api.html#ServerAPI.scenes_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.old_web_server_api.ServerAPI.scenes_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of scenes.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-backend.scenes_manager">
+<span id="backend-scenes-manager-module"></span><h2>backend.scenes_manager module<a class="headerlink" href="#module-backend.scenes_manager" title="Permalink to this headline">¶</a></h2>
+<p>An instance for an empty scene.</p>
+<dl class="class">
+<dt id="backend.scenes_manager.SceneManager">
+<em class="property">class </em><code class="descclassname">backend.scenes_manager.</code><code class="descname">SceneManager</code><span class="sig-paren">(</span><em>data_dir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_manager.html#SceneManager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_manager.SceneManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Takes care of registering scenes.</p>
+<dl class="method">
+<dt id="backend.scenes_manager.SceneManager.delete_scene">
+<code class="descname">delete_scene</code><span class="sig-paren">(</span><em>scene_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_manager.html#SceneManager.delete_scene"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_manager.SceneManager.delete_scene" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a scene.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.scenes_manager.SceneManager.get_femdata_dirs">
+<code class="descname">get_femdata_dirs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_manager.html#SceneManager.get_femdata_dirs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_manager.SceneManager.get_femdata_dirs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list with directories that contain simulation data in
+_data_dir.</p>
+<p>Check all the files we find in self.data_directory, check if it’s a
+directory, if it’s a directory check if there is a directory called
+‘fo’ in there. If that’s the case we add it to the list we return
+in the end.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.scenes_manager.SceneManager.get_scene_infos">
+<code class="descname">get_scene_infos</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_manager.html#SceneManager.get_scene_infos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_manager.SceneManager.get_scene_infos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dict with all the scenes and information regarding every scene.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.scenes_manager.SceneManager.new_scene">
+<code class="descname">new_scene</code><span class="sig-paren">(</span><em>object_path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_manager.html#SceneManager.new_scene"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_manager.SceneManager.new_scene" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new scene with an object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.scenes_manager.SceneManager.scene">
+<code class="descname">scene</code><span class="sig-paren">(</span><em>scene_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_manager.html#SceneManager.scene"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_manager.SceneManager.scene" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a scene object.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-backend.scenes_object_prototype">
+<span id="backend-scenes-object-prototype-module"></span><h2>backend.scenes_object_prototype module<a class="headerlink" href="#module-backend.scenes_object_prototype" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-backend.scenes_scene_prototype">
+<span id="backend-scenes-scene-prototype-module"></span><h2>backend.scenes_scene_prototype module<a class="headerlink" href="#module-backend.scenes_scene_prototype" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-backend.web_server">
+<span id="backend-web-server-module"></span><h2>backend.web_server module<a class="headerlink" href="#module-backend.web_server" title="Permalink to this headline">¶</a></h2>
+<p>The web server class. This will host a web server at a given port.</p>
+<dl class="class">
+<dt id="backend.web_server.Web_Server">
+<em class="property">class </em><code class="descclassname">backend.web_server.</code><code class="descname">Web_Server</code><span class="sig-paren">(</span><em>frontend_directory</em>, <em>data_directory</em>, <em>port=8008</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server.html#Web_Server"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server.Web_Server" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Host a web server on a given port and hand out the files in the path.</p>
+<dl class="method">
+<dt id="backend.web_server.Web_Server.start">
+<code class="descname">start</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server.html#Web_Server.start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server.Web_Server.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the web server on the given port with the given config.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-backend.web_server_api">
+<span id="backend-web-server-api-module"></span><h2>backend.web_server_api module<a class="headerlink" href="#module-backend.web_server_api" title="Permalink to this headline">¶</a></h2>
+<p>The api.</p>
+<dl class="class">
+<dt id="backend.web_server_api.ServerAPI">
+<em class="property">class </em><code class="descclassname">backend.web_server_api.</code><code class="descname">ServerAPI</code><a class="reference internal" href="_modules/backend/web_server_api.html#ServerAPI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_api.ServerAPI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Expose an API to control the server.</p>
+<dl class="method">
+<dt id="backend.web_server_api.ServerAPI.connect_client">
+<code class="descname">connect_client</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server_api.html#ServerAPI.connect_client"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_api.ServerAPI.connect_client" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a jsoned string with version number. Maybe more later?</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.web_server_api.ServerAPI.get_object_properties">
+<code class="descname">get_object_properties</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server_api.html#ServerAPI.get_object_properties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_api.ServerAPI.get_object_properties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of properties for a given element on catching
+‘get_object_properties’</p>
+<p>Go through all timestep folders and look in every ef- and nf-folder
+for files. Append every file to an array, afterwards find the unique
+files in that array. Append this list to a list containing an entry
+for a simple wireframe (i.e. no field values, just the bare mesh).</p>
+<p>Returns a json file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.web_server_api.ServerAPI.get_object_timesteps">
+<code class="descname">get_object_timesteps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server_api.html#ServerAPI.get_object_timesteps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_api.ServerAPI.get_object_timesteps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of the available timesteps for a given element on
+catching ‘get_object_timesteps’</p>
+<p>Go through all the folders in the object/fo folder. Every folder
+here is a timestep.</p>
+<p>Returns a json file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.web_server_api.ServerAPI.get_sorted_timesteps">
+<code class="descname">get_sorted_timesteps</code><span class="sig-paren">(</span><em>object_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server_api.html#ServerAPI.get_sorted_timesteps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_api.ServerAPI.get_sorted_timesteps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a sorted list of timesteps.</p>
+<p>Go through all the folders in the object/fo folder. Every folder
+here is a timestep.</p>
+<p>Returns a list of lists.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.web_server_api.ServerAPI.get_timestep_after">
+<code class="descname">get_timestep_after</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server_api.html#ServerAPI.get_timestep_after"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_api.ServerAPI.get_timestep_after" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a timestep, find the next timestep.</p>
+<p>Return the same timestep if there is no timestep after.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.web_server_api.ServerAPI.get_timestep_before">
+<code class="descname">get_timestep_before</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server_api.html#ServerAPI.get_timestep_before"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_api.ServerAPI.get_timestep_before" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a timestep, find the previous timestep.</p>
+<p>Return the same timestep if there is no timestep before.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.web_server_api.ServerAPI.get_timestep_data">
+<code class="descname">get_timestep_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server_api.html#ServerAPI.get_timestep_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_api.ServerAPI.get_timestep_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>On getting a POST:get_some_data from the webserver we give
+the required data back.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.web_server_api.ServerAPI.list_of_fem_data">
+<code class="descname">list_of_fem_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server_api.html#ServerAPI.list_of_fem_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_api.ServerAPI.list_of_fem_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>List the available fem simulation directories.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.web_server_api.ServerAPI.mesher_init">
+<code class="descname">mesher_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server_api.html#ServerAPI.mesher_init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_api.ServerAPI.mesher_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the mesher class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.web_server_api.ServerAPI.requestTimestepData">
+<code class="descname">requestTimestepData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server_api.html#ServerAPI.requestTimestepData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_api.ServerAPI.requestTimestepData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deliver a JSON file to the caller containing an indexed list of
+surface triangles, surface node data, corresponding index data and
+also non-indexed wireframe data for the surface.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.web_server_api.ServerAPI.scenes_create">
+<code class="descname">scenes_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server_api.html#ServerAPI.scenes_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_api.ServerAPI.scenes_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new scene with an initial object. We expect a json string like
+{‘object_path’: STRING_RELATIVE_TO_DATA_DIR_IN_GLOSET}</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.web_server_api.ServerAPI.scenes_delete">
+<code class="descname">scenes_delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server_api.html#ServerAPI.scenes_delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_api.ServerAPI.scenes_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a scene.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.web_server_api.ServerAPI.scenes_infos">
+<code class="descname">scenes_infos</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server_api.html#ServerAPI.scenes_infos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_api.ServerAPI.scenes_infos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of scenes.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-backend.web_server_display">
+<span id="backend-web-server-display-module"></span><h2>backend.web_server_display module<a class="headerlink" href="#module-backend.web_server_display" title="Permalink to this headline">¶</a></h2>
+<p>The web server class with all available RESTful api endpoints.</p>
+<p>For example: call the server on SERVER_ADRESS/get_object_list to get a list
+of the available objects in the data directory.</p>
+<dl class="class">
+<dt id="backend.web_server_display.ServerDisplayScene">
+<em class="property">class </em><code class="descclassname">backend.web_server_display.</code><code class="descname">ServerDisplayScene</code><a class="reference internal" href="_modules/backend/web_server_display.html#ServerDisplayScene"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_display.ServerDisplayScene" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>This returns an individual index.html file with the scene_hash encoded
+into it.</p>
+<dl class="method">
+<dt id="backend.web_server_display.ServerDisplayScene.default">
+<code class="descname">default</code><span class="sig-paren">(</span><em>scene_hash</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server_display.html#ServerDisplayScene.default"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_display.ServerDisplayScene.default" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="backend.web_server_display.ServerRoot">
+<em class="property">class </em><code class="descclassname">backend.web_server_display.</code><code class="descname">ServerRoot</code><a class="reference internal" href="_modules/backend/web_server_display.html#ServerRoot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_display.ServerRoot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Handle the data for fem-gl.</p>
+<dl class="method">
+<dt id="backend.web_server_display.ServerRoot.index">
+<code class="descname">index</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server_display.html#ServerRoot.index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_display.ServerRoot.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>The scene administration page.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="backend.web_server_display.ServerScenesDispatcher">
+<em class="property">class </em><code class="descclassname">backend.web_server_display.</code><code class="descname">ServerScenesDispatcher</code><a class="reference internal" href="_modules/backend/web_server_display.html#ServerScenesDispatcher"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_display.ServerScenesDispatcher" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Display scenes on the server.</p>
+<dl class="method">
+<dt id="backend.web_server_display.ServerScenesDispatcher.error">
+<code class="descname">error</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server_display.html#ServerScenesDispatcher.error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_display.ServerScenesDispatcher.error" title="Permalink to this definition">¶</a></dt>
+<dd><p>In case the scene does not exist.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.web_server_display.ServerScenesDispatcher.index">
+<code class="descname">index</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server_display.html#ServerScenesDispatcher.index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_display.ServerScenesDispatcher.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>If we simply call HOST:PORT/scenes(/) we will get this message.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-backend">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-backend" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">TBD</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">backend package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-backend.data_backend">backend.data_backend module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-backend.global_settings">backend.global_settings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-backend.old_web_server_api">backend.old_web_server_api module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-backend.scenes_manager">backend.scenes_manager module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-backend.scenes_object_prototype">backend.scenes_object_prototype module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-backend.scenes_scene_prototype">backend.scenes_scene_prototype module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-backend.web_server">backend.web_server module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-backend.web_server_api">backend.web_server_api module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-backend.web_server_display">backend.web_server_display module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-backend">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="frontend.html">frontend package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to TBD’s documentation!</a></li>
+      <li>Next: <a href="backend.static.html" title="next chapter">backend.static package</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Matthias Plock.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/backend.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

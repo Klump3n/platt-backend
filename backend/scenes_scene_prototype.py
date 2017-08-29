@@ -16,7 +16,7 @@ class _ScenePrototype:
             data_dir=None
     ):
         """
-        Initialise an empty scene.
+        Initialise an scene with some simulation data.
         """
 
         if not isinstance(data_dir, os.PathLike):

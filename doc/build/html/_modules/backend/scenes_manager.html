@@ -1,0 +1,258 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>backend.scenes_manager &#8212; TBD alpha documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     'alpha',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for backend.scenes_manager</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">An instance for an empty scene.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">from</span> <span class="nn">backend.scenes_scene_prototype</span> <span class="k">import</span> <span class="n">_ScenePrototype</span>
+
+
+<div class="viewcode-block" id="SceneManager"><a class="viewcode-back" href="../../backend.html#backend.scenes_manager.SceneManager">[docs]</a><span class="k">class</span> <span class="nc">SceneManager</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Takes care of registering scenes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">data_dir</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialise the manager.</span>
+
+<span class="sd">        E.g. set an empty scene list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>  <span class="c1"># Yes, string.</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;data_dir is </span><span class="si">{}</span><span class="s1">, expected str&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="nb">type</span><span class="p">(</span><span class="n">data_dir</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
+
+        <span class="c1"># Set the data dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_dir</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">data_dir</span><span class="p">)</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scene_list</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">return</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="SceneManager.get_femdata_dirs"><a class="viewcode-back" href="../../backend.html#backend.scenes_manager.SceneManager.get_femdata_dirs">[docs]</a>    <span class="k">def</span> <span class="nf">get_femdata_dirs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a list with directories that contain simulation data in</span>
+<span class="sd">        _data_dir.</span>
+
+<span class="sd">        Check all the files we find in self.data_directory, check if it&#39;s a</span>
+<span class="sd">        directory, if it&#39;s a directory check if there is a directory called</span>
+<span class="sd">        &#39;fo&#39; in there. If that&#39;s the case we add it to the list we return</span>
+<span class="sd">        in the end.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Find all the folders in _data_dir</span>
+        <span class="n">dirs_in_data_dir</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;*/&#39;</span><span class="p">))</span>
+
+        <span class="n">data_folders</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="n">dirs_in_data_dir</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">candidate</span> <span class="o">/</span> <span class="s1">&#39;fo&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+                <span class="n">data_folders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">candidate</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">data_folders</span></div>
+
+<div class="viewcode-block" id="SceneManager.get_scene_infos"><a class="viewcode-back" href="../../backend.html#backend.scenes_manager.SceneManager.get_scene_infos">[docs]</a>    <span class="k">def</span> <span class="nf">get_scene_infos</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a dict with all the scenes and information regarding every scene.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># TODO: Make this better</span>
+
+        <span class="n">info_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">scene</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scene_list</span><span class="p">:</span>
+            <span class="c1"># Do this for every scene</span>
+            <span class="n">scene_info</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;object_list&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scene_list</span><span class="p">[</span><span class="n">scene</span><span class="p">]</span><span class="o">.</span><span class="n">object_list</span><span class="p">()}</span>
+            <span class="n">info_dict</span><span class="p">[</span><span class="n">scene</span><span class="p">]</span> <span class="o">=</span> <span class="n">scene_info</span>
+
+        <span class="k">return</span> <span class="n">info_dict</span></div>
+
+<div class="viewcode-block" id="SceneManager.delete_scene"><a class="viewcode-back" href="../../backend.html#backend.scenes_manager.SceneManager.delete_scene">[docs]</a>    <span class="k">def</span> <span class="nf">delete_scene</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Delete a scene.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scene_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;scene_id is </span><span class="si">{}</span><span class="s1">, expected str&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="nb">type</span><span class="p">(</span><span class="n">scene_id</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">scene_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scene_list</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scene_list</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">scene_id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">scene_id</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No scene found to delete.&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="SceneManager.new_scene"><a class="viewcode-back" href="../../backend.html#backend.scenes_manager.SceneManager.new_scene">[docs]</a>    <span class="k">def</span> <span class="nf">new_scene</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">object_path</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a new scene with an object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Type checking for object path</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">object_path</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>  <span class="c1"># Yes, string.</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;object_path is </span><span class="si">{}</span><span class="s1">, expected list&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="nb">type</span><span class="p">(</span><span class="n">object_path</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
+
+        <span class="c1"># Get a new instance of a scene</span>
+        <span class="n">new_scene</span> <span class="o">=</span> <span class="n">_ScenePrototype</span><span class="p">(</span><span class="n">data_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_dir</span><span class="p">)</span>
+        <span class="n">scene_name</span> <span class="o">=</span> <span class="n">new_scene</span><span class="o">.</span><span class="n">name</span><span class="p">()</span>
+
+        <span class="c1"># Cast each path to a os.Pathlike object and add the object to the scene</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">object_path</span><span class="p">:</span>
+
+            <span class="c1"># Type checking, if path is string</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>  <span class="c1"># Yes, string.</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;object_path entry is </span><span class="si">{}</span><span class="s1">, expected str&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="nb">type</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
+
+            <span class="c1"># Cast to pathlike object</span>
+            <span class="n">add_entry</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+            <span class="n">new_scene</span><span class="o">.</span><span class="n">add_object</span><span class="p">(</span><span class="n">object_path</span><span class="o">=</span><span class="n">add_entry</span><span class="p">)</span>
+
+        <span class="c1"># Append to scene with object to the list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scene_list</span><span class="p">[</span><span class="n">scene_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_scene</span>
+
+        <span class="c1"># Return the name of the new scene so we keep our sanity.</span>
+        <span class="k">return</span> <span class="n">scene_name</span></div>
+
+<div class="viewcode-block" id="SceneManager.scene"><a class="viewcode-back" href="../../backend.html#backend.scenes_manager.SceneManager.scene">[docs]</a>    <span class="k">def</span> <span class="nf">scene</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">scene_id</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a scene object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># See which index fits to the provided scene id</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scene_list</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">scene_id</span><span class="p">)</span>
+
+            <span class="c1"># Get all the scene objects out of the _scene_list</span>
+            <span class="n">scenes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scene_list</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+            <span class="k">return</span> <span class="n">scenes</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="c1"># The use case would later be to load this file in global variables,</span>
+    <span class="c1"># instantiating it once and then make that instance globally available.</span>
+    <span class="c1"># In this case: make manager globally available.</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">SceneManager</span><span class="p">(</span><span class="n">data_dir</span><span class="o">=</span><span class="s1">&#39;../example_data&#39;</span><span class="p">)</span>
+    <span class="n">name_a</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">new_scene</span><span class="p">(</span><span class="n">object_path</span><span class="o">=</span><span class="s1">&#39;object a_no_symlinks&#39;</span><span class="p">)</span>
+    <span class="n">name_b</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">new_scene</span><span class="p">(</span><span class="n">object_path</span><span class="o">=</span><span class="s1">&#39;object a_no_symlinks&#39;</span><span class="p">)</span>
+    <span class="n">manager</span><span class="o">.</span><span class="n">delete_scene</span><span class="p">(</span><span class="s1">&#39;asd&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">manager</span><span class="o">.</span><span class="n">scene</span><span class="p">(</span><span class="n">name_b</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">())</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">TBD</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../backend.html">backend package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../frontend.html">frontend package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Matthias Plock.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
