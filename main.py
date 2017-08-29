@@ -23,6 +23,16 @@ def parse_commandline():
      namespace: A namespace containing all the parsed command line arguments.
     """
 
+    # HACK: Under certain conditions we don't want to supply a --data_dir, but
+    # we still want to set it to required while parsing the command line. This
+    # will give True if we neither want to test or have the version printed
+    # out, but False otherwise.
+    no_data_dir_requirements = (
+        '--test' not in sys.argv and
+        '--version' not in sys.argv and
+        '-v' not in sys.argv
+    )
+
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -31,14 +41,14 @@ def parse_commandline():
         '-p', '--port', default=8008,
         help='The port for the web server.')
     parser.add_argument(
-        # NOTE: the term behind 'required' gives either True or False depending
-        # on whether --test is present in sys.argv or not. This is a small hack
-        # for not having to supply --data-dir when we do a test but still kind
-        # of setting it to required.
-        '-d', '--data-dir', required='--test' not in sys.argv,
+        # NOTE: see the comment above the declaration of
+        # no_data_dir_requirements
+        '-d', '--data-dir', required=no_data_dir_requirements,
         help='The directory in which we want to look for simulation data.')
     parser.add_argument('--test', action='store_true',
                         help='Perform a unit test.')
+    parser.add_argument('-v', '--version', action='store_true',
+                        help='Display the program name and version.')
     args = parser.parse_args()
 
     return args
@@ -122,8 +132,13 @@ def start_program():
 
     # Extract the command line arguments
     do_unittest = ARGS.test
+    just_print_version = ARGS.version
     port = ARGS.port
     data_dir = ARGS.data_dir
+
+    # Just print the version?
+    if just_print_version:
+        print_version()
 
     # Perform a unit test?
     if do_unittest:
@@ -135,6 +150,28 @@ def start_program():
 
     # Start the program
     start_backend(data_dir, port)
+
+    return None
+
+
+def print_version():
+    """
+    Print the program name and version and exit the program.
+
+    Args:
+     None: No parameters.
+
+    Returns:
+     None: Nothing.
+
+    """
+
+    # Get the version information
+    version_info = version()
+    program_name = version_info['program']
+    version_number = version_info['version']
+
+    sys.exit('{} {}'.format(program_name, version_number))
 
     return None
 
