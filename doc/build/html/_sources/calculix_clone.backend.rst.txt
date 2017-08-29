@@ -1,0 +1,94 @@
+calculix\_clone\.backend package
+================================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    calculix_clone.backend.static
+    calculix_clone.backend.tests
+
+Submodules
+----------
+
+calculix\_clone\.backend\.data\_backend module
+----------------------------------------------
+
+.. automodule:: calculix_clone.backend.data_backend
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+calculix\_clone\.backend\.global\_settings module
+-------------------------------------------------
+
+.. automodule:: calculix_clone.backend.global_settings
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+calculix\_clone\.backend\.old\_web\_server\_api module
+------------------------------------------------------
+
+.. automodule:: calculix_clone.backend.old_web_server_api
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+calculix\_clone\.backend\.scenes\_manager module
+------------------------------------------------
+
+.. automodule:: calculix_clone.backend.scenes_manager
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+calculix\_clone\.backend\.scenes\_object\_prototype module
+----------------------------------------------------------
+
+.. automodule:: calculix_clone.backend.scenes_object_prototype
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+calculix\_clone\.backend\.scenes\_scene\_prototype module
+---------------------------------------------------------
+
+.. automodule:: calculix_clone.backend.scenes_scene_prototype
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+calculix\_clone\.backend\.web\_server module
+--------------------------------------------
+
+.. automodule:: calculix_clone.backend.web_server
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+calculix\_clone\.backend\.web\_server\_api module
+-------------------------------------------------
+
+.. automodule:: calculix_clone.backend.web_server_api
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+calculix\_clone\.backend\.web\_server\_display module
+-----------------------------------------------------
+
+.. automodule:: calculix_clone.backend.web_server_display
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: calculix_clone.backend
+    :members:
+    :undoc-members:
+    :show-inheritance:

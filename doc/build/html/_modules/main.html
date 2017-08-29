@@ -1,0 +1,246 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>main &#8212; TBD alpha documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     'alpha',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for main</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Start a web server. Direct your browser to [HOST_IP]:[PORT] with PORT being</span>
+<span class="sd">either 8008 or the supplied value.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">from</span> <span class="nn">util.version</span> <span class="k">import</span> <span class="n">version</span>
+<span class="kn">import</span> <span class="nn">backend.web_server</span> <span class="k">as</span> <span class="nn">web_server</span>
+
+
+<div class="viewcode-block" id="parse_commandline"><a class="viewcode-back" href="../main.html#main.parse_commandline">[docs]</a><span class="k">def</span> <span class="nf">parse_commandline</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parse the command line and return the parsed arguments.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     None: No parameters.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">     namespace: A namespace containing all the parsed command line arguments.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="vm">__doc__</span><span class="p">,</span>
+        <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentDefaultsHelpFormatter</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="s1">&#39;--port&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">8008</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The port for the web server.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="c1"># NOTE: the term behind &#39;required&#39; gives either True or False depending</span>
+        <span class="c1"># on whether --test is present in sys.argv or not. This is a small hack</span>
+        <span class="c1"># for not having to supply --data-dir when we do a test but still kind</span>
+        <span class="c1"># of setting it to required.</span>
+        <span class="s1">&#39;-d&#39;</span><span class="p">,</span> <span class="s1">&#39;--data-dir&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="s1">&#39;--test&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The directory in which we want to look for simulation data.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--test&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Perform a unit test.&#39;</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">args</span></div>
+
+
+<div class="viewcode-block" id="start_backend"><a class="viewcode-back" href="../main.html#main.start_backend">[docs]</a><span class="k">def</span> <span class="nf">start_backend</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Start the backend with parameters parsed from the command line.</span>
+
+<span class="sd">    Extract the port and the directory that contains the simulation data from</span>
+<span class="sd">    the `args` namespace. Set the working directory to the program directory</span>
+<span class="sd">    and display a welcome message, containing the program name and version</span>
+<span class="sd">    along with the server port and the directories for the frontend and the</span>
+<span class="sd">    simulation data. Finally start an instance of the cherrypy ``Web_Server``</span>
+<span class="sd">    class.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     args (namespace): The parsed command line arguments.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">     None: Nothing</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Get the version information</span>
+    <span class="n">version_info</span> <span class="o">=</span> <span class="n">version</span><span class="p">()</span>
+    <span class="n">program_name</span> <span class="o">=</span> <span class="n">version_info</span><span class="p">[</span><span class="s1">&#39;program&#39;</span><span class="p">]</span>
+    <span class="n">version_number</span> <span class="o">=</span> <span class="n">version_info</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Settings for the server</span>
+    <span class="n">data_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">data_dir</span><span class="p">)</span>
+
+    <span class="n">working_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+    <span class="n">frontend_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">working_dir</span><span class="p">,</span> <span class="s1">&#39;frontend&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Change working directory in case we are not there yet</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">working_dir</span><span class="p">)</span>
+
+    <span class="n">port</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">port</span>
+
+    <span class="c1"># Welcome message</span>
+    <span class="n">start_msg</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">This is </span><span class="si">{program_name}</span><span class="s1"> </span><span class="si">{version_number}</span><span class="se">\n</span><span class="s1">&#39;</span>\
+                <span class="s1">&#39;Starting http server on port </span><span class="si">{port_text}</span><span class="se">\n\n</span><span class="s1">&#39;</span>\
+                <span class="s1">&#39;Serving frontent from directory </span><span class="si">{frontend_dir_text}</span><span class="se">\n</span><span class="s1">&#39;</span>\
+                <span class="s1">&#39;Will search for simulation data in directory </span><span class="si">{data_dir_text}</span><span class="s1">&#39;</span>\
+                <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">program_name</span><span class="o">=</span><span class="n">program_name</span><span class="p">,</span>
+                    <span class="n">version_number</span><span class="o">=</span><span class="n">version_number</span><span class="p">,</span>
+                    <span class="n">port_text</span><span class="o">=</span><span class="n">port</span><span class="p">,</span>
+                    <span class="n">frontend_dir_text</span><span class="o">=</span><span class="n">frontend_dir</span><span class="p">,</span>
+                    <span class="n">data_dir_text</span><span class="o">=</span><span class="n">data_dir</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">start_msg</span><span class="p">)</span>
+
+    <span class="c1"># Instanciate and start the backend.</span>
+    <span class="n">web_instance</span> <span class="o">=</span> <span class="n">web_server</span><span class="o">.</span><span class="n">Web_Server</span><span class="p">(</span>
+        <span class="n">frontend_directory</span><span class="o">=</span><span class="n">frontend_dir</span><span class="p">,</span>
+        <span class="n">data_directory</span><span class="o">=</span><span class="n">data_dir</span><span class="p">,</span>
+        <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">)</span>
+    <span class="n">web_instance</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="start_program"><a class="viewcode-back" href="../main.html#main.start_program">[docs]</a><span class="k">def</span> <span class="nf">start_program</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Start the program.</span>
+
+<span class="sd">    Parse the command line and either perform a unit test or start the backend</span>
+<span class="sd">    with the parameters that have been parsed from the command line.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     None: No parameters.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">     None: Nothing</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Parse the command line arguments</span>
+    <span class="n">ARGS</span> <span class="o">=</span> <span class="n">parse_commandline</span><span class="p">()</span>
+
+    <span class="c1"># Perform a unit test?</span>
+    <span class="k">if</span> <span class="n">ARGS</span><span class="o">.</span><span class="n">test</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">unittest</span>
+        <span class="n">tests</span> <span class="o">=</span> <span class="n">unittest</span><span class="o">.</span><span class="n">TestLoader</span><span class="p">()</span><span class="o">.</span><span class="n">discover</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+        <span class="n">unittest</span><span class="o">.</span><span class="n">runner</span><span class="o">.</span><span class="n">TextTestRunner</span><span class="p">(</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">tests</span><span class="p">)</span>
+
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Performed unittests -- exiting.&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Start the program</span>
+    <span class="n">start_backend</span><span class="p">(</span><span class="n">ARGS</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is called when (e.g. always) we start this file as a standalone</span>
+<span class="sd">    version.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Start the program</span>
+    <span class="n">start_program</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">TBD</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Packages and modules:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../main.html">main file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../backend.html">backend package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../frontend.html">frontend package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Matthias Plock.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

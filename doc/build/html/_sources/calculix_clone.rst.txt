@@ -1,0 +1,30 @@
+calculix\_clone package
+=======================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    calculix_clone.backend
+    calculix_clone.client
+
+Submodules
+----------
+
+calculix\_clone\.main module
+----------------------------
+
+.. automodule:: calculix_clone.main
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: calculix_clone
+    :members:
+    :undoc-members:
+    :show-inheritance:

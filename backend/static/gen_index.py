@@ -16,7 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Contains functions for generating taylored index.html files.
+Contains the function for generating taylored index.html files.
+
 """
 
 # The main html body
@@ -103,8 +104,32 @@ def make_index(
         overlay_message=None
 ):
     """
-    Generate a string that we can return to the browser, so it knows what it has
-    to load.
+    Return a string with the index.html file.
+
+    This string contains information about the scene_hash (if any) and whether
+    or not we want to display the browser menu to add and remove simulation
+    data to it as well as the color bar on the right side of the window.
+
+
+    Args:
+
+     scene_hash (str, optional, defaults to ``''``): The scene hash that will be
+      encoded into the index.html
+
+     with_menu (bool, optional, defaults to `True`): True means we want to
+      display a menu, False means we don't want to display a menu.
+
+     with_colorbar (bool, optional, defaults to `True`): True means we want to
+      display a colorbar, False means we don't want to display a colorbar.
+
+     overlay_message (str or None, optional, defaults to `None`): If set, this
+      message will be displayed in a centered overlay on the screen.
+
+
+    Returns:
+
+     str: The index.html string.
+
     """
 
     # Initialise strings

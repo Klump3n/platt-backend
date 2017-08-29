@@ -1,0 +1,22 @@
+calculix\_clone\.backend\.static package
+========================================
+
+Submodules
+----------
+
+calculix\_clone\.backend\.static\.gen\_index module
+---------------------------------------------------
+
+.. automodule:: calculix_clone.backend.static.gen_index
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: calculix_clone.backend.static
+    :members:
+    :undoc-members:
+    :show-inheritance:

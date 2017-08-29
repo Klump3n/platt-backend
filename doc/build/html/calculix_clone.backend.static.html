@@ -1,0 +1,148 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>calculix_clone.backend.static package &#8212; TBD alpha documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     'alpha',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="calculix-clone-backend-static-package">
+<h1>calculix_clone.backend.static package<a class="headerlink" href="#calculix-clone-backend-static-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-calculix_clone.backend.static.gen_index">
+<span id="calculix-clone-backend-static-gen-index-module"></span><h2>calculix_clone.backend.static.gen_index module<a class="headerlink" href="#module-calculix_clone.backend.static.gen_index" title="Permalink to this headline">¶</a></h2>
+<p>Contains the function for generating taylored index.html files.</p>
+<dl class="function">
+<dt id="calculix_clone.backend.static.gen_index.make_index">
+<code class="descclassname">calculix_clone.backend.static.gen_index.</code><code class="descname">make_index</code><span class="sig-paren">(</span><em>scene_hash=''</em>, <em>with_menu=True</em>, <em>with_colorbar=True</em>, <em>overlay_message=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/calculix_clone/backend/static/gen_index.html#make_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#calculix_clone.backend.static.gen_index.make_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string with the index.html file.</p>
+<p>This string contains information about the scene_hash (if any) and whether
+or not we want to display the browser menu to add and remove simulation
+data to it as well as the color bar on the right side of the window.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>scene_hash</strong> (str, optional, defaults to <code class="docutils literal"><span class="pre">''</span></code>) – The scene hash that will be
+encoded into the index.html</li>
+<li><strong>with_menu</strong> (bool, optional, defaults to <cite>True</cite>) – True means we want to
+display a menu, False means we don’t want to display a menu.</li>
+<li><strong>with_colorbar</strong> (bool, optional, defaults to <cite>True</cite>) – True means we want to
+display a colorbar, False means we don’t want to display a colorbar.</li>
+<li><strong>overlay_message</strong> (str or None, optional, defaults to <cite>None</cite>) – If set, this
+message will be displayed in a centered overlay on the screen.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The index.html string.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">str</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-calculix_clone.backend.static">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-calculix_clone.backend.static" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">TBD</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="backend.html">backend package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="frontend.html">frontend package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Matthias Plock.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/calculix_clone.backend.static.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

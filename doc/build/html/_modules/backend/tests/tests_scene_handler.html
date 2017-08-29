@@ -97,10 +97,10 @@
 <span class="sd">        matrix.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">nparray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
-            <span class="p">[[</span> <span class="mf">1.</span><span class="p">,</span>  <span class="mf">2.</span><span class="p">,</span>  <span class="mf">3.</span><span class="p">,</span>  <span class="mf">4.</span><span class="p">],</span>
-             <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.1</span><span class="p">,</span>  <span class="mf">0.2</span><span class="p">,</span>  <span class="mf">0.1</span><span class="p">],</span>
-             <span class="p">[</span> <span class="o">-</span><span class="mf">0.</span><span class="p">,</span>  <span class="o">-</span><span class="mf">1.</span><span class="p">,</span>  <span class="o">-</span><span class="mf">2.</span><span class="p">,</span>  <span class="o">-</span><span class="mf">3.</span><span class="p">],</span>
-             <span class="p">[</span> <span class="o">-</span><span class="mf">1.1</span><span class="p">,</span>  <span class="o">-.</span><span class="mi">1</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.</span><span class="p">]]</span>
+            <span class="p">[[</span><span class="mf">1.</span><span class="p">,</span>  <span class="mf">2.</span><span class="p">,</span>  <span class="mf">3.</span><span class="p">,</span>  <span class="mf">4.</span><span class="p">],</span>
+             <span class="p">[</span><span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.1</span><span class="p">,</span>  <span class="mf">0.2</span><span class="p">,</span>  <span class="mf">0.1</span><span class="p">],</span>
+             <span class="p">[</span><span class="o">-</span><span class="mf">0.</span><span class="p">,</span>  <span class="o">-</span><span class="mf">1.</span><span class="p">,</span>  <span class="o">-</span><span class="mf">2.</span><span class="p">,</span>  <span class="o">-</span><span class="mf">3.</span><span class="p">],</span>
+             <span class="p">[</span><span class="o">-</span><span class="mf">1.1</span><span class="p">,</span>  <span class="o">-.</span><span class="mi">1</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.</span><span class="p">]]</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">example_object</span><span class="o">.</span><span class="n">orientation</span><span class="p">(</span><span class="n">nparray</span><span class="p">)</span>
         <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span>
@@ -119,13 +119,14 @@
 <span class="sd">        See that anything but a numpy array raises an exception.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">testlist</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="p">[</span> <span class="mf">1.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">],</span>
-            <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">],</span>
-            <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">],</span>
-            <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.</span><span class="p">]</span>
+            <span class="p">[</span><span class="mf">1.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">],</span>
+            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">],</span>
+            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">],</span>
+            <span class="p">[</span><span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.</span><span class="p">]</span>
         <span class="p">]</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">example_object</span><span class="o">.</span><span class="n">orientation</span><span class="p">(</span><span class="n">testlist</span><span class="p">)</span></div></div>
+
 
 <div class="viewcode-block" id="TestSimulationScene"><a class="viewcode-back" href="../../../backend.tests.html#backend.tests.tests_scene_handler.TestSimulationScene">[docs]</a><span class="k">class</span> <span class="nc">TestSimulationScene</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -159,6 +160,7 @@
     <span class="c1">#         _ObjectPrototype</span>
     <span class="c1">#     )</span>
 
+
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Testing as standalone program.</span>
@@ -181,8 +183,9 @@
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p class="caption"><span class="caption-text">Packages and modules:</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../main.html">main file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../backend.html">backend package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../frontend.html">frontend package</a></li>
 </ul>

@@ -15,6 +15,12 @@ import backend.web_server as web_server
 def parse_commandline():
     """
     Parse the command line and return the parsed arguments.
+
+    Args:
+     None: No parameters.
+
+    Returns:
+     namespace: A namespace containing all the parsed command line arguments.
     """
 
     parser = argparse.ArgumentParser(
@@ -37,9 +43,23 @@ def parse_commandline():
 
     return args
 
+
 def start_backend(args):
     """
-    Start the backend.
+    Start the backend with parameters parsed from the command line.
+
+    Extract the port and the directory that contains the simulation data from
+    the `args` namespace. Set the working directory to the program directory
+    and display a welcome message, containing the program name and version
+    along with the server port and the directories for the frontend and the
+    simulation data. Finally start an instance of the cherrypy ``Web_Server``
+    class.
+
+    Args:
+     args (namespace): The parsed command line arguments.
+
+    Returns:
+     None: Nothing
     """
 
     # Get the version information
@@ -78,18 +98,28 @@ def start_backend(args):
         port=port)
     web_instance.start()
 
+    return None
 
-# Start the program
-if __name__ == '__main__':
+
+def start_program():
     """
-    This is called when (e.g. always) we start this file as a standalone
-    version.
+    Start the program.
+
+    Parse the command line and either perform a unit test or start the backend
+    with the parameters that have been parsed from the command line.
+
+    Args:
+     None: No parameters.
+
+    Returns:
+     None: Nothing
+
     """
 
     # Parse the command line arguments
     ARGS = parse_commandline()
 
-    # Perform a unit test
+    # Perform a unit test?
     if ARGS.test:
         import unittest
         tests = unittest.TestLoader().discover('.')
@@ -99,3 +129,15 @@ if __name__ == '__main__':
 
     # Start the program
     start_backend(ARGS)
+
+    return None
+
+
+if __name__ == '__main__':
+    """
+    This is called when (e.g. always) we start this file as a standalone
+    version.
+    """
+
+    # Start the program
+    start_program()
