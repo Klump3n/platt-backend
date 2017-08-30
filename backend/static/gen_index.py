@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Contains the function for generating taylored index.html files.
+Contains the function for generating taylored ``index.html`` files.
 
 """
 
@@ -104,7 +104,7 @@ def make_index(
         overlay_message=None
 ):
     """
-    Return a string with the index.html file.
+    Return a string with the ``index.html`` file.
 
     This string contains information about the scene_hash (if any) and whether
     or not we want to display the browser menu to add and remove simulation
@@ -128,7 +128,7 @@ def make_index(
 
     Returns:
 
-     str: The index.html string.
+     str: The ``index.html`` string.
 
     """
 

@@ -21,12 +21,15 @@ def parse_commandline():
 
     Returns:
      namespace: A namespace containing all the parsed command line arguments.
+
+    Notes:
+     The default port for the web server is contained in this function.
     """
 
     # HACK: Under certain conditions we don't want to supply a --data_dir, but
-    # we still want to set it to required while parsing the command line. This
-    # will give True if we neither want to test or have the version printed
-    # out, but False otherwise.
+    # we still want to set it to required while parsing the command line. The
+    # following will give True if we neither want to test nor have the version
+    # printed out, but False otherwise.
     no_data_dir_requirements = (
         '--test' not in sys.argv and
         '--version' not in sys.argv and
@@ -54,7 +57,7 @@ def parse_commandline():
     return args
 
 
-def start_backend(data_dir, port=8008):
+def start_backend(data_dir, port):
     """
     Start the backend on the provided port, serving simulation data from the
     provided directory.
@@ -67,7 +70,7 @@ def start_backend(data_dir, port=8008):
     Args:
      data_dir (string): The path to the simulation data, either relative to the
       main.py file or absolute.
-     port (int, optional, defaults to `8008`): The port for the web server.
+     port (int): The port for the web server.
 
     Returns:
      None: Nothing
