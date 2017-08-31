@@ -165,15 +165,58 @@
   <h1>Source code for _dos.do_scenes</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python3</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Do scenes for CLI.</span>
+<span class="sd">A small module containing the function for manipulating (listing, deleting,</span>
+<span class="sd">creating, selecting) scenes on the backend via the client.</span>
+
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">argparse</span>
 <span class="kn">from</span> <span class="nn">util.post_json</span> <span class="k">import</span> <span class="n">post_json_string</span>
 
+
+<div class="viewcode-block" id="scenes_help"><a class="viewcode-back" href="../../client._dos.html#_dos.do_scenes.scenes_help">[docs]</a><span class="k">def</span> <span class="nf">scenes_help</span><span class="p">(</span><span class="n">c_data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Call the scenes function with &#39;-h&#39; for line, so we get the automatic</span>
+<span class="sd">    documentation from argparse printed out.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     c_data (dict): A dictionary containing host, port and headers. This is</span>
+<span class="sd">      necessary because we essentially call the scenes function and need this</span>
+<span class="sd">      as an argument for that.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">     None, str: Hopefully nothing or a string containing &#39;&#39;.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">     This is a bit sketchy, because it should in principle be the same as</span>
+<span class="sd">     writing ``scenes -h`` in the terminal, but it somehow is not.</span>
+
+<span class="sd">    Todo:</span>
+<span class="sd">     Find a solution for that sketchy behaviour.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">scenes</span><span class="p">(</span><span class="s1">&#39;-h&#39;</span><span class="p">,</span> <span class="n">c_data</span><span class="p">))</span></div>
+
+
 <div class="viewcode-block" id="scenes"><a class="viewcode-back" href="../../client._dos.html#_dos.do_scenes.scenes">[docs]</a><span class="k">def</span> <span class="nf">scenes</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">c_data</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The do_scenes routine for the CLI.</span>
+<span class="sd">    Manipulate the the scenes on the backend server.</span>
+
+<span class="sd">    Parse the arguments to a call of ``scenes`` and process them with argparse.</span>
+<span class="sd">    Call other functions to actually do something (like creating, deleting,</span>
+<span class="sd">    listing or selecting scenes) afterwards.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     line (str): The parsed line from the command line.</span>
+<span class="sd">     c_data (dict): A dictionary containing host, port and headers.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">     None, str: Nothing or an empty string. See notes.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">     There is some sketchy behaviour if we try to get the usage message. See</span>
+<span class="sd">     the notes to scenes_help.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">host</span> <span class="o">=</span> <span class="n">c_data</span><span class="p">[</span><span class="s1">&#39;host&#39;</span><span class="p">]</span>
@@ -193,7 +236,7 @@
         <span class="n">help</span><span class="o">=</span><span class="s1">&#39;List the scenes.&#39;</span>
     <span class="p">)</span>
     <span class="n">list_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--just&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
-                             <span class="n">help</span><span class="o">=</span><span class="s1">&#39;If provided we only list the properties &#39;</span><span class="o">+</span>
+                             <span class="n">help</span><span class="o">=</span><span class="s1">&#39;If provided we only list the properties &#39;</span> <span class="o">+</span>
                              <span class="s1">&#39;of this/these scene/s.&#39;</span><span class="p">)</span>
 
     <span class="n">create_parser</span> <span class="o">=</span> <span class="n">subparsers</span><span class="o">.</span><span class="n">add_parser</span><span class="p">(</span>
@@ -202,8 +245,8 @@
     <span class="p">)</span>
     <span class="n">create_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;object_id&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span>
                                <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The id of the object we want to &#39;</span> <span class="o">+</span>
-                               <span class="s1">&#39;instantiate the scene with. Valid &#39;</span><span class="o">+</span>
-                               <span class="s1">&#39;identifiers are available via the command &#39;</span><span class="o">+</span>
+                               <span class="s1">&#39;instantiate the scene with. Valid &#39;</span> <span class="o">+</span>
+                               <span class="s1">&#39;identifiers are available via the command &#39;</span> <span class="o">+</span>
                                <span class="s1">&#39;</span><span class="se">\&#39;</span><span class="s1">objects</span><span class="se">\&#39;</span><span class="s1">.&#39;</span><span class="p">)</span>
 
     <span class="n">delete_parser</span> <span class="o">=</span> <span class="n">subparsers</span><span class="o">.</span><span class="n">add_parser</span><span class="p">(</span>
@@ -231,158 +274,241 @@
     <span class="k">except</span><span class="p">:</span>
         <span class="c1"># Something went wrong. argparse will tell us anyway so no need to</span>
         <span class="c1"># report anything here.</span>
-        <span class="k">return</span> <span class="kc">None</span>
+        <span class="c1">#</span>
+        <span class="c1"># FIXME: When I type &#39;help scenes&#39; (which essentially is just typing</span>
+        <span class="c1"># &#39;scenes -h&#39;) I will be presented with a final newline (because of</span>
+        <span class="c1"># return &#39;&#39;), but when I type &#39;scenes -h&#39; this does not happen. I have</span>
+        <span class="c1"># no idea why that&#39;s the case.</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span>
 
     <span class="n">scenes_action</span> <span class="o">=</span> <span class="n">parsed_args</span><span class="o">.</span><span class="n">scenes</span>
-
-    <span class="k">def</span> <span class="nf">clean_list</span><span class="p">(</span><span class="n">dirty_list</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        This is a small helper function that removes empty entries</span>
-<span class="sd">        from a list and casts everything to string.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">list_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dirty_list</span><span class="p">)</span>
-
-        <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">list_length</span><span class="p">):</span>
-            <span class="c1"># Pop all empty entries</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">empty_index</span> <span class="o">=</span> <span class="n">dirty_list</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
-                <span class="n">dirty_list</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">empty_index</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                <span class="k">continue</span>
-
-        <span class="k">for</span> <span class="n">it</span><span class="p">,</span> <span class="n">entry</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dirty_list</span><span class="p">):</span>
-            <span class="c1"># Cast to string and remove all &#39;-marks</span>
-            <span class="n">dirty_list</span><span class="p">[</span><span class="n">it</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">dirty_list</span><span class="p">[</span><span class="n">it</span><span class="p">])</span>
-            <span class="n">dirty_list</span><span class="p">[</span><span class="n">it</span><span class="p">]</span> <span class="o">=</span> <span class="n">dirty_list</span><span class="p">[</span><span class="n">it</span><span class="p">]</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span>
-                <span class="p">{</span><span class="nb">ord</span><span class="p">(</span><span class="n">c</span><span class="p">):</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="s1">&#39;</span><span class="se">\&#39;</span><span class="s1">&#39;</span><span class="p">})</span>
-
-        <span class="k">return</span> <span class="n">dirty_list</span>
-
-    <span class="c1">#</span>
-    <span class="c1"># Function definitions for the valid actions on scenes.</span>
-    <span class="k">def</span> <span class="nf">scenes_list</span><span class="p">(</span><span class="n">just</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        List one, several or all scenes.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">def</span> <span class="nf">pretty_print_scene</span><span class="p">(</span><span class="n">scene_hash</span><span class="p">,</span> <span class="n">scene</span><span class="p">):</span>
-            <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            Pretty print a scene.</span>
-<span class="sd">            &quot;&quot;&quot;</span>
-
-            <span class="nb">print</span><span class="p">()</span>             <span class="c1"># Newline</span>
-
-            <span class="k">if</span> <span class="n">scene</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Invalid scene: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">scene_hash</span><span class="p">))</span>
-
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># Make this pretty!</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Scene </span><span class="si">{}</span><span class="s1"> can be found at&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">scene_hash</span><span class="p">))</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  http://</span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1">/scenes/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span> <span class="nb">format</span><span class="p">(</span>
-                    <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">scene_hash</span><span class="p">))</span>
-
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----------------------------------------&#39;</span> <span class="o">+</span>
-                      <span class="s1">&#39;----------------------------------------&#39;</span><span class="p">)</span>
-
-                <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">scene</span><span class="p">[</span><span class="s1">&#39;object_list&#39;</span><span class="p">]:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">entry</span><span class="p">))</span>
-
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;========================================&#39;</span> <span class="o">+</span>
-                      <span class="s1">&#39;========================================&#39;</span><span class="p">)</span>
-
-            <span class="k">return</span>
-
-        <span class="n">api_call</span> <span class="o">=</span> <span class="s1">&#39;scenes_infos&#39;</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-        <span class="n">answer</span> <span class="o">=</span> <span class="n">post_json_string</span><span class="p">(</span>
-            <span class="n">api_call</span><span class="o">=</span><span class="n">api_call</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">connection_data</span><span class="o">=</span><span class="n">c_data</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">answer</span> <span class="o">==</span> <span class="p">{}:</span>
-            <span class="c1"># If there are no scenes to display on the server</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;There are no scenes to display.&#39;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">just</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># If we only want to list a limited amount of scenes</span>
-            <span class="k">for</span> <span class="n">scene_hash</span> <span class="ow">in</span> <span class="n">answer</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                <span class="n">pretty_print_scene</span><span class="p">(</span><span class="n">scene_hash</span><span class="p">,</span> <span class="n">answer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">scene_hash</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># List everything we have</span>
-            <span class="k">for</span> <span class="n">scene_hash</span> <span class="ow">in</span> <span class="n">just</span><span class="p">:</span>
-                <span class="n">pretty_print_scene</span><span class="p">(</span><span class="n">scene_hash</span><span class="p">,</span> <span class="n">answer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">scene_hash</span><span class="p">))</span>
-
-        <span class="k">return</span> <span class="kc">None</span>
-
-    <span class="k">def</span> <span class="nf">scenes_create</span><span class="p">(</span><span class="n">object_id</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Create a new scene.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">api_call</span> <span class="o">=</span> <span class="s1">&#39;scenes_create&#39;</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;object_path&#39;</span><span class="p">:</span> <span class="n">object_id</span><span class="p">}</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="n">post_json_string</span><span class="p">(</span>
-            <span class="n">api_call</span><span class="o">=</span><span class="n">api_call</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">connection_data</span><span class="o">=</span><span class="n">c_data</span><span class="p">)</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">output</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Created scene </span><span class="si">{}</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="s1">&#39;created&#39;</span><span class="p">])</span> <span class="o">+</span>
-                      <span class="s1">&#39;It can be found at http://</span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1">/scenes/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                          <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;created&#39;</span><span class="p">]))</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Error: wrong id?&#39;</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="kc">None</span>
-
-    <span class="k">def</span> <span class="nf">scenes_delete</span><span class="p">(</span><span class="n">scene_hash</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Delete a scene.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">api_call</span> <span class="o">=</span> <span class="s1">&#39;scenes_delete&#39;</span>
-        <span class="c1"># data = {&#39;scene_hash&#39;: scene_hash}</span>
-        <span class="c1"># self.post_json_string(api_call=api_call, data=data)</span>
-        <span class="k">for</span> <span class="n">scene</span> <span class="ow">in</span> <span class="n">scene_hash</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;scene_hash&#39;</span><span class="p">:</span> <span class="n">scene</span><span class="p">}</span>
-            <span class="n">post_json_string</span><span class="p">(</span>
-                <span class="n">api_call</span><span class="o">=</span><span class="n">api_call</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">connection_data</span><span class="o">=</span><span class="n">c_data</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="kc">None</span>
-
-    <span class="k">def</span> <span class="nf">scenes_select</span><span class="p">():</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Select a scene.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">api_call</span> <span class="o">=</span> <span class="s1">&#39;scenes_select&#39;</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-        <span class="n">answer</span> <span class="o">=</span> <span class="n">post_json_string</span><span class="p">(</span>
-            <span class="n">api_call</span><span class="o">=</span><span class="n">api_call</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">connection_data</span><span class="o">=</span><span class="n">c_data</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="kc">None</span>
 
     <span class="c1"># If we want to list the available scenes</span>
     <span class="k">if</span> <span class="n">scenes_action</span> <span class="o">==</span> <span class="s1">&#39;list&#39;</span><span class="p">:</span>
         <span class="n">just</span> <span class="o">=</span> <span class="n">parsed_args</span><span class="o">.</span><span class="n">just</span>
         <span class="k">if</span> <span class="n">just</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">just</span> <span class="o">=</span> <span class="n">clean_list</span><span class="p">(</span><span class="n">just</span><span class="p">)</span>
-        <span class="n">scenes_list</span><span class="p">(</span><span class="n">just</span><span class="o">=</span><span class="n">just</span><span class="p">)</span>
+        <span class="n">scenes_list</span><span class="p">(</span><span class="n">c_data</span><span class="p">,</span> <span class="n">just</span><span class="o">=</span><span class="n">just</span><span class="p">)</span>
 
     <span class="c1"># If we want to create a new and empty scene</span>
     <span class="k">elif</span> <span class="n">scenes_action</span> <span class="o">==</span> <span class="s1">&#39;create&#39;</span><span class="p">:</span>
         <span class="n">object_id</span> <span class="o">=</span>  <span class="n">parsed_args</span><span class="o">.</span><span class="n">object_id</span>
         <span class="n">object_id</span> <span class="o">=</span> <span class="n">clean_list</span><span class="p">(</span><span class="n">object_id</span><span class="p">)</span>
-        <span class="n">scenes_create</span><span class="p">(</span><span class="n">object_id</span><span class="o">=</span><span class="n">object_id</span><span class="p">)</span>
+        <span class="n">scenes_create</span><span class="p">(</span><span class="n">c_data</span><span class="p">,</span> <span class="n">object_id</span><span class="o">=</span><span class="n">object_id</span><span class="p">)</span>
 
     <span class="c1"># If we want to delete a scene</span>
     <span class="k">elif</span> <span class="n">scenes_action</span> <span class="o">==</span> <span class="s1">&#39;delete&#39;</span><span class="p">:</span>
         <span class="n">scene_hash</span> <span class="o">=</span> <span class="n">parsed_args</span><span class="o">.</span><span class="n">scene_hash</span>
         <span class="n">scene_hash</span> <span class="o">=</span> <span class="n">clean_list</span><span class="p">(</span><span class="n">scene_hash</span><span class="p">)</span>
-        <span class="n">scenes_delete</span><span class="p">(</span><span class="n">scene_hash</span><span class="p">)</span>
+        <span class="n">scenes_delete</span><span class="p">(</span><span class="n">c_data</span><span class="p">,</span> <span class="n">scene_hash</span><span class="p">)</span>
 
     <span class="c1"># If we want to select a scene to perform operations on it</span>
     <span class="k">elif</span> <span class="n">scenes_action</span> <span class="o">==</span> <span class="s1">&#39;select&#39;</span><span class="p">:</span>
         <span class="n">scene_hash</span> <span class="o">=</span> <span class="n">parsed_args</span><span class="o">.</span><span class="n">scene_hash</span>
-        <span class="n">scenes_select</span><span class="p">(</span><span class="n">scene_hash</span><span class="p">)</span>
+        <span class="n">scenes_select</span><span class="p">(</span><span class="n">c_data</span><span class="p">,</span> <span class="n">scene_hash</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="clean_list"><a class="viewcode-back" href="../../client._dos.html#_dos.do_scenes.clean_list">[docs]</a><span class="k">def</span> <span class="nf">clean_list</span><span class="p">(</span><span class="n">dirty_list</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Remove empty entries from a list and cast everything to a string.</span>
+
+<span class="sd">    When we parse a string like &#39;    foo&#39; this will land in an array that</span>
+<span class="sd">    replaces the every _leading_ whitespace into an empty entry in the array.</span>
+<span class="sd">    Getting rid of those empty entries is the point of this function.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     dirty_list (list): A list that potentially has entries that are empty.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">     list: A list containing no empty entries, each entry is a string.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">list_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dirty_list</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">list_length</span><span class="p">):</span>
+        <span class="c1"># Pop all empty entries</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">empty_index</span> <span class="o">=</span> <span class="n">dirty_list</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">dirty_list</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">empty_index</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+    <span class="c1"># Tidy up the entries.</span>
+    <span class="k">for</span> <span class="n">it</span><span class="p">,</span> <span class="n">entry</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dirty_list</span><span class="p">):</span>
+        <span class="c1"># Cast to string and remove all &#39;-marks</span>
+        <span class="n">dirty_list</span><span class="p">[</span><span class="n">it</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">dirty_list</span><span class="p">[</span><span class="n">it</span><span class="p">])</span>
+        <span class="n">dirty_list</span><span class="p">[</span><span class="n">it</span><span class="p">]</span> <span class="o">=</span> <span class="n">dirty_list</span><span class="p">[</span><span class="n">it</span><span class="p">]</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span>
+            <span class="p">{</span><span class="nb">ord</span><span class="p">(</span><span class="n">c</span><span class="p">):</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="s1">&#39;</span><span class="se">\&#39;</span><span class="s1">&#39;</span><span class="p">})</span>
+
+    <span class="c1"># For clarity, we want to return something clean.</span>
+    <span class="n">clean_list</span> <span class="o">=</span> <span class="n">dirty_list</span>
+
+    <span class="k">return</span> <span class="n">clean_list</span></div>
+
+
+<div class="viewcode-block" id="pretty_print_scene"><a class="viewcode-back" href="../../client._dos.html#_dos.do_scenes.pretty_print_scene">[docs]</a><span class="k">def</span> <span class="nf">pretty_print_scene</span><span class="p">(</span><span class="n">scene_hash</span><span class="p">,</span> <span class="n">scene</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pretty print a scene.</span>
+
+<span class="sd">    Print a scene (and the objects in it) to the screen.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     scene_hash (str): The unique identifier of the scene.</span>
+<span class="sd">     scene (dict): Contains all the information about the scene.</span>
+<span class="sd">     host (str): The address of the backend server, for printing a URL.</span>
+<span class="sd">     port (int): The port of the backend server, for printing a URL.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">     None: Nothing.</span>
+
+<span class="sd">    Todo:</span>
+<span class="sd">     Maybe rework this to make it even prettier!</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">()</span>             <span class="c1"># Newline</span>
+
+    <span class="k">if</span> <span class="n">scene</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Invalid scene: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">scene_hash</span><span class="p">))</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Scene </span><span class="si">{}</span><span class="s1"> can be found at&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">scene_hash</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  http://</span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1">/scenes/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span> <span class="nb">format</span><span class="p">(</span>
+            <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">scene_hash</span><span class="p">))</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;----------------------------------------&#39;</span> <span class="o">+</span>
+              <span class="s1">&#39;----------------------------------------&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">scene</span><span class="p">[</span><span class="s1">&#39;object_list&#39;</span><span class="p">]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">entry</span><span class="p">))</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;========================================&#39;</span> <span class="o">+</span>
+                  <span class="s1">&#39;========================================&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="scenes_list"><a class="viewcode-back" href="../../client._dos.html#_dos.do_scenes.scenes_list">[docs]</a><span class="k">def</span> <span class="nf">scenes_list</span><span class="p">(</span><span class="n">c_data</span><span class="p">,</span> <span class="n">just</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    List one, several or all scenes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     c_data (dict): A dictionary containing host, port and headers.</span>
+<span class="sd">     just (list, optional, defaults to None): A list of scene_hashes of a</span>
+<span class="sd">     limited subset of the available scenes, we want to display.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">     None: Nothing.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="n">c_data</span><span class="p">[</span><span class="s1">&#39;host&#39;</span><span class="p">]</span>
+    <span class="n">port</span> <span class="o">=</span> <span class="n">c_data</span><span class="p">[</span><span class="s1">&#39;port&#39;</span><span class="p">]</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="n">c_data</span><span class="p">[</span><span class="s1">&#39;headers&#39;</span><span class="p">]</span>
+
+    <span class="n">api_call</span> <span class="o">=</span> <span class="s1">&#39;scenes_infos&#39;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">answer</span> <span class="o">=</span> <span class="n">post_json_string</span><span class="p">(</span>
+        <span class="n">api_call</span><span class="o">=</span><span class="n">api_call</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">connection_data</span><span class="o">=</span><span class="n">c_data</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">answer</span> <span class="o">==</span> <span class="p">{}:</span>
+        <span class="c1"># If there are no scenes to display on the server</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;There are no scenes to display.&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">just</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># If we only want to list a limited amount of scenes</span>
+        <span class="k">for</span> <span class="n">scene_hash</span> <span class="ow">in</span> <span class="n">answer</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">pretty_print_scene</span><span class="p">(</span><span class="n">scene_hash</span><span class="p">,</span> <span class="n">answer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">scene_hash</span><span class="p">),</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># List everything we have</span>
+        <span class="k">for</span> <span class="n">scene_hash</span> <span class="ow">in</span> <span class="n">just</span><span class="p">:</span>
+            <span class="n">pretty_print_scene</span><span class="p">(</span><span class="n">scene_hash</span><span class="p">,</span> <span class="n">answer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">scene_hash</span><span class="p">),</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="scenes_create"><a class="viewcode-back" href="../../client._dos.html#_dos.do_scenes.scenes_create">[docs]</a><span class="k">def</span> <span class="nf">scenes_create</span><span class="p">(</span><span class="n">c_data</span><span class="p">,</span> <span class="n">object_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a new scene.</span>
+
+<span class="sd">    If object_id is an empty array, an empty scene will be created. After</span>
+<span class="sd">    creation a link to the new scene is printed to the screen.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     c_data (dict): A dictionary containing host, port and headers.</span>
+<span class="sd">     object_id (list): A list of objects to include on creation of a new scene.</span>
+<span class="sd">      Valid object names can be found by typing &#39;objects&#39;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">     None: Nothing.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="n">c_data</span><span class="p">[</span><span class="s1">&#39;host&#39;</span><span class="p">]</span>
+    <span class="n">port</span> <span class="o">=</span> <span class="n">c_data</span><span class="p">[</span><span class="s1">&#39;port&#39;</span><span class="p">]</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="n">c_data</span><span class="p">[</span><span class="s1">&#39;headers&#39;</span><span class="p">]</span>
+
+    <span class="n">api_call</span> <span class="o">=</span> <span class="s1">&#39;scenes_create&#39;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;object_path&#39;</span><span class="p">:</span> <span class="n">object_id</span><span class="p">}</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">post_json_string</span><span class="p">(</span>
+        <span class="n">api_call</span><span class="o">=</span><span class="n">api_call</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">connection_data</span><span class="o">=</span><span class="n">c_data</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Created scene </span><span class="si">{}</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="s1">&#39;created&#39;</span><span class="p">])</span> <span class="o">+</span>
+                  <span class="s1">&#39;It can be found at http://</span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1">/scenes/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                      <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;created&#39;</span><span class="p">]))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Error: wrong id?&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="scenes_delete"><a class="viewcode-back" href="../../client._dos.html#_dos.do_scenes.scenes_delete">[docs]</a><span class="k">def</span> <span class="nf">scenes_delete</span><span class="p">(</span><span class="n">c_data</span><span class="p">,</span> <span class="n">scene_hash</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Delete a scene.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     c_data (dict): A dictionary containing host, port and headers.</span>
+<span class="sd">     scene_hash (str): The unique identifier of the scene that should be</span>
+<span class="sd">      deleted.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">     None: Nothing.</span>
+
+<span class="sd">    Todo:</span>
+<span class="sd">     Print feedback?</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">api_call</span> <span class="o">=</span> <span class="s1">&#39;scenes_delete&#39;</span>
+    <span class="k">for</span> <span class="n">scene</span> <span class="ow">in</span> <span class="n">scene_hash</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;scene_hash&#39;</span><span class="p">:</span> <span class="n">scene</span><span class="p">}</span>
+        <span class="n">post_json_string</span><span class="p">(</span>
+            <span class="n">api_call</span><span class="o">=</span><span class="n">api_call</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">connection_data</span><span class="o">=</span><span class="n">c_data</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="scenes_select"><a class="viewcode-back" href="../../client._dos.html#_dos.do_scenes.scenes_select">[docs]</a><span class="k">def</span> <span class="nf">scenes_select</span><span class="p">(</span><span class="n">c_data</span><span class="p">,</span> <span class="n">scene_hash</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Select a scene.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     c_data (dict): A dictionary containing host, port and headers.</span>
+<span class="sd">     scene_hash (str): The unique identifier of the scene that should be</span>
+<span class="sd">      selected.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">     None: Nothing.</span>
+
+<span class="sd">    Todo:</span>
+<span class="sd">     Expand this. This is the entry point for manipulating anything IN a given</span>
+<span class="sd">     scene.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">api_call</span> <span class="o">=</span> <span class="s1">&#39;scenes_select&#39;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">answer</span> <span class="o">=</span> <span class="n">post_json_string</span><span class="p">(</span>
+        <span class="n">api_call</span><span class="o">=</span><span class="n">api_call</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">connection_data</span><span class="o">=</span><span class="n">c_data</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="kc">None</span></div>
 </pre></div>

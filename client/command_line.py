@@ -7,11 +7,10 @@ Terminal-like interface for interacting with calculix-clone.
 import cmd
 import sys
 import argparse
-import textwrap
 
 # Command line interface functionality
-from _dos.do_scenes import scenes
-from _dos.do_objects import objects
+from _dos.do_scenes import scenes, scenes_help
+from _dos.do_objects import objects, objects_help
 
 # Some utility functions
 from util.post_json import post_json_string
@@ -20,6 +19,7 @@ from util.test_host import target_online_and_compatible
 # Get the version from the parent directory
 sys.path.append('..')
 from util.version import version
+from util.print_function_usage import print_help
 
 
 def parse_commandline():
@@ -38,8 +38,8 @@ def parse_commandline():
 
      --host  defaults to `localhost`
      --port  defaults to `8008`
-    """
 
+    """
     parser = argparse.ArgumentParser(
         description=__doc__
     )
@@ -50,6 +50,7 @@ def parse_commandline():
     parsed_args = parser.parse_args()
 
     return parsed_args
+
 
 class Terminal(cmd.Cmd):
     """
@@ -65,7 +66,6 @@ class Terminal(cmd.Cmd):
     program.
 
     """
-
     def __init__(
             self,
             host, port
@@ -98,9 +98,10 @@ class Terminal(cmd.Cmd):
         # Set the program details
         self.prompt = '>> '
         self.intro = (
-            'Welcome to {} command line interface version {}.\n'\
+            'Welcome to {} command line interface version {}.\n'
             'To leave type \'exit\' or \'quit\'.'.format(
                 program_name, version_number))
+        # Construct the header
         self.headers = {'user-agent': '{}/{}'.format(
             program_name, version_number)}
         self.host = host
@@ -125,7 +126,7 @@ class Terminal(cmd.Cmd):
 
         Args:
          intro (str, defaults to None): The 'intro' message. This message will
-          be displayed when we press Ctrl-C.
+          be displayed in a line before every new prompt.
 
         """
 
@@ -140,53 +141,6 @@ class Terminal(cmd.Cmd):
                 break
             except KeyboardInterrupt:
                 print('')
-
-        return None
-
-    def print_help(self, help_text):
-        """
-        A small helper function that prints out a help string in a nice format.
-
-        Args:
-         help_text (str): The 'unformated' help string.
-
-        Returns:
-         None: Nothing.
-
-        Todo:
-         I think this can be done waaay more elegant...
-
-        """
-
-        # Take out indentation
-        dedented = textwrap.dedent(help_text)
-
-        # Split the string in lines
-        splitlines = dedented.splitlines()
-
-        # Delete a leading and trailing newline
-        if splitlines[0] == '':
-            splitlines.pop(0)
-        if splitlines[-1] == '':
-            splitlines.pop(-1)
-
-        # Construct the paragraphs
-        paragraphs = ''
-        for line in splitlines:
-            if line == '':
-                paragraphs += '\n'
-            else:
-                paragraphs += line + ' '
-
-        # Split on newlines
-        paragraphs = paragraphs.split('\n')
-
-        print()                 # Newline
-        for paragraph in paragraphs:
-            wrapped_string = textwrap.wrap(paragraph)
-            for line in wrapped_string:
-                print(line)
-            print()             # Newline after each paragraph
 
         return None
 
@@ -208,37 +162,73 @@ class Terminal(cmd.Cmd):
     def help_objects(self):
         """
         Print help string for 'objects'.
-        """
 
-        help_text = """
-        List all the available simulation data directories.
         """
-        self.print_help(help_text)
-
-        return None
+        return objects_help()
 
     def do_scenes(self, line):
         """
-        Handle scenes. For a more complete documentation type scenes -h
+        Calls the imported scenes function and returns the result.
+
+        See ``_dos.do_scenes.scenes`` for full documentation.
+
+        Args:
+         line (str): The parsed line from the command line.
+
+        Returns:
+         str: A formatted string containing the returned information about the
+          scenes.
+
         """
         return scenes(line, self.c_data)
 
+    def help_scenes(self):
+        """
+        Print the usage message for scenes.
+
+        """
+        return(scenes_help(self.c_data))
+
     def do_exit(self, line):
         """
-        Exit the CLI.
+        Print 'Bye' and exit the program.
+
+        Args:
+         line (str): The parsed line for the command line.
+
+        Returns:
+         int (-1): Return code for exiting the program.
+
         """
         print('Bye.')
         return -1
 
     def help_exit(self):
-        print("BLABLABLA")
-        return None
+        """
+        Print the help message for 'exit'.
+
+        """
+        print("Exit the command line interface.")
 
     def do_quit(self, line):
         """
-        Exit alias.
+        Alias for exit.
+
+        Args:
+         line (str): The parsed line for the command line.
+
+        Returns:
+         int: -1, since exit returns -1.
+
         """
         return(self.do_exit(line))
+
+    def help_quit(self):
+        """
+        Print the help message for 'quit'.
+
+        """
+        return self.help_exit()
 
 
 if __name__ == '__main__':

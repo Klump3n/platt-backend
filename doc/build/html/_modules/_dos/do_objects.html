@@ -165,14 +165,45 @@
   <h1>Source code for _dos.do_objects</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python3</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">List all the available simulation data directories.</span>
+<span class="sd">A small module containing the function for getting the available simulation</span>
+<span class="sd">data from the backend and displaying it in the client.</span>
+
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">util.post_json</span> <span class="k">import</span> <span class="n">post_json_string</span>
+<span class="kn">from</span> <span class="nn">util.print_function_usage</span> <span class="k">import</span> <span class="n">print_help</span>
+
+
+<div class="viewcode-block" id="objects_help"><a class="viewcode-back" href="../../client._dos.html#_dos.do_objects.objects_help">[docs]</a><span class="k">def</span> <span class="nf">objects_help</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Print the help message for the objects function.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">help_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    List all the available simulation data directories.</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+
+    <span class="n">print_help</span><span class="p">(</span><span class="n">help_text</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
 
 <div class="viewcode-block" id="objects"><a class="viewcode-back" href="../../client._dos.html#_dos.do_objects.objects">[docs]</a><span class="k">def</span> <span class="nf">objects</span><span class="p">(</span><span class="n">c_data</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    List all the available simulation data directories.</span>
+
+<span class="sd">    Sends an empty JSON request to the ``api/list_of_fem_data``. The returned</span>
+<span class="sd">    response is then parsed and printed out nicely formatted. In case of an</span>
+<span class="sd">    exception (that means no response is returned) a message is printed to the</span>
+<span class="sd">    screen, informing us that no response came back.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     c_data (dict): A dictionary containing the connection data. That is, a</span>
+<span class="sd">      target host, target port and a header.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">     None: Nothing</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Call the host and ask for simulation data</span>

@@ -172,11 +172,10 @@
 <span class="kn">import</span> <span class="nn">cmd</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">argparse</span>
-<span class="kn">import</span> <span class="nn">textwrap</span>
 
 <span class="c1"># Command line interface functionality</span>
-<span class="kn">from</span> <span class="nn">_dos.do_scenes</span> <span class="k">import</span> <span class="n">scenes</span>
-<span class="kn">from</span> <span class="nn">_dos.do_objects</span> <span class="k">import</span> <span class="n">objects</span>
+<span class="kn">from</span> <span class="nn">_dos.do_scenes</span> <span class="k">import</span> <span class="n">scenes</span><span class="p">,</span> <span class="n">scenes_help</span>
+<span class="kn">from</span> <span class="nn">_dos.do_objects</span> <span class="k">import</span> <span class="n">objects</span><span class="p">,</span> <span class="n">objects_help</span>
 
 <span class="c1"># Some utility functions</span>
 <span class="kn">from</span> <span class="nn">util.post_json</span> <span class="k">import</span> <span class="n">post_json_string</span>
@@ -185,6 +184,7 @@
 <span class="c1"># Get the version from the parent directory</span>
 <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">util.version</span> <span class="k">import</span> <span class="n">version</span>
+<span class="kn">from</span> <span class="nn">util.print_function_usage</span> <span class="k">import</span> <span class="n">print_help</span>
 
 
 <div class="viewcode-block" id="parse_commandline"><a class="viewcode-back" href="../../client.html#client.command_line.parse_commandline">[docs]</a><span class="k">def</span> <span class="nf">parse_commandline</span><span class="p">():</span>
@@ -203,8 +203,8 @@
 
 <span class="sd">     --host  defaults to `localhost`</span>
 <span class="sd">     --port  defaults to `8008`</span>
-<span class="sd">    &quot;&quot;&quot;</span>
 
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
         <span class="n">description</span><span class="o">=</span><span class="vm">__doc__</span>
     <span class="p">)</span>
@@ -215,6 +215,7 @@
     <span class="n">parsed_args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">parsed_args</span></div>
+
 
 <div class="viewcode-block" id="Terminal"><a class="viewcode-back" href="../../client.html#client.command_line.Terminal">[docs]</a><span class="k">class</span> <span class="nc">Terminal</span><span class="p">(</span><span class="n">cmd</span><span class="o">.</span><span class="n">Cmd</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -230,7 +231,6 @@
 <span class="sd">    program.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-
 <div class="viewcode-block" id="Terminal.__init__"><a class="viewcode-back" href="../../client.html#client.command_line.Terminal.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">host</span><span class="p">,</span> <span class="n">port</span>
@@ -263,9 +263,10 @@
         <span class="c1"># Set the program details</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">prompt</span> <span class="o">=</span> <span class="s1">&#39;&gt;&gt; &#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">intro</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="s1">&#39;Welcome to </span><span class="si">{}</span><span class="s1"> command line interface version </span><span class="si">{}</span><span class="s1">.</span><span class="se">\n</span><span class="s1">&#39;</span>\
+            <span class="s1">&#39;Welcome to </span><span class="si">{}</span><span class="s1"> command line interface version </span><span class="si">{}</span><span class="s1">.</span><span class="se">\n</span><span class="s1">&#39;</span>
             <span class="s1">&#39;To leave type </span><span class="se">\&#39;</span><span class="s1">exit</span><span class="se">\&#39;</span><span class="s1"> or </span><span class="se">\&#39;</span><span class="s1">quit</span><span class="se">\&#39;</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                 <span class="n">program_name</span><span class="p">,</span> <span class="n">version_number</span><span class="p">))</span>
+        <span class="c1"># Construct the header</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;user-agent&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="n">program_name</span><span class="p">,</span> <span class="n">version_number</span><span class="p">)}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span>
@@ -290,7 +291,7 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">         intro (str, defaults to None): The &#39;intro&#39; message. This message will</span>
-<span class="sd">          be displayed when we press Ctrl-C.</span>
+<span class="sd">          be displayed in a line before every new prompt.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -305,53 +306,6 @@
                 <span class="k">break</span>
             <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="kc">None</span></div>
-
-<div class="viewcode-block" id="Terminal.print_help"><a class="viewcode-back" href="../../client.html#client.command_line.Terminal.print_help">[docs]</a>    <span class="k">def</span> <span class="nf">print_help</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">help_text</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        A small helper function that prints out a help string in a nice format.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">         help_text (str): The &#39;unformated&#39; help string.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">         None: Nothing.</span>
-
-<span class="sd">        Todo:</span>
-<span class="sd">         I think this can be done waaay more elegant...</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="c1"># Take out indentation</span>
-        <span class="n">dedented</span> <span class="o">=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="n">help_text</span><span class="p">)</span>
-
-        <span class="c1"># Split the string in lines</span>
-        <span class="n">splitlines</span> <span class="o">=</span> <span class="n">dedented</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
-
-        <span class="c1"># Delete a leading and trailing newline</span>
-        <span class="k">if</span> <span class="n">splitlines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
-            <span class="n">splitlines</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">splitlines</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
-            <span class="n">splitlines</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-
-        <span class="c1"># Construct the paragraphs</span>
-        <span class="n">paragraphs</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">splitlines</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
-                <span class="n">paragraphs</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">paragraphs</span> <span class="o">+=</span> <span class="n">line</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span>
-
-        <span class="c1"># Split on newlines</span>
-        <span class="n">paragraphs</span> <span class="o">=</span> <span class="n">paragraphs</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-
-        <span class="nb">print</span><span class="p">()</span>                 <span class="c1"># Newline</span>
-        <span class="k">for</span> <span class="n">paragraph</span> <span class="ow">in</span> <span class="n">paragraphs</span><span class="p">:</span>
-            <span class="n">wrapped_string</span> <span class="o">=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">paragraph</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">wrapped_string</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">()</span>             <span class="c1"># Newline after each paragraph</span>
 
         <span class="k">return</span> <span class="kc">None</span></div>
 
@@ -373,37 +327,73 @@
 <div class="viewcode-block" id="Terminal.help_objects"><a class="viewcode-back" href="../../client.html#client.command_line.Terminal.help_objects">[docs]</a>    <span class="k">def</span> <span class="nf">help_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Print help string for &#39;objects&#39;.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">help_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">        List all the available simulation data directories.</span>
-<span class="s2">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">print_help</span><span class="p">(</span><span class="n">help_text</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="kc">None</span></div>
+        <span class="k">return</span> <span class="n">objects_help</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Terminal.do_scenes"><a class="viewcode-back" href="../../client.html#client.command_line.Terminal.do_scenes">[docs]</a>    <span class="k">def</span> <span class="nf">do_scenes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Handle scenes. For a more complete documentation type scenes -h</span>
+<span class="sd">        Calls the imported scenes function and returns the result.</span>
+
+<span class="sd">        See ``_dos.do_scenes.scenes`` for full documentation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         line (str): The parsed line from the command line.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         str: A formatted string containing the returned information about the</span>
+<span class="sd">          scenes.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">scenes</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">c_data</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="Terminal.help_scenes"><a class="viewcode-back" href="../../client.html#client.command_line.Terminal.help_scenes">[docs]</a>    <span class="k">def</span> <span class="nf">help_scenes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Print the usage message for scenes.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span><span class="p">(</span><span class="n">scenes_help</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c_data</span><span class="p">))</span></div>
+
 <div class="viewcode-block" id="Terminal.do_exit"><a class="viewcode-back" href="../../client.html#client.command_line.Terminal.do_exit">[docs]</a>    <span class="k">def</span> <span class="nf">do_exit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Exit the CLI.</span>
+<span class="sd">        Print &#39;Bye&#39; and exit the program.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         line (str): The parsed line for the command line.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         int (-1): Return code for exiting the program.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Bye.&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="o">-</span><span class="mi">1</span></div>
 
 <div class="viewcode-block" id="Terminal.help_exit"><a class="viewcode-back" href="../../client.html#client.command_line.Terminal.help_exit">[docs]</a>    <span class="k">def</span> <span class="nf">help_exit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;BLABLABLA&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="kc">None</span></div>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Print the help message for &#39;exit&#39;.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exit the command line interface.&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Terminal.do_quit"><a class="viewcode-back" href="../../client.html#client.command_line.Terminal.do_quit">[docs]</a>    <span class="k">def</span> <span class="nf">do_quit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Exit alias.</span>
+<span class="sd">        Alias for exit.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         line (str): The parsed line for the command line.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         int: -1, since exit returns -1.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">do_exit</span><span class="p">(</span><span class="n">line</span><span class="p">))</span></div></div>
+        <span class="k">return</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">do_exit</span><span class="p">(</span><span class="n">line</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Terminal.help_quit"><a class="viewcode-back" href="../../client.html#client.command_line.Terminal.help_quit">[docs]</a>    <span class="k">def</span> <span class="nf">help_quit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Print the help message for &#39;quit&#39;.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">help_exit</span><span class="p">()</span></div></div>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
