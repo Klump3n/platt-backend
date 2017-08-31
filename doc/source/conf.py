@@ -20,11 +20,21 @@
 
 import os
 import sys
+
+# Add the main program path
 sys.path.insert(
     0, os.path.abspath(
         os.path.join('..', '..')
     )
 )
+
+# Add the client path
+sys.path.insert(
+    0, os.path.abspath(
+        os.path.join('..', '..', 'client')
+    )
+)
+
 
 # -- General configuration ------------------------------------------------
 
@@ -42,6 +52,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.mathjax',
               'sphinx.ext.viewcode',
               'sphinx.ext.githubpages',
+              'sphinx.ext.intersphinx',
               'sphinx_js',
               'sphinx.ext.napoleon'
 ]

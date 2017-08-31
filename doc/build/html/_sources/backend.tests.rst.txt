@@ -1,6 +1,9 @@
 backend\.tests package
 ======================
 
+I am not sure if I want to keep the tests, because at this point it seems to me
+one more construction site that I have to maintain.
+
 Submodules
 ----------
 

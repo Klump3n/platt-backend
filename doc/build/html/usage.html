@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>backend &mdash; TBD alpha documentation</title>
+  <title>Usage &mdash; TBD alpha documentation</title>
   
 
   
@@ -35,7 +35,9 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="TBD alpha documentation" href="index.html"/> 
+    <link rel="top" title="TBD alpha documentation" href="index.html"/>
+        <link rel="next" title="Startup script" href="main.html"/>
+        <link rel="prev" title="Welcome to TBD’s documentation!" href="index.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -89,8 +91,8 @@
             
             
               <p class="caption"><span class="caption-text">Usage:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Packages and modules:</span></p>
 <ul>
@@ -142,13 +144,13 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>backend</li>
+      <li>Usage</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/modules.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/usage.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -161,35 +163,15 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="backend">
-<h1>backend<a class="headerlink" href="#backend" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="backend.html">backend package (Python code)</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="backend.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="backend.static.html">backend.static package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="backend.static.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="backend.static.html#module-backend.static.gen_index">backend.static.gen_index module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="backend.static.html#module-backend.static">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="backend.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.data_backend">backend.data_backend module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.global_settings">backend.global_settings module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.old_web_server_api">backend.old_web_server_api module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.scenes_manager">backend.scenes_manager module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.scenes_object_prototype">backend.scenes_object_prototype module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.scenes_scene_prototype">backend.scenes_scene_prototype module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.web_server">backend.web_server module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.web_server_api">backend.web_server_api module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.web_server_display">backend.web_server_display module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</div>
+  <div class="section" id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
+<p>Call <code class="docutils literal"><span class="pre">main.py</span> <span class="pre">-h</span></code> for a little help.</p>
+<p>With the provided example data in the programs main directory, a viable command
+would be</p>
+<p><code class="docutils literal"><span class="pre">main.py</span> <span class="pre">-d</span> <span class="pre">example_data</span></code>.</p>
+<p>This would start the backend, which in turn would look for simulation data in
+the directory <code class="docutils literal"><span class="pre">example_data</span></code>. A web server would also be started. This we
+could reach at <code class="docutils literal"><span class="pre">http://localhost:8008</span></code>.</p>
 </div>
 
 
@@ -199,6 +181,15 @@
            </div>
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="main.html" class="btn btn-neutral float-right" title="Startup script" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Welcome to TBD’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

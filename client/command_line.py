@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """
 Terminal-like interface for interacting with calculix-clone.
+
 """
 
 import cmd
 import sys
 import argparse
+import textwrap
 
 # Command line interface functionality
 from _dos.do_scenes import scenes
@@ -20,12 +22,27 @@ sys.path.append('..')
 from util.version import version
 
 
-def grab_CLA():
+def parse_commandline():
     """
     Parse the command line arguments.
+
+    Args:
+     None: No parameters.
+
+    Returns:
+     namespace: A namespace containing all the parsed command line arguments.
+
+    Notes:
+     This function implements the defaults for the client program. The
+     returned parameters and corresponding defaults are:
+
+     --host  defaults to `localhost`
+     --port  defaults to `8008`
     """
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description=__doc__
+    )
     parser.add_argument('--host', type=str, default='localhost',
                         help='Host to connect to.')
     parser.add_argument('--port', type=int, default=8008,
@@ -36,15 +53,38 @@ def grab_CLA():
 
 class Terminal(cmd.Cmd):
     """
-    Send commands to the server.
+    Send commands to the backend api.
+
+    This terminal-like interface sends commands to a running backend to change
+    parameters, add data, etc. The address and port of this server are
+    specified when Terminal is instantiated.
+
+    For every do_* function we also implement a help_* function, that overrides
+    the docstring for the do_* function. This is so we can clearly separate the
+    documentation of the client from the documentation of how to use the
+    program.
+
     """
 
     def __init__(
             self,
-            args
+            host, port
     ):
         """
         Init function for the terminal.
+
+        Display the version on starting the program. Set a command prompt and a
+        user agent. Then check if the target server backend is actually online
+        and is also running the same version. If that is not the case terminate
+        the client program.
+
+        Args:
+         host (str): The IP of the target server backend.
+         port (int): The port of the target, to which we are trying to connect.
+
+        Returns:
+         None: Nothing.
+
         """
 
         # Version of the package
@@ -63,8 +103,8 @@ class Terminal(cmd.Cmd):
                 program_name, version_number))
         self.headers = {'user-agent': '{}/{}'.format(
             program_name, version_number)}
-        self.host = args.host
-        self.port = args.port
+        self.host = host
+        self.port = port
 
         # A dict with connection data for easy handing into functions
         self.c_data = {}
@@ -80,25 +120,102 @@ class Terminal(cmd.Cmd):
 
     def cmdloop(self, intro=None):
         """
-        A slightly modified version of the cmdloop that catches Ctrl-C keyboard
-        interrupts.
+        Override cmd.Cmd.cmdloop so we catch Ctrl-C keyboard interrupts
+        without exiting the program.
+
+        Args:
+         intro (str, defaults to None): The 'intro' message. This message will
+          be displayed when we press Ctrl-C.
+
         """
 
         print(self.intro)
 
         while True:
             try:
+                # Set the message we display on pressing Ctrl-C to an empty
+                # string.
                 super().cmdloop(intro="")  # super references the parent class, i.e. cmd.Cmd
                 self.postloop()
                 break
             except KeyboardInterrupt:
                 print('')
 
+        return None
+
+    def print_help(self, help_text):
+        """
+        A small helper function that prints out a help string in a nice format.
+
+        Args:
+         help_text (str): The 'unformated' help string.
+
+        Returns:
+         None: Nothing.
+
+        Todo:
+         I think this can be done waaay more elegant...
+
+        """
+
+        # Take out indentation
+        dedented = textwrap.dedent(help_text)
+
+        # Split the string in lines
+        splitlines = dedented.splitlines()
+
+        # Delete a leading and trailing newline
+        if splitlines[0] == '':
+            splitlines.pop(0)
+        if splitlines[-1] == '':
+            splitlines.pop(-1)
+
+        # Construct the paragraphs
+        paragraphs = ''
+        for line in splitlines:
+            if line == '':
+                paragraphs += '\n'
+            else:
+                paragraphs += line + ' '
+
+        # Split on newlines
+        paragraphs = paragraphs.split('\n')
+
+        print()                 # Newline
+        for paragraph in paragraphs:
+            wrapped_string = textwrap.wrap(paragraph)
+            for line in wrapped_string:
+                print(line)
+            print()             # Newline after each paragraph
+
+        return None
+
     def do_objects(self, line):
         """
-        List all the available simulation data directories.
+        Calls the imported object function and returns the result.
+
+        See ``_dos.do_objects.objects`` for full documentation.
+
+        Args:
+         line (str): The parsed line from the command line.
+
+        Returns:
+         str: A formatted string containing all the objects available.
+
         """
         return objects(self.c_data)
+
+    def help_objects(self):
+        """
+        Print help string for 'objects'.
+        """
+
+        help_text = """
+        List all the available simulation data directories.
+        """
+        self.print_help(help_text)
+
+        return None
 
     def do_scenes(self, line):
         """
@@ -113,6 +230,10 @@ class Terminal(cmd.Cmd):
         print('Bye.')
         return -1
 
+    def help_exit(self):
+        print("BLABLABLA")
+        return None
+
     def do_quit(self, line):
         """
         Exit alias.
@@ -122,10 +243,15 @@ class Terminal(cmd.Cmd):
 
 if __name__ == '__main__':
     """
-    Start.
+    Start the client.
     """
-    ARGS = grab_CLA()
-    CLI = Terminal(args=ARGS)
+
+    ARGS = parse_commandline()
+
+    HOST = ARGS.host
+    PORT = ARGS.port
+
+    CLI = Terminal(host=HOST, port=PORT)
     CLI.cmdloop()
 
 

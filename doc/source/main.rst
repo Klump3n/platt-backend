@@ -1,5 +1,5 @@
-main file (.py)
-===============
+Startup script
+==============
 
 This is the central file of the program. We call this file as an executable to
 instantiate the ``Web_Server`` class.

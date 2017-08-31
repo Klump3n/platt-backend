@@ -1,0 +1,11 @@
+Frontend code (JavaScript)
+==========================
+
+The frontend is written in HTML/CSS with JavaScript for geometric manipulations
+and rendering of models via WebGL2.
+
+.. toctree::
+   :maxdepth: 3
+   :caption: Contents
+
+   frontend

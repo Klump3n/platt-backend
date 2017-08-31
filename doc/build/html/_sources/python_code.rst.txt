@@ -1,0 +1,11 @@
+Backend code (Python/C)
+=======================
+
+The backend is written in Python3, with numerical routines implemented in C for
+speed.
+
+.. toctree::
+   :caption: Contents
+
+   main
+   backend

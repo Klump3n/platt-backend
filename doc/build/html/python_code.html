@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>backend &mdash; TBD alpha documentation</title>
+  <title>Backend code (Python/C) &mdash; TBD alpha documentation</title>
   
 
   
@@ -35,7 +35,9 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="TBD alpha documentation" href="index.html"/> 
+    <link rel="top" title="TBD alpha documentation" href="index.html"/>
+        <link rel="next" title="Frontend code (JavaScript)" href="javascript_code.html"/>
+        <link rel="prev" title="frontend package (.js)" href="frontend.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -93,11 +95,16 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Packages and modules:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="main.html">Startup script</a></li>
-<li class="toctree-l1"><a class="reference internal" href="backend.html">backend package (Python code)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="frontend.html">frontend package (JavaScript Code)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="client.html">client package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backend.html">backend package (.py)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="frontend.html">frontend package (.js)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Backend code (Python/C)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="main.html">Startup script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="backend.html">backend package (.py)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="javascript_code.html">Frontend code (JavaScript)</a></li>
 </ul>
 
             
@@ -142,13 +149,13 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>backend</li>
+      <li>Backend code (Python/C)</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/modules.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/python_code.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -161,16 +168,29 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="backend">
-<h1>backend<a class="headerlink" href="#backend" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="backend-code-python-c">
+<h1>Backend code (Python/C)<a class="headerlink" href="#backend-code-python-c" title="Permalink to this headline">¶</a></h1>
+<p>The backend is written in Python3, with numerical routines implemented in C for
+speed.</p>
 <div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="backend.html">backend package (Python code)</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="main.html">Startup script</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="main.html#module-main">main module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="backend.html">backend package (.py)</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="backend.html#subpackages">Subpackages</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="backend.static.html">backend.static package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="backend.static.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="backend.static.html#module-backend.static.gen_index">backend.static.gen_index module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="backend.static.html#module-backend.static">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="backend.tests.html">backend.tests package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="backend.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="backend.tests.html#module-backend.tests.tests_scene_handler">backend.tests.tests_scene_handler module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="backend.tests.html#module-backend.tests">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -199,6 +219,15 @@
            </div>
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="javascript_code.html" class="btn btn-neutral float-right" title="Frontend code (JavaScript)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="frontend.html" class="btn btn-neutral" title="frontend package (.js)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

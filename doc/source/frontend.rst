@@ -1,5 +1,5 @@
-frontend package (.js)
-======================
+frontend package (JavaScript Code)
+==================================
 
 Submodules
 ----------

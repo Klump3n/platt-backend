@@ -1,0 +1,488 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>client.command_line &mdash; TBD alpha documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="TBD alpha documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> TBD
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Usage:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Packages and modules:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../main.html">Startup script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../backend.html">backend package (Python code)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../frontend.html">frontend package (JavaScript Code)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../client.html">client package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">TBD</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>client.command_line</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for client.command_line</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Terminal-like interface for interacting with calculix-clone.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">cmd</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">textwrap</span>
+
+<span class="c1"># Command line interface functionality</span>
+<span class="kn">from</span> <span class="nn">_dos.do_scenes</span> <span class="k">import</span> <span class="n">scenes</span>
+<span class="kn">from</span> <span class="nn">_dos.do_objects</span> <span class="k">import</span> <span class="n">objects</span>
+
+<span class="c1"># Some utility functions</span>
+<span class="kn">from</span> <span class="nn">util.post_json</span> <span class="k">import</span> <span class="n">post_json_string</span>
+<span class="kn">from</span> <span class="nn">util.test_host</span> <span class="k">import</span> <span class="n">target_online_and_compatible</span>
+
+<span class="c1"># Get the version from the parent directory</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">util.version</span> <span class="k">import</span> <span class="n">version</span>
+
+
+<div class="viewcode-block" id="parse_commandline"><a class="viewcode-back" href="../../client.html#client.command_line.parse_commandline">[docs]</a><span class="k">def</span> <span class="nf">parse_commandline</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parse the command line arguments.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     None: No parameters.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">     namespace: A namespace containing all the parsed command line arguments.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">     This function implements the defaults for the client program. The</span>
+<span class="sd">     returned parameters and corresponding defaults are:</span>
+
+<span class="sd">     --host  defaults to `localhost`</span>
+<span class="sd">     --port  defaults to `8008`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="vm">__doc__</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--host&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Host to connect to.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--port&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">8008</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Port of host.&#39;</span><span class="p">)</span>
+    <span class="n">parsed_args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">parsed_args</span></div>
+
+<div class="viewcode-block" id="Terminal"><a class="viewcode-back" href="../../client.html#client.command_line.Terminal">[docs]</a><span class="k">class</span> <span class="nc">Terminal</span><span class="p">(</span><span class="n">cmd</span><span class="o">.</span><span class="n">Cmd</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Send commands to the backend api.</span>
+
+<span class="sd">    This terminal-like interface sends commands to a running backend to change</span>
+<span class="sd">    parameters, add data, etc. The address and port of this server are</span>
+<span class="sd">    specified when Terminal is instantiated.</span>
+
+<span class="sd">    For every do_* function we also implement a help_* function, that overrides</span>
+<span class="sd">    the docstring for the do_* function. This is so we can clearly separate the</span>
+<span class="sd">    documentation of the client from the documentation of how to use the</span>
+<span class="sd">    program.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Terminal.__init__"><a class="viewcode-back" href="../../client.html#client.command_line.Terminal.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">host</span><span class="p">,</span> <span class="n">port</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Init function for the terminal.</span>
+
+<span class="sd">        Display the version on starting the program. Set a command prompt and a</span>
+<span class="sd">        user agent. Then check if the target server backend is actually online</span>
+<span class="sd">        and is also running the same version. If that is not the case terminate</span>
+<span class="sd">        the client program.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         host (str): The IP of the target server backend.</span>
+<span class="sd">         port (int): The port of the target, to which we are trying to connect.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         None: Nothing.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Version of the package</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version_dict</span> <span class="o">=</span> <span class="n">version</span><span class="p">(</span><span class="n">detail</span><span class="o">=</span><span class="s1">&#39;long&#39;</span><span class="p">)</span>
+        <span class="n">program_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">version_dict</span><span class="p">[</span><span class="s1">&#39;program&#39;</span><span class="p">]</span>
+        <span class="n">version_number</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">version_dict</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Initialise the class defaults</span>
+        <span class="n">cmd</span><span class="o">.</span><span class="n">Cmd</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># Set the program details</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prompt</span> <span class="o">=</span> <span class="s1">&#39;&gt;&gt; &#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intro</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s1">&#39;Welcome to </span><span class="si">{}</span><span class="s1"> command line interface version </span><span class="si">{}</span><span class="s1">.</span><span class="se">\n</span><span class="s1">&#39;</span>\
+            <span class="s1">&#39;To leave type </span><span class="se">\&#39;</span><span class="s1">exit</span><span class="se">\&#39;</span><span class="s1"> or </span><span class="se">\&#39;</span><span class="s1">quit</span><span class="se">\&#39;</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">program_name</span><span class="p">,</span> <span class="n">version_number</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;user-agent&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">program_name</span><span class="p">,</span> <span class="n">version_number</span><span class="p">)}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
+
+        <span class="c1"># A dict with connection data for easy handing into functions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_data</span><span class="p">[</span><span class="s1">&#39;host&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_data</span><span class="p">[</span><span class="s1">&#39;port&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_data</span><span class="p">[</span><span class="s1">&#39;headers&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">headers</span>
+
+        <span class="c1"># Check if the host is running a compatible server</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">target_online_and_compatible</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">version_dict</span><span class="p">):</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s1">&#39;Exiting.&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Terminal.cmdloop"><a class="viewcode-back" href="../../client.html#client.command_line.Terminal.cmdloop">[docs]</a>    <span class="k">def</span> <span class="nf">cmdloop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intro</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Override cmd.Cmd.cmdloop so we catch Ctrl-C keyboard interrupts</span>
+<span class="sd">        without exiting the program.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         intro (str, defaults to None): The &#39;intro&#39; message. This message will</span>
+<span class="sd">          be displayed when we press Ctrl-C.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intro</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Set the message we display on pressing Ctrl-C to an empty</span>
+                <span class="c1"># string.</span>
+                <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">cmdloop</span><span class="p">(</span><span class="n">intro</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>  <span class="c1"># super references the parent class, i.e. cmd.Cmd</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">postloop</span><span class="p">()</span>
+                <span class="k">break</span>
+            <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Terminal.print_help"><a class="viewcode-back" href="../../client.html#client.command_line.Terminal.print_help">[docs]</a>    <span class="k">def</span> <span class="nf">print_help</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">help_text</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A small helper function that prints out a help string in a nice format.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         help_text (str): The &#39;unformated&#39; help string.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         None: Nothing.</span>
+
+<span class="sd">        Todo:</span>
+<span class="sd">         I think this can be done waaay more elegant...</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Take out indentation</span>
+        <span class="n">dedented</span> <span class="o">=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="n">help_text</span><span class="p">)</span>
+
+        <span class="c1"># Split the string in lines</span>
+        <span class="n">splitlines</span> <span class="o">=</span> <span class="n">dedented</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+
+        <span class="c1"># Delete a leading and trailing newline</span>
+        <span class="k">if</span> <span class="n">splitlines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">splitlines</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">splitlines</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">splitlines</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Construct the paragraphs</span>
+        <span class="n">paragraphs</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">splitlines</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+                <span class="n">paragraphs</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">paragraphs</span> <span class="o">+=</span> <span class="n">line</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span>
+
+        <span class="c1"># Split on newlines</span>
+        <span class="n">paragraphs</span> <span class="o">=</span> <span class="n">paragraphs</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">()</span>                 <span class="c1"># Newline</span>
+        <span class="k">for</span> <span class="n">paragraph</span> <span class="ow">in</span> <span class="n">paragraphs</span><span class="p">:</span>
+            <span class="n">wrapped_string</span> <span class="o">=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">paragraph</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">wrapped_string</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">()</span>             <span class="c1"># Newline after each paragraph</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Terminal.do_objects"><a class="viewcode-back" href="../../client.html#client.command_line.Terminal.do_objects">[docs]</a>    <span class="k">def</span> <span class="nf">do_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calls the imported object function and returns the result.</span>
+
+<span class="sd">        See ``_dos.do_objects.objects`` for full documentation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         line (str): The parsed line from the command line.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         str: A formatted string containing all the objects available.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">objects</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c_data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Terminal.help_objects"><a class="viewcode-back" href="../../client.html#client.command_line.Terminal.help_objects">[docs]</a>    <span class="k">def</span> <span class="nf">help_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Print help string for &#39;objects&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">help_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        List all the available simulation data directories.</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print_help</span><span class="p">(</span><span class="n">help_text</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Terminal.do_scenes"><a class="viewcode-back" href="../../client.html#client.command_line.Terminal.do_scenes">[docs]</a>    <span class="k">def</span> <span class="nf">do_scenes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Handle scenes. For a more complete documentation type scenes -h</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">scenes</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">c_data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Terminal.do_exit"><a class="viewcode-back" href="../../client.html#client.command_line.Terminal.do_exit">[docs]</a>    <span class="k">def</span> <span class="nf">do_exit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Exit the CLI.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Bye.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span></div>
+
+<div class="viewcode-block" id="Terminal.help_exit"><a class="viewcode-back" href="../../client.html#client.command_line.Terminal.help_exit">[docs]</a>    <span class="k">def</span> <span class="nf">help_exit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;BLABLABLA&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Terminal.do_quit"><a class="viewcode-back" href="../../client.html#client.command_line.Terminal.do_quit">[docs]</a>    <span class="k">def</span> <span class="nf">do_quit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Exit alias.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">do_exit</span><span class="p">(</span><span class="n">line</span><span class="p">))</span></div></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Start the client.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ARGS</span> <span class="o">=</span> <span class="n">parse_commandline</span><span class="p">()</span>
+
+    <span class="n">HOST</span> <span class="o">=</span> <span class="n">ARGS</span><span class="o">.</span><span class="n">host</span>
+    <span class="n">PORT</span> <span class="o">=</span> <span class="n">ARGS</span><span class="o">.</span><span class="n">port</span>
+
+    <span class="n">CLI</span> <span class="o">=</span> <span class="n">Terminal</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">HOST</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">PORT</span><span class="p">)</span>
+    <span class="n">CLI</span><span class="o">.</span><span class="n">cmdloop</span><span class="p">()</span>
+
+
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Matthias Plock.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'alpha',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

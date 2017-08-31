@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>backend.global_settings &mdash; TBD alpha documentation</title>
+  <title>_dos.do_objects &mdash; TBD alpha documentation</title>
   
 
   
@@ -145,7 +145,7 @@
         
           <li><a href="../index.html">Module code</a> &raquo;</li>
         
-      <li>backend.global_settings</li>
+      <li>_dos.do_objects</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -162,25 +162,40 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <h1>Source code for backend.global_settings</h1><div class="highlight"><pre>
+  <h1>Source code for _dos.do_objects</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python3</span>
-
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">A list of globally available variables.</span>
+<span class="sd">List all the available simulation data directories.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">backend.scenes_manager</span> <span class="k">import</span> <span class="n">SceneManager</span>
+<span class="kn">from</span> <span class="nn">util.post_json</span> <span class="k">import</span> <span class="n">post_json_string</span>
 
-
-<div class="viewcode-block" id="init"><a class="viewcode-back" href="../../backend.html#backend.global_settings.init">[docs]</a><span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="n">data_dir</span><span class="p">):</span>
+<div class="viewcode-block" id="objects"><a class="viewcode-back" href="../../client._dos.html#_dos.do_objects.objects">[docs]</a><span class="k">def</span> <span class="nf">objects</span><span class="p">(</span><span class="n">c_data</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Initialise the global variables.</span>
+<span class="sd">    List all the available simulation data directories.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="c1"># An object that contains all the scenes on the server and exposes methods</span>
-    <span class="c1"># to manipulate them and the objects that are contained.</span>
-    <span class="k">global</span> <span class="n">scene_manager</span>
-    <span class="n">scene_manager</span> <span class="o">=</span> <span class="n">SceneManager</span><span class="p">(</span><span class="n">data_dir</span><span class="o">=</span><span class="n">data_dir</span><span class="p">)</span></div>
+    <span class="c1"># Call the host and ask for simulation data</span>
+    <span class="n">api_call</span> <span class="o">=</span> <span class="s1">&#39;list_of_fem_data&#39;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">post_json_string</span><span class="p">(</span>
+        <span class="n">api_call</span><span class="o">=</span><span class="n">api_call</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">connection_data</span><span class="o">=</span><span class="n">c_data</span><span class="p">)</span>
+
+    <span class="c1"># Try to parse the available simulation files</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">object_folders</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;data_folders&#39;</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;A list of valid objects is:&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">folder</span> <span class="ow">in</span> <span class="n">object_folders</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  </span><span class="se">\&#39;</span><span class="si">{}</span><span class="se">\&#39;</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">folder</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">()</span>
+
+    <span class="c1"># If none are returned, so be it</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No data returned.&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Return nothing</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
 </pre></div>
 
            </div>

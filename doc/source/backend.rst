@@ -1,5 +1,5 @@
-backend package (.py)
-=====================
+backend package (Python code)
+=============================
 
 Subpackages
 -----------
@@ -7,7 +7,6 @@ Subpackages
 .. toctree::
 
     backend.static
-    backend.tests
 
 Submodules
 ----------
