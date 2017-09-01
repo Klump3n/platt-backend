@@ -93,12 +93,24 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Packages and modules:</span></p>
+<p class="caption"><span class="caption-text">Visualisation Backend:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="main.html">Startup script</a></li>
 <li class="toctree-l1"><a class="reference internal" href="backend.html">backend package (Python code)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="util.html">util package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Visualisation Frontend:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="frontend.html">frontend package (JavaScript Code)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Control Terminal:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="client.html">client package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Misc:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="todo_general.html">General things to do</a></li>
+<li class="toctree-l1"><a class="reference internal" href="todo.html">Todo (collection of everything)</a></li>
 </ul>
 
             
@@ -182,6 +194,7 @@
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
+ | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
  
 </div>
@@ -191,6 +204,8 @@
       <li><a href="client.html#client.command_line.Terminal.__init__">__init__() (client.command_line.Terminal method)</a>
 </li>
       <li><a href="client.html#client.command_line.Terminal.__module__">__module__ (client.command_line.Terminal attribute)</a>
+</li>
+      <li><a href="backend.html#backend.web_server_display.ServerScenesDispatcher._cp_dispatch">_cp_dispatch() (backend.web_server_display.ServerScenesDispatcher method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -220,19 +235,17 @@
 </li>
       <li><a href="backend.html#module-backend.global_settings">backend.global_settings (module)</a>
 </li>
-      <li><a href="backend.html#module-backend.old_web_server_api">backend.old_web_server_api (module)</a>
-</li>
       <li><a href="backend.html#module-backend.scenes_manager">backend.scenes_manager (module)</a>
 </li>
       <li><a href="backend.html#module-backend.scenes_object_prototype">backend.scenes_object_prototype (module)</a>
 </li>
       <li><a href="backend.html#module-backend.scenes_scene_prototype">backend.scenes_scene_prototype (module)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="backend.static.html#module-backend.static">backend.static (module)</a>
 </li>
-      <li><a href="backend.static.html#module-backend.static.gen_index">backend.static.gen_index (module)</a>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="backend.static.html#module-backend.static.make_index">backend.static.make_index (module)</a>
 </li>
       <li><a href="backend.tests.html#module-backend.tests">backend.tests (module)</a>
 </li>
@@ -241,6 +254,8 @@
       <li><a href="backend.html#module-backend.web_server">backend.web_server (module)</a>
 </li>
       <li><a href="backend.html#module-backend.web_server_api">backend.web_server_api (module)</a>
+</li>
+      <li><a href="backend.html#module-backend.web_server_control">backend.web_server_control (module)</a>
 </li>
       <li><a href="backend.html#module-backend.web_server_display">backend.web_server_display (module)</a>
 </li>
@@ -256,16 +271,20 @@
 </li>
       <li><a href="client.html#module-client.command_line">client.command_line (module)</a>
 </li>
+      <li><a href="client.util_client.html#module-client.util_client">client.util_client (module)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="client.util_client.html#module-client.util_client.post_json">client.util_client.post_json (module)</a>
+</li>
+      <li><a href="client.util_client.html#module-client.util_client.print_function_usage">client.util_client.print_function_usage (module)</a>
+</li>
+      <li><a href="client.util_client.html#module-client.util_client.test_host">client.util_client.test_host (module)</a>
+</li>
       <li><a href="client.html#client.command_line.Terminal.cmdloop">cmdloop() (client.command_line.Terminal method)</a>
 </li>
-      <li><a href="backend.html#backend.old_web_server_api.ServerAPI.connect_client">connect_client() (backend.old_web_server_api.ServerAPI method)</a>
-
-      <ul>
-        <li><a href="backend.html#backend.web_server_api.ServerAPI.connect_client">(backend.web_server_api.ServerAPI method)</a>
+      <li><a href="backend.html#backend.web_server_api.ServerAPI.connect_client">connect_client() (backend.web_server_api.ServerAPI method)</a>
 </li>
-      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -276,10 +295,12 @@
 </li>
       <li><a href="backend.html#backend.scenes_manager.SceneManager.delete_scene">delete_scene() (backend.scenes_manager.SceneManager method)</a>
 </li>
-      <li><a href="client.html#client.command_line.Terminal.do_exit">do_exit() (client.command_line.Terminal method)</a>
+      <li><a href="util.html#util.version.dirty_version_string">dirty_version_string() (in module util.version)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="client.html#client.command_line.Terminal.do_exit">do_exit() (client.command_line.Terminal method)</a>
+</li>
       <li><a href="client.html#client.command_line.Terminal.do_objects">do_objects() (client.command_line.Terminal method)</a>
 </li>
       <li><a href="client.html#client.command_line.Terminal.do_quit">do_quit() (client.command_line.Terminal method)</a>
@@ -312,48 +333,22 @@
 </li>
       <li><a href="backend.html#backend.scenes_manager.SceneManager.get_femdata_dirs">get_femdata_dirs() (backend.scenes_manager.SceneManager method)</a>
 </li>
-      <li><a href="backend.html#backend.old_web_server_api.ServerAPI.get_object_list">get_object_list() (backend.old_web_server_api.ServerAPI method)</a>
+      <li><a href="backend.html#backend.web_server_api.ServerAPI.get_object_properties">get_object_properties() (backend.web_server_api.ServerAPI method)</a>
 </li>
-      <li><a href="backend.html#backend.old_web_server_api.ServerAPI.get_object_properties">get_object_properties() (backend.old_web_server_api.ServerAPI method)</a>
-
-      <ul>
-        <li><a href="backend.html#backend.web_server_api.ServerAPI.get_object_properties">(backend.web_server_api.ServerAPI method)</a>
-</li>
-      </ul></li>
-      <li><a href="backend.html#backend.old_web_server_api.ServerAPI.get_object_timesteps">get_object_timesteps() (backend.old_web_server_api.ServerAPI method)</a>
-
-      <ul>
-        <li><a href="backend.html#backend.web_server_api.ServerAPI.get_object_timesteps">(backend.web_server_api.ServerAPI method)</a>
-</li>
-      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="backend.html#backend.web_server_api.ServerAPI.get_object_timesteps">get_object_timesteps() (backend.web_server_api.ServerAPI method)</a>
+</li>
       <li><a href="backend.html#backend.scenes_manager.SceneManager.get_scene_infos">get_scene_infos() (backend.scenes_manager.SceneManager method)</a>
 </li>
-      <li><a href="backend.html#backend.old_web_server_api.ServerAPI.get_sorted_timesteps">get_sorted_timesteps() (backend.old_web_server_api.ServerAPI method)</a>
-
-      <ul>
-        <li><a href="backend.html#backend.web_server_api.ServerAPI.get_sorted_timesteps">(backend.web_server_api.ServerAPI method)</a>
+      <li><a href="backend.html#backend.web_server_api.ServerAPI.get_sorted_timesteps">get_sorted_timesteps() (backend.web_server_api.ServerAPI method)</a>
 </li>
-      </ul></li>
-      <li><a href="backend.html#backend.old_web_server_api.ServerAPI.get_timestep_after">get_timestep_after() (backend.old_web_server_api.ServerAPI method)</a>
-
-      <ul>
-        <li><a href="backend.html#backend.web_server_api.ServerAPI.get_timestep_after">(backend.web_server_api.ServerAPI method)</a>
+      <li><a href="backend.html#backend.web_server_api.ServerAPI.get_timestep_after">get_timestep_after() (backend.web_server_api.ServerAPI method)</a>
 </li>
-      </ul></li>
-      <li><a href="backend.html#backend.old_web_server_api.ServerAPI.get_timestep_before">get_timestep_before() (backend.old_web_server_api.ServerAPI method)</a>
-
-      <ul>
-        <li><a href="backend.html#backend.web_server_api.ServerAPI.get_timestep_before">(backend.web_server_api.ServerAPI method)</a>
+      <li><a href="backend.html#backend.web_server_api.ServerAPI.get_timestep_before">get_timestep_before() (backend.web_server_api.ServerAPI method)</a>
 </li>
-      </ul></li>
-      <li><a href="backend.html#backend.old_web_server_api.ServerAPI.get_timestep_data">get_timestep_data() (backend.old_web_server_api.ServerAPI method)</a>
-
-      <ul>
-        <li><a href="backend.html#backend.web_server_api.ServerAPI.get_timestep_data">(backend.web_server_api.ServerAPI method)</a>
+      <li><a href="backend.html#backend.web_server_api.ServerAPI.get_timestep_data">get_timestep_data() (backend.web_server_api.ServerAPI method)</a>
 </li>
-      </ul></li>
       <li><a href="index.html#grabCanvas">grabCanvas() (built-in function)</a>
 </li>
   </ul></td>
@@ -378,7 +373,7 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="backend.html#backend.web_server_display.ServerRoot.index">index() (backend.web_server_display.ServerRoot method)</a>
+      <li><a href="backend.html#backend.web_server_control.ServerRoot.index">index() (backend.web_server_control.ServerRoot method)</a>
 
       <ul>
         <li><a href="backend.html#backend.web_server_display.ServerScenesDispatcher.index">(backend.web_server_display.ServerScenesDispatcher method)</a>
@@ -397,6 +392,10 @@
       <li><a href="backend.html#backend.web_server_api.ServerAPI.list_of_fem_data">list_of_fem_data() (backend.web_server_api.ServerAPI method)</a>
 </li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="util.html#util.version.long_version_string">long_version_string() (in module util.version)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="M">M</h2>
@@ -404,16 +403,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="main.html#module-main">main (module)</a>
 </li>
-      <li><a href="backend.static.html#backend.static.gen_index.make_index">make_index() (in module backend.static.gen_index)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="backend.html#backend.old_web_server_api.ServerAPI.mesher_init">mesher_init() (backend.old_web_server_api.ServerAPI method)</a>
-
-      <ul>
-        <li><a href="backend.html#backend.web_server_api.ServerAPI.mesher_init">(backend.web_server_api.ServerAPI method)</a>
+      <li><a href="backend.static.html#backend.static.make_index.make_index">make_index() (in module backend.static.make_index)</a>
 </li>
-      </ul></li>
+      <li><a href="backend.html#backend.web_server_api.ServerAPI.mesher_init">mesher_init() (backend.web_server_api.ServerAPI method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -446,9 +441,13 @@
         <li><a href="main.html#main.parse_commandline">(in module main)</a>
 </li>
       </ul></li>
+      <li><a href="client.util_client.html#client.util_client.post_json.post_json_string">post_json_string() (in module client.util_client.post_json)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="client._dos.html#_dos.do_scenes.pretty_print_scene">pretty_print_scene() (in module _dos.do_scenes)</a>
+</li>
+      <li><a href="client.util_client.html#client.util_client.print_function_usage.print_help">print_help() (in module client.util_client.print_function_usage)</a>
 </li>
       <li><a href="main.html#main.print_version">print_version() (in module main)</a>
 </li>
@@ -458,12 +457,8 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="backend.html#backend.old_web_server_api.ServerAPI.requestTimestepData">requestTimestepData() (backend.old_web_server_api.ServerAPI method)</a>
-
-      <ul>
-        <li><a href="backend.html#backend.web_server_api.ServerAPI.requestTimestepData">(backend.web_server_api.ServerAPI method)</a>
+      <li><a href="backend.html#backend.web_server_api.ServerAPI.requestTimestepData">requestTimestepData() (backend.web_server_api.ServerAPI method)</a>
 </li>
-      </ul></li>
       <li><a href="backend.html#backend.data_backend.UnpackMesh.return_data_for_unique_nodes">return_data_for_unique_nodes() (backend.data_backend.UnpackMesh method)</a>
 </li>
   </ul></td>
@@ -486,19 +481,15 @@
 </li>
       <li><a href="client._dos.html#_dos.do_scenes.scenes">scenes() (in module _dos.do_scenes)</a>
 </li>
-      <li><a href="backend.html#backend.old_web_server_api.ServerAPI.scenes_create">scenes_create() (backend.old_web_server_api.ServerAPI method)</a>
+      <li><a href="backend.html#backend.web_server_api.ServerAPI.scenes_create">scenes_create() (backend.web_server_api.ServerAPI method)</a>
 
       <ul>
-        <li><a href="backend.html#backend.web_server_api.ServerAPI.scenes_create">(backend.web_server_api.ServerAPI method)</a>
-</li>
         <li><a href="client._dos.html#_dos.do_scenes.scenes_create">(in module _dos.do_scenes)</a>
 </li>
       </ul></li>
-      <li><a href="backend.html#backend.old_web_server_api.ServerAPI.scenes_delete">scenes_delete() (backend.old_web_server_api.ServerAPI method)</a>
+      <li><a href="backend.html#backend.web_server_api.ServerAPI.scenes_delete">scenes_delete() (backend.web_server_api.ServerAPI method)</a>
 
       <ul>
-        <li><a href="backend.html#backend.web_server_api.ServerAPI.scenes_delete">(backend.web_server_api.ServerAPI method)</a>
-</li>
         <li><a href="client._dos.html#_dos.do_scenes.scenes_delete">(in module _dos.do_scenes)</a>
 </li>
       </ul></li>
@@ -506,25 +497,17 @@
 </li>
       <li><a href="backend.html#backend.web_server_api.ServerAPI.scenes_infos">scenes_infos() (backend.web_server_api.ServerAPI method)</a>
 </li>
-      <li><a href="backend.html#backend.old_web_server_api.ServerAPI.scenes_list">scenes_list() (backend.old_web_server_api.ServerAPI method)</a>
-
-      <ul>
-        <li><a href="client._dos.html#_dos.do_scenes.scenes_list">(in module _dos.do_scenes)</a>
+      <li><a href="client._dos.html#_dos.do_scenes.scenes_list">scenes_list() (in module _dos.do_scenes)</a>
 </li>
-      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="client._dos.html#_dos.do_scenes.scenes_select">scenes_select() (in module _dos.do_scenes)</a>
 </li>
-      <li><a href="backend.html#backend.old_web_server_api.ServerAPI">ServerAPI (class in backend.old_web_server_api)</a>
-
-      <ul>
-        <li><a href="backend.html#backend.web_server_api.ServerAPI">(class in backend.web_server_api)</a>
+      <li><a href="backend.html#backend.web_server_api.ServerAPI">ServerAPI (class in backend.web_server_api)</a>
 </li>
-      </ul></li>
       <li><a href="backend.html#backend.web_server_display.ServerDisplayScene">ServerDisplayScene (class in backend.web_server_display)</a>
 </li>
-      <li><a href="backend.html#backend.web_server_display.ServerRoot">ServerRoot (class in backend.web_server_display)</a>
+      <li><a href="backend.html#backend.web_server_control.ServerRoot">ServerRoot (class in backend.web_server_control)</a>
 </li>
       <li><a href="backend.html#backend.web_server_display.ServerScenesDispatcher">ServerScenesDispatcher (class in backend.web_server_display)</a>
 </li>
@@ -534,6 +517,8 @@
         <li><a href="backend.tests.html#backend.tests.tests_scene_handler.TestSimulationScene.setUp">(backend.tests.tests_scene_handler.TestSimulationScene method)</a>
 </li>
       </ul></li>
+      <li><a href="util.html#util.version.short_version_string">short_version_string() (in module util.version)</a>
+</li>
       <li><a href="backend.html#backend.web_server.Web_Server.start">start() (backend.web_server.Web_Server method)</a>
 </li>
       <li><a href="main.html#main.start_backend">start_backend() (in module main)</a>
@@ -546,6 +531,8 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="client.util_client.html#client.util_client.test_host.target_online_and_compatible">target_online_and_compatible() (in module client.util_client.test_host)</a>
+</li>
       <li><a href="client.html#client.command_line.Terminal">Terminal (class in client.command_line)</a>
 </li>
       <li><a href="backend.tests.html#backend.tests.tests_scene_handler.TestSimulationObject.test_default_orientation_is_unitary">test_default_orientation_is_unitary() (backend.tests.tests_scene_handler.TestSimulationObject method)</a>
@@ -573,6 +560,20 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="backend.html#backend.data_backend.UnpackMesh">UnpackMesh (class in backend.data_backend)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="util.html#module-util">util (module)</a>
+</li>
+      <li><a href="util.html#module-util.version">util.version (module)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="util.html#util.version.version">version() (in module util.version)</a>
 </li>
   </ul></td>
 </tr></table>

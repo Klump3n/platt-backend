@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 The web server class. This will host a web server at a given port.
+
 """
 
 import os
@@ -8,20 +9,55 @@ import os
 # conda install cherrypy
 import cherrypy
 
-from backend.web_server_display import ServerRoot, ServerScenesDispatcher
-# from backend.old_web_server_api import OLDServerAPI
 from backend.web_server_api import ServerAPI
+from backend.web_server_control import ServerRoot
+from backend.web_server_display import ServerScenesDispatcher
 import backend.global_settings as global_settings
 
 
 class Web_Server:
     """
     Host a web server on a given port and hand out the files in the path.
+
+    On initialising it sets the path to the control interface directory and to
+    the directory that contains the visualization. It also sets the
+    configurations for the control interface, for the visualization and for
+    the API. Finally, it initializes the global settings module.
+
+    Args:
+     frontend_directory (str): The path to the frontend.
+     data_directory (str): The path to the directory, that contains the
+      simulation data.
+     port (int, optional, defaults to 8008): The port on which the
+      backend listens to connections.
+
+    Todo:
+     Replace path strings with Pathlike objects.
+
+    Notes:
+     The global_settings module is initialized in __init__().
+
     """
 
     def __init__(self, frontend_directory, data_directory, port=8008):
         """
         Initialise the webserver.
+
+        Set the path to the control interface directory and to the directory
+        that contains the visualization. Set the configurations for the control
+        interface, for the visualization and for the API. Finally, initialize
+        the global settings module.
+
+        Args:
+         frontend_directory (str): The path to the frontend.
+         data_directory (str): The path to the directory, that contains the
+          simulation data.
+         port (int, optional, defaults to 8008): The port on which the
+          backend listens to connections.
+
+        Returns:
+         None: Nothing.
+
         """
 
         control_path = os.path.join(frontend_directory, 'control')
@@ -59,9 +95,32 @@ class Web_Server:
         # backend.global_settings and use the scene manager from there.
         global_settings.init(data_dir=self.data_directory)
 
+        return None
+
     def start(self):
         """
-        Start the web server on the given port with the given config.
+        Start the web server with the parameters that were set upon
+        initialization.
+
+        This mounts three different servers:
+
+        * one that serves the configuration menu on ``http://HOST:PORT/``. The
+          server class rests in ``backend.web_server_control``.
+        * one that serves the visualization on ``http://HOST:PORT/scenes``. The
+          server class rests in ``backend.web_server_display``.
+        * one for the API endpoint on ``http://HOST:PORT/api``. The server
+          class rests in ``backend.web_server_api``.
+
+        Args:
+         None: No parameters.
+
+        Returns:
+         None: Nothing.
+
+        Notes:
+         After this method is called, no further commands will be evaluated
+         until after the backend is shut down.
+
         """
 
         # Set the port
@@ -84,3 +143,5 @@ class Web_Server:
         # Start the server
         cherrypy.engine.start()
         cherrypy.engine.block()
+
+        return None

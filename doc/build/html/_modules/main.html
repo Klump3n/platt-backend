@@ -93,12 +93,24 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Packages and modules:</span></p>
+<p class="caption"><span class="caption-text">Visualisation Backend:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../main.html">Startup script</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../backend.html">backend package (Python code)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../util.html">util package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Visualisation Frontend:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../frontend.html">frontend package (JavaScript Code)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Control Terminal:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../client.html">client package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Misc:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../todo_general.html">General things to do</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../todo.html">Todo (collection of everything)</a></li>
 </ul>
 
             
@@ -168,11 +180,13 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Start a web server. Direct your browser to [HOST_IP]:[PORT] with PORT being</span>
 <span class="sd">either 8008 or the supplied value.</span>
+
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">argparse</span>
+
 <span class="kn">from</span> <span class="nn">util.version</span> <span class="k">import</span> <span class="n">version</span>
 <span class="kn">import</span> <span class="nn">backend.web_server</span> <span class="k">as</span> <span class="nn">web_server</span>
 
@@ -189,8 +203,8 @@
 
 <span class="sd">    Notes:</span>
 <span class="sd">     The default port for the web server is contained in this function.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
 
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># HACK: Under certain conditions we don&#39;t want to supply a --data_dir, but</span>
     <span class="c1"># we still want to set it to required while parsing the command line. The</span>
     <span class="c1"># following will give True if we neither want to test nor have the version</span>
@@ -239,8 +253,8 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">     None: Nothing</span>
-<span class="sd">    &quot;&quot;&quot;</span>
 
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Get the version information</span>
     <span class="n">version_info</span> <span class="o">=</span> <span class="n">version</span><span class="p">()</span>
     <span class="n">program_name</span> <span class="o">=</span> <span class="n">version_info</span><span class="p">[</span><span class="s1">&#39;program&#39;</span><span class="p">]</span>
@@ -294,7 +308,6 @@
 <span class="sd">     None: Nothing</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="c1"># Parse the command line arguments</span>
     <span class="n">ARGS</span> <span class="o">=</span> <span class="n">parse_commandline</span><span class="p">()</span>
 
@@ -333,7 +346,6 @@
 <span class="sd">     None: Nothing.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="c1"># Get the version information</span>
     <span class="n">version_info</span> <span class="o">=</span> <span class="n">version</span><span class="p">()</span>
     <span class="n">program_name</span> <span class="o">=</span> <span class="n">version_info</span><span class="p">[</span><span class="s1">&#39;program&#39;</span><span class="p">]</span>
@@ -348,8 +360,8 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This is called when (e.g. always) we start this file as a standalone</span>
 <span class="sd">    version.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
 
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Start the program</span>
     <span class="n">start_program</span><span class="p">()</span>
 </pre></div>

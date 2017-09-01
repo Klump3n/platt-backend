@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+"""
+Check the target host.
+
+"""
+
+from util_client.post_json import post_json_string
+
+
+def target_online_and_compatible(c_data):
+    """
+    Check whether or not we are dealing with a compatible server that is
+    online.
+
+    Args:
+     c_data (dict): A dictionary containing target host and port as well as a
+      header with a user-agent, which we use to figure out which backend
+      version we hope to find.
+
+    Returns:
+     bool: False if the backend is not responding or is running a different
+     version than the client and True if the backend is online and has the
+     same version as the client.
+
+    """
+    # Call the about page of the host
+    api_call = 'connect_client'
+    response = post_json_string(
+        api_call=api_call, connection_data=c_data)
+
+    # Check if we see what we want to see. Get the version out of the headers
+    # user-agent.
+    expected_version_response = c_data['headers']['user-agent'].split('/')[1]
+
+    if ('Failed to establish a new connection' in response):
+        print('No active server found.')
+        return False
+
+    # If the backend version is not as expected
+    elif (response['version'] != expected_version_response):
+        warning_text = ('Server/client version mismatch. Do not expect ' +
+                        'functionality.')
+        print(warning_text)
+        return False
+
+    else:
+        return True

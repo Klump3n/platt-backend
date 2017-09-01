@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Terminal-like interface for interacting with calculix-clone.
+Terminal-like interface for interacting with the backend.
 
 """
 
@@ -13,13 +13,11 @@ from _dos.do_scenes import scenes, scenes_help
 from _dos.do_objects import objects, objects_help
 
 # Some utility functions
-from util.post_json import post_json_string
-from util.test_host import target_online_and_compatible
+from util_client.test_host import target_online_and_compatible
 
-# Get the version from the parent directory
+# # Get the version from the parent directory
 sys.path.append('..')
 from util.version import version
-from util.print_function_usage import print_help
 
 
 def parse_commandline():
@@ -114,7 +112,7 @@ class Terminal(cmd.Cmd):
         self.c_data['headers'] = self.headers
 
         # Check if the host is running a compatible server
-        if not target_online_and_compatible(self.c_data, self.version_dict):
+        if not target_online_and_compatible(self.c_data):
             sys.exit('Exiting.')
 
         return None
@@ -243,5 +241,3 @@ if __name__ == '__main__':
 
     CLI = Terminal(host=HOST, port=PORT)
     CLI.cmdloop()
-
-

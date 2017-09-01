@@ -94,14 +94,22 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Packages and modules:</span></p>
-<ul class="current">
+<p class="caption"><span class="caption-text">Visualisation Backend:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="main.html">Startup script</a></li>
 <li class="toctree-l1"><a class="reference internal" href="backend.html">backend package (Python code)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="util.html">util package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Visualisation Frontend:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="frontend.html">frontend package (JavaScript Code)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Control Terminal:</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">client package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="client._dos.html">_dos package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="client.util_client.html">client.util_client package</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
@@ -109,6 +117,11 @@
 <li class="toctree-l2"><a class="reference internal" href="#module-client">Module contents</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption"><span class="caption-text">Misc:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="todo_general.html">General things to do</a></li>
+<li class="toctree-l1"><a class="reference internal" href="todo.html">Todo (collection of everything)</a></li>
 </ul>
 
             
@@ -187,6 +200,14 @@ api on <code class="docutils literal"><span class="pre">http://HOST:PORT/api</sp
 <li class="toctree-l2"><a class="reference internal" href="client._dos.html#module-_dos">Module contents</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="client.util_client.html">client.util_client package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="client.util_client.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client.util_client.html#module-client.util_client.post_json">client.util_client.post_json module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client.util_client.html#module-client.util_client.print_function_usage">client.util_client.print_function_usage module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client.util_client.html#module-client.util_client.test_host">client.util_client.test_host module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="client.util_client.html#module-client.util_client">Module contents</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -195,7 +216,7 @@ api on <code class="docutils literal"><span class="pre">http://HOST:PORT/api</sp
 </div>
 <div class="section" id="module-client.command_line">
 <span id="client-command-line-module"></span><h2>client.command_line module<a class="headerlink" href="#module-client.command_line" title="Permalink to this headline">¶</a></h2>
-<p>Terminal-like interface for interacting with calculix-clone.</p>
+<p>Terminal-like interface for interacting with the backend.</p>
 <dl class="class">
 <dt id="client.command_line.Terminal">
 <em class="property">class </em><code class="descclassname">client.command_line.</code><code class="descname">Terminal</code><span class="sig-paren">(</span><em>host</em>, <em>port</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/client/command_line.html#Terminal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#client.command_line.Terminal" title="Permalink to this definition">¶</a></dt>

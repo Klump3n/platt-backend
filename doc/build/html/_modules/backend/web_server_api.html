@@ -93,12 +93,24 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Packages and modules:</span></p>
+<p class="caption"><span class="caption-text">Visualisation Backend:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../main.html">Startup script</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../backend.html">backend package (Python code)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../util.html">util package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Visualisation Frontend:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../frontend.html">frontend package (JavaScript Code)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Control Terminal:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../client.html">client package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Misc:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../todo_general.html">General things to do</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../todo.html">Todo (collection of everything)</a></li>
 </ul>
 
             
@@ -164,9 +176,9 @@
             
   <h1>Source code for backend.web_server_api</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python3</span>
-
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">The api.</span>
+
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
@@ -179,7 +191,6 @@
 <span class="kn">import</span> <span class="nn">cherrypy</span>
 
 <span class="kn">from</span> <span class="nn">util.version</span> <span class="k">import</span> <span class="n">version</span>
-
 <span class="kn">import</span> <span class="nn">backend.data_backend</span> <span class="k">as</span> <span class="nn">fem_mesh</span>
 
 <span class="c1"># This imports the scene manager and the data_directory</span>

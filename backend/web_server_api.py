@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-
 """
 The api.
+
 """
 
 import os
@@ -14,7 +14,6 @@ import numpy as np
 import cherrypy
 
 from util.version import version
-
 import backend.data_backend as fem_mesh
 
 # This imports the scene manager and the data_directory

@@ -10,6 +10,7 @@ Subpackages
 .. toctree::
 
     client._dos
+    client.util_client
 
 Submodules
 ----------

@@ -1,28 +1,32 @@
 #!/usr/bin/env python3
-
 """
-main.py
-
-Unpacks some binary files and finds the surface of the mesh. Right now this is
+Unpack some binary files and finds the surface of the mesh. Right now this is
 limited to C3D8 file format.
+
 """
 
 import struct
 import numpy as np
 import matplotlib.cm as cm
-import sys
+# import sys
+
 
 class UnpackMesh:
-    """Unpacks mesh data from two binary files and does some magic to it.
+    """
+    Unpacks mesh data from two binary files and does some magic to it.
     """
 
     def __init__(self, node_path, element_path):
-        """Initialise the class by:
+        """
+        Initialise the mesh unpacking class by:
 
         - unpacking the nodes and the elements of the mesh
         - initialising the timestep array
         - initialising the surface quads for the elements
         - initialising the triangulated surface
+
+        Args:
+         node_path (str): The path to the data.
         """
         self.get_binary_data(node_path, do='unpack', what='nodes')
         self.get_binary_data(element_path, do='unpack', what='elements')
@@ -32,9 +36,14 @@ class UnpackMesh:
         self.unique_surface_triangles = None
 
     def add_timestep(self, path):
-        """Wrapper around the get_binary_data function.
+        """
+        Wrapper around the get_binary_data function.
 
-        Makes adding a timestep less confusing.
+        This just calls the function with pre-selected arguments, makes adding
+        a timestep less confusing.
+
+        Args:
+         path (str): 
         """
         return self.get_binary_data(path, do='add', what='timestep')
 
@@ -90,7 +99,8 @@ class UnpackMesh:
         return data
 
     def generate_surfaces_for_elements(self):
-        """Finds the outward faces of the mesh (in other words: the surface).
+        """
+        Finds the outward faces of the mesh (in other words: the surface).
         Returns a numpy array with the surface faces.
 
         The mesh consists of cubic elements with corner nodes.
@@ -100,6 +110,7 @@ class UnpackMesh:
         Faces at the corner will have a count of 9, faces at the border a
         count of 12 and faces in the middle of the plane a count of 16.
         (You might want to draw it on a piece of paper.)
+
         """
         # self.elements is a map that points from each element to the nodes
         # that constitute an element. In that sense two neighbouring elements
@@ -121,16 +132,17 @@ class UnpackMesh:
 
         surfaces = []
 
-        def append_face_to_surfaces(element, element_face):
-            """Append the face to the output array.
-            """
-            face = [
-                element[element_face[0]],
-                element[element_face[1]],
-                element[element_face[2]],
-                element[element_face[3]]
-            ]
-            surfaces.append(face)
+        # FIXME: Can this function be deleted?
+        # def append_face_to_surfaces(element, element_face):
+        #     """Append the face to the output array.
+        #     """
+        #     face = [
+        #         element[element_face[0]],
+        #         element[element_face[1]],
+        #         element[element_face[2]],
+        #         element[element_face[3]]
+        #     ]
+        #     surfaces.append(face)
 
         for element in self.elements:
             for element_face in element_faces:
@@ -144,7 +156,17 @@ class UnpackMesh:
                         (node_weight == 12) or  # Border faces
                         (node_weight == 16)     # Plane faces
                 ):
-                    append_face_to_surfaces(element, element_face)
+                    face = [
+                        element[element_face[0]],
+                        element[element_face[1]],
+                        element[element_face[2]],
+                        element[element_face[3]]
+                    ]
+                    surfaces.append(face)
+
+                    # FIXME: Can this function call be deleted?
+                    # append_face_to_surfaces(element, element_face)
+
                 else:
                     pass
 

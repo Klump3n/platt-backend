@@ -1,0 +1,413 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>util.version &mdash; TBD alpha documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="TBD alpha documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> TBD
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Usage:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Visualisation Backend:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../main.html">Startup script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../backend.html">backend package (Python code)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../util.html">util package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Visualisation Frontend:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../frontend.html">frontend package (JavaScript Code)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Control Terminal:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../client.html">client package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Misc:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../todo_general.html">General things to do</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../todo.html">Todo (collection of everything)</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">TBD</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>util.version</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for util.version</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Set the name of the program and implement methods to determine and display a</span>
+<span class="sd">version identifier.</span>
+
+<span class="sd">In the dict `VERSION_DICT` we set the name of the program.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="k">import</span> <span class="n">warn</span>
+
+<span class="c1"># Version template. The programs name is defined here. version will be</span>
+<span class="c1"># overwritten by the functions in this module.</span>
+<span class="n">VERSION_DICT</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;program&#39;</span><span class="p">:</span> <span class="s1">&#39;norderney&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="short_version_string"><a class="viewcode-back" href="../../util.html#util.version.short_version_string">[docs]</a><span class="k">def</span> <span class="nf">short_version_string</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the short version string.</span>
+
+<span class="sd">    This contains the tag. If there have been commits since introduction of</span>
+<span class="sd">    the tag it also includes the number of commits since introduction of the</span>
+<span class="sd">    tag, as well as a short version of the commits SHA1 sum.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     None: No parameters.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">     str: The shortest possible unique version string.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">version</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span>
+        <span class="p">[</span><span class="s1">&#39;git&#39;</span><span class="p">,</span> <span class="s1">&#39;describe&#39;</span><span class="p">,</span> <span class="s1">&#39;--tags&#39;</span><span class="p">,</span> <span class="s1">&#39;--always&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">version</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="long_version_string"><a class="viewcode-back" href="../../util.html#util.version.long_version_string">[docs]</a><span class="k">def</span> <span class="nf">long_version_string</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the long version string.</span>
+
+<span class="sd">    This contains the tag and the number of commits since introduction of the</span>
+<span class="sd">    tag, as well as a short version of the commits SHA1 sum.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     None: No parameters.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">     str: A unique version string.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">version</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span>
+        <span class="p">[</span><span class="s1">&#39;git&#39;</span><span class="p">,</span> <span class="s1">&#39;describe&#39;</span><span class="p">,</span> <span class="s1">&#39;--long&#39;</span><span class="p">,</span> <span class="s1">&#39;--tags&#39;</span><span class="p">,</span> <span class="s1">&#39;--always&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">version</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="dirty_version_string"><a class="viewcode-back" href="../../util.html#util.version.dirty_version_string">[docs]</a><span class="k">def</span> <span class="nf">dirty_version_string</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the dirty version string.</span>
+
+<span class="sd">    This contains the tag and the number of commits since introduction of the</span>
+<span class="sd">    tag, as well as a short version of the commits SHA1 sum. If there have been</span>
+<span class="sd">    changes to the repository that have not been committed, a &#39;-dirty&#39; will be</span>
+<span class="sd">    appended to the version string.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     None: No parameters.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">     str: A unique version string with hints on whether or not someone has</span>
+<span class="sd">     tampered with the repository.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">version</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span>
+        <span class="p">[</span><span class="s1">&#39;git&#39;</span><span class="p">,</span> <span class="s1">&#39;describe&#39;</span><span class="p">,</span> <span class="s1">&#39;--long&#39;</span><span class="p">,</span> <span class="s1">&#39;--dirty&#39;</span><span class="p">,</span> <span class="s1">&#39;--tags&#39;</span><span class="p">,</span> <span class="s1">&#39;--always&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">version</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="version"><a class="viewcode-back" href="../../util.html#util.version.version">[docs]</a><span class="k">def</span> <span class="nf">version</span><span class="p">(</span><span class="n">detail</span><span class="o">=</span><span class="s1">&#39;dirty&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find the version number of the git repository.</span>
+
+<span class="sd">    Try to determine the version via &#39;git describe&#39;. If this succeeds write the</span>
+<span class="sd">    program name and version to a file. If the script is not able to determine</span>
+<span class="sd">    the version, maybe because git is not installed or because the code has</span>
+<span class="sd">    been removed from the (a) git-repository, it first tries to read the</span>
+<span class="sd">    version number from a file. If that fails the version &#39;NoVer&#39; will be</span>
+<span class="sd">    assigned.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     detail (str, [&#39;short&#39;, &#39;long&#39;, &#39;dirty&#39;], defaults to &#39;dirty&#39;): How</span>
+<span class="sd">      detailed would you like the version string. See the other functions in</span>
+<span class="sd">      this module for further information.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">     dict: The `VERSION_DICT`, containing the programs name and version.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Specify which arguments are valid</span>
+    <span class="k">if</span> <span class="n">detail</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;short&#39;</span><span class="p">,</span> <span class="s1">&#39;long&#39;</span><span class="p">,</span> <span class="s1">&#39;dirty&#39;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Argument </span><span class="se">\&#39;</span><span class="s1">detail</span><span class="se">\&#39;</span><span class="s1"> must be either </span><span class="se">\&#39;</span><span class="s1">short</span><span class="se">\&#39;</span><span class="s1">, </span><span class="se">\&#39;</span><span class="s1">long</span><span class="se">\&#39;</span><span class="s1"> or &#39;</span><span class="o">+</span>
+              <span class="s1">&#39;</span><span class="se">\&#39;</span><span class="s1">dirty</span><span class="se">\&#39;</span><span class="s1">. Setting to </span><span class="se">\&#39;</span><span class="s1">dirty</span><span class="se">\&#39;</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Try to get a version number from git</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="p">[</span><span class="s1">&#39;git&#39;</span><span class="p">,</span> <span class="s1">&#39;describe&#39;</span><span class="p">],</span>
+            <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">DEVNULL</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">DEVNULL</span>
+        <span class="p">)</span>
+
+        <span class="c1"># If we don&#39;t get a returncode of 0 we are probably not in any git repo.</span>
+        <span class="c1"># Maybe someone has taken all the files out of the repo and uses them</span>
+        <span class="c1"># without git..? Or maybe we are on windows?</span>
+        <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+
+            <span class="c1"># Let&#39;s see if we can find a _version.py-file!</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;_version.py&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">version_file</span><span class="p">:</span>
+                    <span class="n">version</span> <span class="o">=</span> <span class="n">version_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+                <span class="n">warning_message</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;We are probably not in a git repository. &#39;</span>\
+                                   <span class="s1">&#39;Falling back to reading the version &#39;</span>\
+                                   <span class="s1">&#39;string from file.&#39;</span><span class="p">)</span>
+                <span class="n">warn</span><span class="p">(</span><span class="n">warning_message</span><span class="p">)</span>
+
+            <span class="c1"># Well, then just assign the NoVer version</span>
+            <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+                <span class="n">version</span> <span class="o">=</span> <span class="s1">&#39;NoVer&#39;</span>
+
+        <span class="c1"># Else, we are in a repo</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">detail</span> <span class="o">==</span> <span class="s1">&#39;short&#39;</span><span class="p">:</span>
+                <span class="n">version</span> <span class="o">=</span> <span class="n">short_version_string</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">detail</span> <span class="o">==</span> <span class="s1">&#39;long&#39;</span><span class="p">:</span>
+                <span class="n">version</span> <span class="o">=</span> <span class="n">long_version_string</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">version</span> <span class="o">=</span> <span class="n">dirty_version_string</span><span class="p">()</span>
+
+    <span class="c1"># Maybe git is not installed or something else is happening</span>
+    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+
+        <span class="c1"># Let&#39;s see if we can find a _version.py-file!</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;_version.py&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">version_file</span><span class="p">:</span>
+                <span class="n">version</span> <span class="o">=</span> <span class="n">version_file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="n">warning_message</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;It seems that git is not installed. Falling &#39;</span>\
+                               <span class="s1">&#39;back to reading the version string from file.&#39;</span><span class="p">)</span>
+            <span class="n">warn</span><span class="p">(</span><span class="n">warning_message</span><span class="p">)</span>
+
+        <span class="c1"># Well, then just assign the NoVer version</span>
+        <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+            <span class="n">version</span> <span class="o">=</span> <span class="s1">&#39;NoVer&#39;</span>
+
+    <span class="c1"># Write the version string to file for fallback use.</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;_version.py&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">version_file</span><span class="p">:</span>
+        <span class="n">version_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">version</span><span class="p">))</span>
+
+    <span class="n">VERSION_DICT</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">version</span>
+    <span class="k">return</span> <span class="n">VERSION_DICT</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Matthias Plock.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'alpha',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

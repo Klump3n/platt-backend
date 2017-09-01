@@ -93,12 +93,24 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Packages and modules:</span></p>
+<p class="caption"><span class="caption-text">Visualisation Backend:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../main.html">Startup script</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../backend.html">backend package (Python code)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../util.html">util package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Visualisation Frontend:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../frontend.html">frontend package (JavaScript Code)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Control Terminal:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../client.html">client package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Misc:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../todo_general.html">General things to do</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../todo.html">Todo (collection of everything)</a></li>
 </ul>
 
             
@@ -166,6 +178,7 @@
 <span></span><span class="ch">#!/usr/bin/env python3</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">The web server class. This will host a web server at a given port.</span>
+
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
@@ -173,20 +186,55 @@
 <span class="c1"># conda install cherrypy</span>
 <span class="kn">import</span> <span class="nn">cherrypy</span>
 
-<span class="kn">from</span> <span class="nn">backend.web_server_display</span> <span class="k">import</span> <span class="n">ServerRoot</span><span class="p">,</span> <span class="n">ServerScenesDispatcher</span>
-<span class="c1"># from backend.old_web_server_api import OLDServerAPI</span>
 <span class="kn">from</span> <span class="nn">backend.web_server_api</span> <span class="k">import</span> <span class="n">ServerAPI</span>
+<span class="kn">from</span> <span class="nn">backend.web_server_control</span> <span class="k">import</span> <span class="n">ServerRoot</span>
+<span class="kn">from</span> <span class="nn">backend.web_server_display</span> <span class="k">import</span> <span class="n">ServerScenesDispatcher</span>
 <span class="kn">import</span> <span class="nn">backend.global_settings</span> <span class="k">as</span> <span class="nn">global_settings</span>
 
 
 <div class="viewcode-block" id="Web_Server"><a class="viewcode-back" href="../../backend.html#backend.web_server.Web_Server">[docs]</a><span class="k">class</span> <span class="nc">Web_Server</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Host a web server on a given port and hand out the files in the path.</span>
+
+<span class="sd">    On initialising it sets the path to the control interface directory and to</span>
+<span class="sd">    the directory that contains the visualization. It also sets the</span>
+<span class="sd">    configurations for the control interface, for the visualization and for</span>
+<span class="sd">    the API. Finally, it initializes the global settings module.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     frontend_directory (str): The path to the frontend.</span>
+<span class="sd">     data_directory (str): The path to the directory, that contains the</span>
+<span class="sd">      simulation data.</span>
+<span class="sd">     port (int, optional, defaults to 8008): The port on which the</span>
+<span class="sd">      backend listens to connections.</span>
+
+<span class="sd">    Todo:</span>
+<span class="sd">     Replace path strings with Pathlike objects.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">     The global_settings module is initialized in __init__().</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frontend_directory</span><span class="p">,</span> <span class="n">data_directory</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">8008</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialise the webserver.</span>
+
+<span class="sd">        Set the path to the control interface directory and to the directory</span>
+<span class="sd">        that contains the visualization. Set the configurations for the control</span>
+<span class="sd">        interface, for the visualization and for the API. Finally, initialize</span>
+<span class="sd">        the global settings module.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         frontend_directory (str): The path to the frontend.</span>
+<span class="sd">         data_directory (str): The path to the directory, that contains the</span>
+<span class="sd">          simulation data.</span>
+<span class="sd">         port (int, optional, defaults to 8008): The port on which the</span>
+<span class="sd">          backend listens to connections.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         None: Nothing.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">control_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">frontend_directory</span><span class="p">,</span> <span class="s1">&#39;control&#39;</span><span class="p">)</span>
@@ -224,9 +272,32 @@
         <span class="c1"># backend.global_settings and use the scene manager from there.</span>
         <span class="n">global_settings</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">data_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_directory</span><span class="p">)</span>
 
+        <span class="k">return</span> <span class="kc">None</span>
+
 <div class="viewcode-block" id="Web_Server.start"><a class="viewcode-back" href="../../backend.html#backend.web_server.Web_Server.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Start the web server on the given port with the given config.</span>
+<span class="sd">        Start the web server with the parameters that were set upon</span>
+<span class="sd">        initialization.</span>
+
+<span class="sd">        This mounts three different servers:</span>
+
+<span class="sd">        * one that serves the configuration menu on ``http://HOST:PORT/``. The</span>
+<span class="sd">          server class rests in ``backend.web_server_control``.</span>
+<span class="sd">        * one that serves the visualization on ``http://HOST:PORT/scenes``. The</span>
+<span class="sd">          server class rests in ``backend.web_server_display``.</span>
+<span class="sd">        * one for the API endpoint on ``http://HOST:PORT/api``. The server</span>
+<span class="sd">          class rests in ``backend.web_server_api``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         None: No parameters.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         None: Nothing.</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">         After this method is called, no further commands will be evaluated</span>
+<span class="sd">         until after the backend is shut down.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Set the port</span>
@@ -248,7 +319,9 @@
 
         <span class="c1"># Start the server</span>
         <span class="n">cherrypy</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-        <span class="n">cherrypy</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">block</span><span class="p">()</span></div></div>
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">block</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div></div>
 </pre></div>
 
            </div>

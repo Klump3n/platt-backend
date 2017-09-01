@@ -5,8 +5,8 @@ data from the backend and displaying it in the client.
 
 """
 
-from util.post_json import post_json_string
-from util.print_function_usage import print_help
+from util_client.post_json import post_json_string
+from util_client.print_function_usage import print_help
 
 
 def objects_help():

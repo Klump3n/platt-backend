@@ -19,12 +19,27 @@ Contents
    usage
 
 .. toctree::
-   :caption: Packages and modules:
+   :caption: Visualisation Backend:
 
    main
    backend
+   util
+
+.. toctree::
+   :caption: Visualisation Frontend:
+
    frontend
+
+.. toctree::
+   :caption: Control Terminal:
+
    client
+
+.. toctree::
+   :caption: Misc:
+
+   todo_general
+   todo
 
 Indices and tables
 ==================

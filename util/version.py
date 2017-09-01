@@ -1,21 +1,37 @@
 #!/usr/bin/env python3
 """
-Get the version number of the program.
+Set the name of the program and implement methods to determine and display a
+version identifier.
+
+In the dict `VERSION_DICT` we set the name of the program.
+
 """
 
 import subprocess
 from warnings import warn
 
-
-# Version template
-version_dict = {
-    'program': 'FemGL',
+# Version template. The programs name is defined here. version will be
+# overwritten by the functions in this module.
+VERSION_DICT = {
+    'program': 'norderney',
     'version': ''
 }
+
 
 def short_version_string():
     """
     Return the short version string.
+
+    This contains the tag. If there have been commits since introduction of
+    the tag it also includes the number of commits since introduction of the
+    tag, as well as a short version of the commits SHA1 sum.
+
+    Args:
+     None: No parameters.
+
+    Returns:
+     str: The shortest possible unique version string.
+
     """
 
     version = subprocess.check_output(
@@ -23,9 +39,20 @@ def short_version_string():
 
     return version.decode('utf-8').splitlines()[0]
 
+
 def long_version_string():
     """
     Return the long version string.
+
+    This contains the tag and the number of commits since introduction of the
+    tag, as well as a short version of the commits SHA1 sum.
+
+    Args:
+     None: No parameters.
+
+    Returns:
+     str: A unique version string.
+
     """
 
     version = subprocess.check_output(
@@ -33,9 +60,23 @@ def long_version_string():
 
     return version.decode('utf-8').splitlines()[0]
 
+
 def dirty_version_string():
     """
     Return the dirty version string.
+
+    This contains the tag and the number of commits since introduction of the
+    tag, as well as a short version of the commits SHA1 sum. If there have been
+    changes to the repository that have not been committed, a '-dirty' will be
+    appended to the version string.
+
+    Args:
+     None: No parameters.
+
+    Returns:
+     str: A unique version string with hints on whether or not someone has
+     tampered with the repository.
+
     """
 
     version = subprocess.check_output(
@@ -43,9 +84,26 @@ def dirty_version_string():
 
     return version.decode('utf-8').splitlines()[0]
 
+
 def version(detail='dirty'):
     """
     Find the version number of the git repository.
+
+    Try to determine the version via 'git describe'. If this succeeds write the
+    program name and version to a file. If the script is not able to determine
+    the version, maybe because git is not installed or because the code has
+    been removed from the (a) git-repository, it first tries to read the
+    version number from a file. If that fails the version 'NoVer' will be
+    assigned.
+
+    Args:
+     detail (str, ['short', 'long', 'dirty'], defaults to 'dirty'): How
+      detailed would you like the version string. See the other functions in
+      this module for further information.
+
+    Returns:
+     dict: The `VERSION_DICT`, containing the programs name and version.
+
     """
 
     # Specify which arguments are valid
@@ -108,5 +166,5 @@ def version(detail='dirty'):
     with open('_version.py', 'w') as version_file:
         version_file.write('{}'.format(version))
 
-    version_dict['version'] = version
-    return version_dict
+    VERSION_DICT['version'] = version
+    return VERSION_DICT

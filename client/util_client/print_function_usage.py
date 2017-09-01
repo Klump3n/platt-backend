@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""
+This module contains a function to reformat long strings.
+
+"""
 
 import textwrap
 

@@ -93,12 +93,24 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Packages and modules:</span></p>
+<p class="caption"><span class="caption-text">Visualisation Backend:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../main.html">Startup script</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../backend.html">backend package (Python code)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../util.html">util package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Visualisation Frontend:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../frontend.html">frontend package (JavaScript Code)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Control Terminal:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../client.html">client package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Misc:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../todo_general.html">General things to do</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../todo.html">Todo (collection of everything)</a></li>
 </ul>
 
             
@@ -168,46 +180,46 @@
 
 <span class="sd">For example: call the server on SERVER_ADRESS/get_object_list to get a list</span>
 <span class="sd">of the available objects in the data directory.</span>
+
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">cherrypy</span>
 
 <span class="kn">import</span> <span class="nn">backend.global_settings</span> <span class="k">as</span> <span class="nn">gloset</span>
-<span class="kn">from</span> <span class="nn">backend.static.gen_index</span> <span class="k">import</span> <span class="n">make_index</span>
+<span class="kn">from</span> <span class="nn">backend.static.make_index</span> <span class="k">import</span> <span class="n">make_index</span>
 
-
-<div class="viewcode-block" id="ServerRoot"><a class="viewcode-back" href="../../backend.html#backend.web_server_display.ServerRoot">[docs]</a><span class="k">class</span> <span class="nc">ServerRoot</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Handle the data for fem-gl.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="ServerRoot.index"><a class="viewcode-back" href="../../backend.html#backend.web_server_display.ServerRoot.index">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
-    <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The scene administration page.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="s1">&#39;This page will at some point contain a command and control &#39;</span> <span class="o">+</span>
-            <span class="s1">&#39;panel for our simulation data and scenes.&#39;</span>
-        <span class="p">)</span></div></div>
 
 <div class="viewcode-block" id="ServerScenesDispatcher"><a class="viewcode-back" href="../../backend.html#backend.web_server_display.ServerScenesDispatcher">[docs]</a><span class="k">class</span> <span class="nc">ServerScenesDispatcher</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Display scenes on the server.</span>
+<span class="sd">    A class for deciding what visualization we want to display.</span>
+
+<span class="sd">    This loads the actual visualization with control menu and colorbar, without</span>
+<span class="sd">    any overlay, or it displays a dummy model without colorbar or control menu,</span>
+<span class="sd">    but with an text overlay.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialise the dispatcher.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">ServerDisplayScene</span> <span class="o">=</span> <span class="n">ServerDisplayScene</span><span class="p">()</span>
+        <span class="k">pass</span>
+        <span class="c1"># self.ServerDisplayScene = ServerDisplayScene()</span>
 
 <div class="viewcode-block" id="ServerScenesDispatcher.index"><a class="viewcode-back" href="../../backend.html#backend.web_server_display.ServerScenesDispatcher.index">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
     <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        If we simply call HOST:PORT/scenes(/) we will get this message.</span>
+<span class="sd">        Return a ``index.html`` file to inform us that we have not selected any</span>
+<span class="sd">        scenes.</span>
+
+<span class="sd">        This method is called if we call ``http://HOST:PORT/scenes(/)``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         None: Nothing.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         str: A string containing the HTML source for generating the</span>
+<span class="sd">         ``index.html`` file.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="n">make_index</span><span class="p">(</span>
@@ -216,29 +228,57 @@
             <span class="n">overlay_message</span><span class="o">=</span><span class="s1">&#39;No scene selected.&#39;</span>
         <span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_cp_dispatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vpath</span><span class="p">):</span>
+<div class="viewcode-block" id="ServerScenesDispatcher._cp_dispatch"><a class="viewcode-back" href="../../backend.html#backend.web_server_display.ServerScenesDispatcher._cp_dispatch">[docs]</a>    <span class="k">def</span> <span class="nf">_cp_dispatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vpath</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        This looks at the url we call. If the first node is a valid scene_hash</span>
-<span class="sd">        we generate an index.html file with this scene_hash encoded. Otherwise</span>
-<span class="sd">        we generate an error message.</span>
+<span class="sd">        Inspect the part of the URL after ``http://HOST:PORT/scenes/`` and</span>
+<span class="sd">        dispatch an error message or the actual visualization class.</span>
+
+<span class="sd">        If the first node is a valid scene_hash we return the actual</span>
+<span class="sd">        visualization class `ServerDisplayScene`. Otherwise we generate an</span>
+<span class="sd">        error message.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         vpath (list): This contains the segments of the URL after</span>
+<span class="sd">          ``http://HOST:PORT/scenes/``.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         ServerDisplayScene or error: Return the visualization class or an</span>
+<span class="sd">         error message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># If the first argument is a scene hash ...</span>
         <span class="k">if</span> <span class="n">vpath</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">gloset</span><span class="o">.</span><span class="n">scene_manager</span><span class="o">.</span><span class="n">get_scene_infos</span><span class="p">():</span>
 
-            <span class="c1"># ... pop the first argument from the stack,</span>
+            <span class="c1"># ... pop the first argument from the stack (store in calling</span>
+            <span class="c1"># parameter)</span>
             <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;scene_hash&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vpath</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ServerDisplayScene</span>
+
+            <span class="c1"># and return the visualization class (with that calling parameter),</span>
+            <span class="c1"># return self.ServerDisplayScene</span>
+            <span class="k">return</span> <span class="n">ServerDisplayScene</span><span class="p">()</span>
 
         <span class="c1"># otherwise ...</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># ... generate an error message</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">error</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">error</span></div>
 
 <div class="viewcode-block" id="ServerScenesDispatcher.error"><a class="viewcode-back" href="../../backend.html#backend.web_server_display.ServerScenesDispatcher.error">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
     <span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        In case the scene does not exist.</span>
+<span class="sd">        Return a ``index.html`` file to inform us that we are trying to look at</span>
+<span class="sd">        a scene that does not exist.</span>
+
+<span class="sd">        This method is called if we call</span>
+<span class="sd">        ``http://HOST:PORT/scenes/INVALID_HASH``, with `INVALID_HASH` being a</span>
+<span class="sd">        hash that does not exist in the global settings array.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         None: Nothing.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         str: A string containing the HTML source for generating the</span>
+<span class="sd">         ``index.html`` file.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="n">make_index</span><span class="p">(</span>
@@ -247,15 +287,30 @@
             <span class="n">overlay_message</span><span class="o">=</span><span class="s1">&#39;Sorry, this scene does not exist.&#39;</span>
         <span class="p">)</span></div></div>
 
+
 <div class="viewcode-block" id="ServerDisplayScene"><a class="viewcode-back" href="../../backend.html#backend.web_server_display.ServerDisplayScene">[docs]</a><span class="k">class</span> <span class="nc">ServerDisplayScene</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This returns an individual index.html file with the scene_hash encoded</span>
-<span class="sd">    into it.</span>
+<span class="sd">    The class for the actual visualization of scenes that exist in the backend.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="ServerDisplayScene.default"><a class="viewcode-back" href="../../backend.html#backend.web_server_display.ServerDisplayScene.default">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
     <span class="k">def</span> <span class="nf">default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene_hash</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The default site that is displayed with this class.</span>
 
+<span class="sd">        This generates a ``index.html`` file that has an existing scene_hash</span>
+<span class="sd">        encoded.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         scene_hash (str): A unique identifier that corresponds to an existing</span>
+<span class="sd">          scene in the backend.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         str: A string containing the HTML source for generating the</span>
+<span class="sd">         ``index.html`` file. This has the scene_hash encoded.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Return a prepared page</span>
         <span class="k">return</span> <span class="n">make_index</span><span class="p">(</span>
             <span class="n">scene_hash</span><span class="o">=</span><span class="n">scene_hash</span><span class="p">,</span>

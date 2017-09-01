@@ -1,0 +1,38 @@
+util package
+============
+
+Submodules
+----------
+
+util\.post\_json module
+-----------------------
+
+.. automodule:: util.post_json
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+util\.print\_function\_usage module
+-----------------------------------
+
+.. automodule:: util.print_function_usage
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+util\.test\_host module
+-----------------------
+
+.. automodule:: util.test_host
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: util
+    :members:
+    :undoc-members:
+    :show-inheritance:

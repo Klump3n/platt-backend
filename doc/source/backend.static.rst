@@ -39,10 +39,10 @@ directives to load the control menu or the colorbar.
 Submodules
 ----------
 
-backend\.static\.gen\_index module
-----------------------------------
+backend\.static\.make\_index module
+-----------------------------------
 
-.. automodule:: backend.static.gen_index
+.. automodule:: backend.static.make_index
     :members:
     :undoc-members:
     :show-inheritance:

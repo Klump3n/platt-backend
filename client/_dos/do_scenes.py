@@ -6,7 +6,7 @@ creating, selecting) scenes on the backend via the client.
 """
 
 import argparse
-from util.post_json import post_json_string
+from util_client.post_json import post_json_string
 
 
 def scenes_help(c_data):
@@ -53,11 +53,6 @@ def scenes(line, c_data):
      the notes to scenes_help.
 
     """
-
-    host = c_data['host']
-    port = c_data['port']
-    headers = c_data['headers']
-
     scenes = argparse.ArgumentParser(
         description='Handle scenes. This means creating, deleting, ' +
         'listing and selecting.',
@@ -127,7 +122,7 @@ def scenes(line, c_data):
 
     # If we want to create a new and empty scene
     elif scenes_action == 'create':
-        object_id =  parsed_args.object_id
+        object_id = parsed_args.object_id
         object_id = clean_list(object_id)
         scenes_create(c_data, object_id=object_id)
 
@@ -230,8 +225,8 @@ def scenes_list(c_data, just=None):
 
     Args:
      c_data (dict): A dictionary containing host, port and headers.
-     just (None or list, optional, defaults to None): A list of scene_hashes of a
-     limited subset of the available scenes, we want to display.
+     just (None or list, optional, defaults to None): A list of scene_hashes
+      of a limited subset of the available scenes, we want to display.
 
     Returns:
      None: Nothing.
@@ -242,7 +237,7 @@ def scenes_list(c_data, just=None):
     headers = c_data['headers']
 
     api_call = 'scenes_infos'
-    data = ''
+    data = None
     answer = post_json_string(
         api_call=api_call, data=data, connection_data=c_data)
 
@@ -341,7 +336,7 @@ def scenes_select(c_data, scene_hash):
 
     """
     api_call = 'scenes_select'
-    data = ''
+    data = None
     answer = post_json_string(
         api_call=api_call, data=data, connection_data=c_data)
 

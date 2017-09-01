@@ -93,12 +93,24 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Packages and modules:</span></p>
+<p class="caption"><span class="caption-text">Visualisation Backend:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../main.html">Startup script</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../backend.html">backend package (Python code)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../util.html">util package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Visualisation Frontend:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../frontend.html">frontend package (JavaScript Code)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Control Terminal:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../client.html">client package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Misc:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../todo_general.html">General things to do</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../todo.html">Todo (collection of everything)</a></li>
 </ul>
 
             
@@ -164,30 +176,34 @@
             
   <h1>Source code for backend.data_backend</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python3</span>
-
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">main.py</span>
-
-<span class="sd">Unpacks some binary files and finds the surface of the mesh. Right now this is</span>
+<span class="sd">Unpack some binary files and finds the surface of the mesh. Right now this is</span>
 <span class="sd">limited to C3D8 file format.</span>
+
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">struct</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">matplotlib.cm</span> <span class="k">as</span> <span class="nn">cm</span>
-<span class="kn">import</span> <span class="nn">sys</span>
+<span class="c1"># import sys</span>
+
 
 <div class="viewcode-block" id="UnpackMesh"><a class="viewcode-back" href="../../backend.html#backend.data_backend.UnpackMesh">[docs]</a><span class="k">class</span> <span class="nc">UnpackMesh</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Unpacks mesh data from two binary files and does some magic to it.</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Unpacks mesh data from two binary files and does some magic to it.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_path</span><span class="p">,</span> <span class="n">element_path</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initialise the class by:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialise the mesh unpacking class by:</span>
 
 <span class="sd">        - unpacking the nodes and the elements of the mesh</span>
 <span class="sd">        - initialising the timestep array</span>
 <span class="sd">        - initialising the surface quads for the elements</span>
 <span class="sd">        - initialising the triangulated surface</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         node_path (str): The path to the data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">get_binary_data</span><span class="p">(</span><span class="n">node_path</span><span class="p">,</span> <span class="n">do</span><span class="o">=</span><span class="s1">&#39;unpack&#39;</span><span class="p">,</span> <span class="n">what</span><span class="o">=</span><span class="s1">&#39;nodes&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">get_binary_data</span><span class="p">(</span><span class="n">element_path</span><span class="p">,</span> <span class="n">do</span><span class="o">=</span><span class="s1">&#39;unpack&#39;</span><span class="p">,</span> <span class="n">what</span><span class="o">=</span><span class="s1">&#39;elements&#39;</span><span class="p">)</span>
@@ -197,9 +213,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">unique_surface_triangles</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="UnpackMesh.add_timestep"><a class="viewcode-back" href="../../backend.html#backend.data_backend.UnpackMesh.add_timestep">[docs]</a>    <span class="k">def</span> <span class="nf">add_timestep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Wrapper around the get_binary_data function.</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Wrapper around the get_binary_data function.</span>
 
-<span class="sd">        Makes adding a timestep less confusing.</span>
+<span class="sd">        This just calls the function with pre-selected arguments, makes adding</span>
+<span class="sd">        a timestep less confusing.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         path (str): </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_binary_data</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">do</span><span class="o">=</span><span class="s1">&#39;add&#39;</span><span class="p">,</span> <span class="n">what</span><span class="o">=</span><span class="s1">&#39;timestep&#39;</span><span class="p">)</span></div>
 
@@ -255,7 +276,8 @@
         <span class="k">return</span> <span class="n">data</span></div>
 
 <div class="viewcode-block" id="UnpackMesh.generate_surfaces_for_elements"><a class="viewcode-back" href="../../backend.html#backend.data_backend.UnpackMesh.generate_surfaces_for_elements">[docs]</a>    <span class="k">def</span> <span class="nf">generate_surfaces_for_elements</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Finds the outward faces of the mesh (in other words: the surface).</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finds the outward faces of the mesh (in other words: the surface).</span>
 <span class="sd">        Returns a numpy array with the surface faces.</span>
 
 <span class="sd">        The mesh consists of cubic elements with corner nodes.</span>
@@ -265,6 +287,7 @@
 <span class="sd">        Faces at the corner will have a count of 9, faces at the border a</span>
 <span class="sd">        count of 12 and faces in the middle of the plane a count of 16.</span>
 <span class="sd">        (You might want to draw it on a piece of paper.)</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># self.elements is a map that points from each element to the nodes</span>
         <span class="c1"># that constitute an element. In that sense two neighbouring elements</span>
@@ -286,16 +309,17 @@
 
         <span class="n">surfaces</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="k">def</span> <span class="nf">append_face_to_surfaces</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">element_face</span><span class="p">):</span>
-            <span class="sd">&quot;&quot;&quot;Append the face to the output array.</span>
-<span class="sd">            &quot;&quot;&quot;</span>
-            <span class="n">face</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="n">element</span><span class="p">[</span><span class="n">element_face</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
-                <span class="n">element</span><span class="p">[</span><span class="n">element_face</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
-                <span class="n">element</span><span class="p">[</span><span class="n">element_face</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
-                <span class="n">element</span><span class="p">[</span><span class="n">element_face</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span>
-            <span class="p">]</span>
-            <span class="n">surfaces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">face</span><span class="p">)</span>
+        <span class="c1"># FIXME: Can this function be deleted?</span>
+        <span class="c1"># def append_face_to_surfaces(element, element_face):</span>
+        <span class="c1">#     &quot;&quot;&quot;Append the face to the output array.</span>
+        <span class="c1">#     &quot;&quot;&quot;</span>
+        <span class="c1">#     face = [</span>
+        <span class="c1">#         element[element_face[0]],</span>
+        <span class="c1">#         element[element_face[1]],</span>
+        <span class="c1">#         element[element_face[2]],</span>
+        <span class="c1">#         element[element_face[3]]</span>
+        <span class="c1">#     ]</span>
+        <span class="c1">#     surfaces.append(face)</span>
 
         <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">element_face</span> <span class="ow">in</span> <span class="n">element_faces</span><span class="p">:</span>
@@ -309,7 +333,17 @@
                         <span class="p">(</span><span class="n">node_weight</span> <span class="o">==</span> <span class="mi">12</span><span class="p">)</span> <span class="ow">or</span>  <span class="c1"># Border faces</span>
                         <span class="p">(</span><span class="n">node_weight</span> <span class="o">==</span> <span class="mi">16</span><span class="p">)</span>     <span class="c1"># Plane faces</span>
                 <span class="p">):</span>
-                    <span class="n">append_face_to_surfaces</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">element_face</span><span class="p">)</span>
+                    <span class="n">face</span> <span class="o">=</span> <span class="p">[</span>
+                        <span class="n">element</span><span class="p">[</span><span class="n">element_face</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+                        <span class="n">element</span><span class="p">[</span><span class="n">element_face</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+                        <span class="n">element</span><span class="p">[</span><span class="n">element_face</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+                        <span class="n">element</span><span class="p">[</span><span class="n">element_face</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span>
+                    <span class="p">]</span>
+                    <span class="n">surfaces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">face</span><span class="p">)</span>
+
+                    <span class="c1"># FIXME: Can this function call be deleted?</span>
+                    <span class="c1"># append_face_to_surfaces(element, element_face)</span>
+
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">pass</span>
 

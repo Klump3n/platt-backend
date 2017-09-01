@@ -1,0 +1,417 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>_dos package &mdash; TBD Client alpha documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="TBD Client alpha documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> TBD Client
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">_dos package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-_dos.do_objects">_dos.do_objects module</a></li>
+<li><a class="reference internal" href="#module-_dos.do_scenes">_dos.do_scenes module</a></li>
+<li><a class="reference internal" href="#module-_dos">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">TBD Client</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>_dos package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/_dos.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="dos-package">
+<h1>_dos package<a class="headerlink" href="#dos-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-_dos.do_objects">
+<span id="dos-do-objects-module"></span><h2>_dos.do_objects module<a class="headerlink" href="#module-_dos.do_objects" title="Permalink to this headline">¶</a></h2>
+<p>A small module containing the function for getting the available simulation
+data from the backend and displaying it in the client.</p>
+<dl class="function">
+<dt id="_dos.do_objects.objects">
+<code class="descclassname">_dos.do_objects.</code><code class="descname">objects</code><span class="sig-paren">(</span><em>c_data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/_dos/do_objects.html#objects"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#_dos.do_objects.objects" title="Permalink to this definition">¶</a></dt>
+<dd><p>List all the available simulation data directories.</p>
+<p>Sends an empty JSON request to the <code class="docutils literal"><span class="pre">api/list_of_fem_data</span></code>. The returned
+response is then parsed and printed out nicely formatted. In case of an
+exception (that means no response is returned) a message is printed to the
+screen, informing us that no response came back.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>c_data (dict): A dictionary containing the connection data. That is, a</dt>
+<dd>target host, target port and a header.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>None: Nothing</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="_dos.do_objects.objects_help">
+<code class="descclassname">_dos.do_objects.</code><code class="descname">objects_help</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/_dos/do_objects.html#objects_help"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#_dos.do_objects.objects_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the help message for the objects function.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-_dos.do_scenes">
+<span id="dos-do-scenes-module"></span><h2>_dos.do_scenes module<a class="headerlink" href="#module-_dos.do_scenes" title="Permalink to this headline">¶</a></h2>
+<p>A small module containing the function for manipulating (listing, deleting,
+creating, selecting) scenes on the backend via the client.</p>
+<dl class="function">
+<dt id="_dos.do_scenes.clean_list">
+<code class="descclassname">_dos.do_scenes.</code><code class="descname">clean_list</code><span class="sig-paren">(</span><em>dirty_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/_dos/do_scenes.html#clean_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#_dos.do_scenes.clean_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove empty entries from a list and cast everything to a string.</p>
+<p>When we parse a string like ‘    foo’ this will land in an array that
+replaces the every _leading_ whitespace into an empty entry in the array.
+Getting rid of those empty entries is the point of this function.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>dirty_list (list): A list that potentially has entries that are empty.</dd>
+<dt>Returns:</dt>
+<dd>list: A list containing no empty entries, each entry is a string.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="_dos.do_scenes.pretty_print_scene">
+<code class="descclassname">_dos.do_scenes.</code><code class="descname">pretty_print_scene</code><span class="sig-paren">(</span><em>scene_hash</em>, <em>scene</em>, <em>host</em>, <em>port</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/_dos/do_scenes.html#pretty_print_scene"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#_dos.do_scenes.pretty_print_scene" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pretty print a scene.</p>
+<p>Print a scene (and the objects in it) to the screen.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>scene_hash (str): The unique identifier of the scene.
+scene (dict): Contains all the information about the scene.
+host (str): The address of the backend server, for printing a URL.
+port (int): The port of the backend server, for printing a URL.</dd>
+<dt>Returns:</dt>
+<dd>None: Nothing.</dd>
+<dt>Todo:</dt>
+<dd>Maybe rework this to make it even prettier!</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="_dos.do_scenes.scenes">
+<code class="descclassname">_dos.do_scenes.</code><code class="descname">scenes</code><span class="sig-paren">(</span><em>line</em>, <em>c_data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/_dos/do_scenes.html#scenes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#_dos.do_scenes.scenes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Manipulate the the scenes on the backend server.</p>
+<p>Parse the arguments to a call of <code class="docutils literal"><span class="pre">scenes</span></code> and process them with argparse.
+Call other functions to actually do something (like creating, deleting,
+listing or selecting scenes) afterwards.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>line (str): The parsed line from the command line.
+c_data (dict): A dictionary containing host, port and headers.</dd>
+<dt>Returns:</dt>
+<dd>None, str: Nothing or an empty string. See notes.</dd>
+<dt>Notes:</dt>
+<dd>There is some sketchy behaviour if we try to get the usage message. See
+the notes to scenes_help.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="_dos.do_scenes.scenes_create">
+<code class="descclassname">_dos.do_scenes.</code><code class="descname">scenes_create</code><span class="sig-paren">(</span><em>c_data</em>, <em>object_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/_dos/do_scenes.html#scenes_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#_dos.do_scenes.scenes_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new scene.</p>
+<p>If object_id is an empty list, an empty scene will be created. After
+creation a link to the new scene is printed to the screen.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">c_data (dict): A dictionary containing host, port and headers.
+object_id (list): A list of objects to include on creation of a new scene.</p>
+<blockquote class="last">
+<div>Valid object names can be found by typing ‘objects’.</div></blockquote>
+</dd>
+<dt>Returns:</dt>
+<dd>None: Nothing.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="_dos.do_scenes.scenes_delete">
+<code class="descclassname">_dos.do_scenes.</code><code class="descname">scenes_delete</code><span class="sig-paren">(</span><em>c_data</em>, <em>scene_hash</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/_dos/do_scenes.html#scenes_delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#_dos.do_scenes.scenes_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a scene.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">c_data (dict): A dictionary containing host, port and headers.
+scene_hash (list): A list of unique identifier(s) of the scene(s) that</p>
+<blockquote class="last">
+<div>should be deleted.</div></blockquote>
+</dd>
+<dt>Returns:</dt>
+<dd>None: Nothing.</dd>
+<dt>Todo:</dt>
+<dd>Print feedback?</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="_dos.do_scenes.scenes_help">
+<code class="descclassname">_dos.do_scenes.</code><code class="descname">scenes_help</code><span class="sig-paren">(</span><em>c_data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/_dos/do_scenes.html#scenes_help"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#_dos.do_scenes.scenes_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call the scenes function with ‘-h’ for line, so we get the automatic
+documentation from argparse printed out.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>c_data (dict): A dictionary containing host, port and headers. This is</dt>
+<dd>necessary because we essentially call the scenes function and need this
+as an argument for that.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>None, str: Hopefully nothing or a string containing ‘’.</dd>
+<dt>Notes:</dt>
+<dd>This is a bit sketchy, because it should in principle be the same as
+writing <code class="docutils literal"><span class="pre">scenes</span> <span class="pre">-h</span></code> in the terminal, but it somehow is not.</dd>
+<dt>Todo:</dt>
+<dd>Find a solution for that sketchy behaviour.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="_dos.do_scenes.scenes_list">
+<code class="descclassname">_dos.do_scenes.</code><code class="descname">scenes_list</code><span class="sig-paren">(</span><em>c_data</em>, <em>just=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/_dos/do_scenes.html#scenes_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#_dos.do_scenes.scenes_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>List one, several or all scenes.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>c_data (dict): A dictionary containing host, port and headers.
+just (None or list, optional, defaults to None): A list of scene_hashes of a
+limited subset of the available scenes, we want to display.</dd>
+<dt>Returns:</dt>
+<dd>None: Nothing.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="_dos.do_scenes.scenes_select">
+<code class="descclassname">_dos.do_scenes.</code><code class="descname">scenes_select</code><span class="sig-paren">(</span><em>c_data</em>, <em>scene_hash</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/_dos/do_scenes.html#scenes_select"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#_dos.do_scenes.scenes_select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select a scene.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">c_data (dict): A dictionary containing host, port and headers.
+scene_hash (str): The unique identifier of the scene that should be</p>
+<blockquote class="last">
+<div>selected.</div></blockquote>
+</dd>
+<dt>Returns:</dt>
+<dd>None: Nothing.</dd>
+<dt>Todo:</dt>
+<dd>Expand this. This is the entry point for manipulating anything IN a given
+scene.</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-_dos">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-_dos" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Matthias Plock.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'alpha',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

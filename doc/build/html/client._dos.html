@@ -37,6 +37,7 @@
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="TBD alpha documentation" href="index.html"/>
         <link rel="up" title="client package" href="client.html"/>
+        <link rel="next" title="client.util_client package" href="client.util_client.html"/>
         <link rel="prev" title="client package" href="client.html"/> 
 
   
@@ -94,11 +95,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Packages and modules:</span></p>
-<ul class="current">
+<p class="caption"><span class="caption-text">Visualisation Backend:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="main.html">Startup script</a></li>
 <li class="toctree-l1"><a class="reference internal" href="backend.html">backend package (Python code)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="util.html">util package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Visualisation Frontend:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="frontend.html">frontend package (JavaScript Code)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Control Terminal:</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="client.html">client package</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="client.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#">_dos package</a><ul>
@@ -108,6 +116,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#module-_dos">Module contents</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="client.util_client.html">client.util_client package</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="client.html#submodules">Submodules</a></li>
@@ -115,6 +124,11 @@
 <li class="toctree-l2"><a class="reference internal" href="client.html#module-client">Module contents</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption"><span class="caption-text">Misc:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="todo_general.html">General things to do</a></li>
+<li class="toctree-l1"><a class="reference internal" href="todo.html">Todo (collection of everything)</a></li>
 </ul>
 
             
@@ -312,7 +326,7 @@ the notes to scenes_help.</p>
 <dt id="_dos.do_scenes.scenes_create">
 <code class="descclassname">_dos.do_scenes.</code><code class="descname">scenes_create</code><span class="sig-paren">(</span><em>c_data</em>, <em>object_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/_dos/do_scenes.html#scenes_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#_dos.do_scenes.scenes_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new scene.</p>
-<p>If object_id is an empty array, an empty scene will be created. After
+<p>If object_id is an empty list, an empty scene will be created. After
 creation a link to the new scene is printed to the screen.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -345,8 +359,8 @@ Valid object names can be found by typing ‘objects’.</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>c_data</strong> (<em>dict</em>) – A dictionary containing host, port and headers.</li>
-<li><strong>scene_hash</strong> (<em>str</em>) – The unique identifier of the scene that should be
-deleted.</li>
+<li><strong>scene_hash</strong> (<em>list</em>) – A list of unique identifier(s) of the scene(s) that
+should be deleted.</li>
 </ul>
 </td>
 </tr>
@@ -402,8 +416,8 @@ writing <code class="docutils literal"><span class="pre">scenes</span> <span cla
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>c_data</strong> (<em>dict</em>) – A dictionary containing host, port and headers.</li>
-<li><strong>just</strong> (<em>list</em><em>, </em><em>optional</em><em>, </em><em>defaults to None</em>) – A list of scene_hashes of a</li>
-<li><strong>subset of the available scenes</strong><strong>, </strong><strong>we want to display.</strong> (<em>limited</em>) – </li>
+<li><strong>just</strong> (<em>None</em><em> or </em><em>list</em><em>, </em><em>optional</em><em>, </em><em>defaults to None</em>) – A list of scene_hashes
+of a limited subset of the available scenes, we want to display.</li>
 </ul>
 </td>
 </tr>
@@ -462,6 +476,8 @@ scene.</p>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="client.util_client.html" class="btn btn-neutral float-right" title="client.util_client package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="client.html" class="btn btn-neutral" title="client package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

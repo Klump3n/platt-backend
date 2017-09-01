@@ -1,0 +1,7 @@
+print\_function\_usage module
+=============================
+
+.. automodule:: print_function_usage
+    :members:
+    :undoc-members:
+    :show-inheritance:

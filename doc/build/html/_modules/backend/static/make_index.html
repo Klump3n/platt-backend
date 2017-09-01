@@ -1,0 +1,425 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>backend.static.make_index &mdash; TBD alpha documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="TBD alpha documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> TBD
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Usage:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Visualisation Backend:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../main.html">Startup script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../backend.html">backend package (Python code)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../util.html">util package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Visualisation Frontend:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../frontend.html">frontend package (JavaScript Code)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Control Terminal:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../client.html">client package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Misc:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../todo_general.html">General things to do</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../todo.html">Todo (collection of everything)</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">TBD</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>backend.static.make_index</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for backend.static.make_index</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="c1"># Copyright (C) 2017 Matthias Plock &lt;matthias.plock@bam.de&gt;</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Contains the function for generating taylored ``index.html`` files.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># The main html body</span>
+<span class="n">HTML</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">&lt;!DOCTYPE html&gt;</span>
+<span class="s2">&lt;html lang=&quot;en&quot;&gt;</span>
+<span class="s2">  &lt;head&gt;</span>
+<span class="s2">    &lt;meta charset=&quot;utf-8&quot;&gt;</span>
+<span class="s2">    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;</span>
+<span class="s2">      &lt;title&gt;FemGL alpha&lt;/title&gt;</span>
+<span class="s2">      &lt;link rel=&quot;stylesheet&quot; href=&quot;main.css&quot; /&gt;</span>
+<span class="s2">      </span><span class="si">{html_css_overlay}</span><span class="s2"></span>
+<span class="s2">      </span><span class="si">{html_css_menu}</span><span class="s2"></span>
+<span class="s2">      </span><span class="si">{html_css_colorbar}</span><span class="s2"></span>
+<span class="s2">  &lt;/head&gt;</span>
+<span class="s2">  &lt;body&gt;</span>
+<span class="s2">    &lt;!-- The canvas element for displaying something via WebGL. Never</span>
+<span class="s2">	       tried anything else, maybe it also works in a &lt;p&gt;? --&gt;</span>
+<span class="s2">    &lt;canvas id=&quot;webGlCanvas&quot; data-scene-hash=&quot;</span><span class="si">{scene_hash}</span><span class="s2">&quot;&gt;&lt;/canvas&gt;</span>
+<span class="s2">    </span><span class="si">{html_body_overlay}</span><span class="s2"></span>
+<span class="s2">    </span><span class="si">{html_body_menu}</span><span class="s2"></span>
+<span class="s2">    </span><span class="si">{html_body_colorbar}</span><span class="s2"></span>
+<span class="s2">  &lt;/body&gt;</span>
+
+<span class="s2">  &lt;!-- Import twgl.js WebGL helper functions --&gt;</span>
+<span class="s2">  &lt;!-- &lt;script src=&quot;twgl-dist-3.x/twgl-full.min.js&quot;&gt;&lt;/script&gt; --&gt;</span>
+<span class="s2">  &lt;script src=&quot;twgl-dist-3.x/twgl-full.js&quot;&gt;&lt;/script&gt;</span>
+<span class="s2">  </span><span class="si">{html_script_menu}</span><span class="s2"></span>
+<span class="s2">  &lt;script src=&quot;loadData.js&quot;&gt;&lt;/script&gt;</span>
+<span class="s2">  &lt;script src=&quot;setView.js&quot;&gt;&lt;/script&gt;</span>
+<span class="s2">  </span><span class="si">{html_script_colorbar}</span><span class="s2"></span>
+<span class="s2">  &lt;script src=&quot;main.js&quot; onload=&quot;main()&quot;&gt;&lt;/script&gt;</span>
+<span class="s2">&lt;/html&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="c1"># The css entries for the menu, the colorbar and the overlay</span>
+<span class="n">CSS_OVERLAY</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">      &lt;link rel=&quot;stylesheet&quot; href=&quot;overlay.css&quot; /&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="n">CSS_MENU</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">      &lt;link rel=&quot;stylesheet&quot; href=&quot;menu.css&quot; /&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="n">CSS_COLORBAR</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">      &lt;link rel=&quot;stylesheet&quot; href=&quot;colorbar.css&quot; /&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="c1"># Divs for menu, colorbar and overlay</span>
+<span class="n">BODY_OVERLAY</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    &lt;div class=&quot;overlay&quot;&gt;</span><span class="si">{message}</span><span class="s2">&lt;/div&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="n">BODY_MENU</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    &lt;div class=&quot;main_container&quot;&gt;</span>
+<span class="s2">      &lt;div class=&quot;add_objects_button_container&quot;&gt;</span>
+<span class="s2">        &lt;div class=&quot;add_objects_button&quot; id=&quot;add_objects_button&quot;&gt;+&lt;/div&gt;</span>
+<span class="s2">        &lt;div class=&quot;add_objects_menu_container&quot; id=&quot;add_objects_menu_container&quot;&gt;</span>
+<span class="s2">            &lt;div class=&quot;add_objects_menu&quot; id=&quot;add_objects_menu&quot;&gt;&lt;/div&gt;</span>
+<span class="s2">        &lt;/div&gt;</span>
+<span class="s2">      &lt;/div&gt;</span>
+<span class="s2">      &lt;div class=&quot;objects_container&quot; id=&quot;objects_container&quot;&gt;&lt;/div&gt; &lt;!-- The menus will be dropped here. --&gt;</span>
+<span class="s2">    &lt;/div&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="n">BODY_COLORBAR</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    &lt;!-- Colorbar stuff --&gt;</span>
+<span class="s2">    &lt;div class=&quot;colorbar_container_outer&quot;&gt;</span>
+<span class="s2">      &lt;div class=&quot;colorbar_container_inner&quot;&gt;</span>
+<span class="s2">        &lt;div id=&quot;colorbar&quot;&gt;&lt;/div&gt;</span>
+<span class="s2">      &lt;/div&gt;</span>
+<span class="s2">    &lt;/div&gt;</span>
+<span class="s2">    &lt;!-- Colorbar stuff ends --&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="c1"># Scripts to load for menu and colorbar</span>
+<span class="n">SCRIPT_MENU</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">  &lt;script src=&quot;menu.js&quot; onload=&quot;main()&quot;&gt;&lt;/script&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="n">SCRIPT_COLORBAR</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">  &lt;script src=&quot;colorbar.js&quot;&gt;&lt;/script&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="make_index"><a class="viewcode-back" href="../../../backend.static.html#backend.static.make_index.make_index">[docs]</a><span class="k">def</span> <span class="nf">make_index</span><span class="p">(</span>
+        <span class="n">scene_hash</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">with_menu</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">with_colorbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">overlay_message</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a string with the ``index.html`` file.</span>
+
+<span class="sd">    This string contains information about the scene_hash (if any) and whether</span>
+<span class="sd">    or not we want to display the browser menu to add and remove simulation</span>
+<span class="sd">    data to it as well as the color bar on the right side of the window.</span>
+
+
+<span class="sd">    Args:</span>
+
+<span class="sd">     scene_hash (str, optional, defaults to ``&#39;&#39;``): The scene hash that will be</span>
+<span class="sd">      encoded into the index.html</span>
+
+<span class="sd">     with_menu (bool, optional, defaults to `True`): True means we want to</span>
+<span class="sd">      display a menu, False means we don&#39;t want to display a menu.</span>
+
+<span class="sd">     with_colorbar (bool, optional, defaults to `True`): True means we want to</span>
+<span class="sd">      display a colorbar, False means we don&#39;t want to display a colorbar.</span>
+
+<span class="sd">     overlay_message (str or None, optional, defaults to `None`): If set, this</span>
+<span class="sd">      message will be displayed in a centered overlay on the screen.</span>
+
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">     str: The ``index.html`` string.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Initialise strings</span>
+    <span class="n">css_overlay_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">css_menu_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">css_colorbar_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">body_overlay_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">body_menu_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">body_colorbar_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">script_menu_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">script_colorbar_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">overlay_message</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">css_overlay_string</span> <span class="o">=</span> <span class="n">CSS_OVERLAY</span>
+        <span class="n">body_overlay_string</span> <span class="o">=</span> <span class="n">BODY_OVERLAY</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">overlay_message</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">with_menu</span><span class="p">:</span>
+        <span class="n">css_menu_string</span> <span class="o">=</span> <span class="n">CSS_MENU</span>
+        <span class="n">body_menu_string</span> <span class="o">=</span> <span class="n">BODY_MENU</span>
+        <span class="n">script_menu_string</span> <span class="o">=</span> <span class="n">SCRIPT_MENU</span>
+
+    <span class="k">if</span> <span class="n">with_colorbar</span><span class="p">:</span>
+        <span class="n">css_colorbar_string</span> <span class="o">=</span> <span class="n">CSS_COLORBAR</span>
+        <span class="n">body_colorbar_string</span> <span class="o">=</span> <span class="n">BODY_COLORBAR</span>
+        <span class="n">script_colorbar_string</span> <span class="o">=</span> <span class="n">SCRIPT_COLORBAR</span>
+
+    <span class="c1"># Format the html string</span>
+    <span class="n">index_file</span> <span class="o">=</span> <span class="n">HTML</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">scene_hash</span><span class="o">=</span><span class="n">scene_hash</span><span class="p">,</span>
+
+        <span class="n">html_css_overlay</span><span class="o">=</span><span class="n">css_overlay_string</span><span class="p">,</span>
+        <span class="n">html_css_menu</span><span class="o">=</span><span class="n">css_menu_string</span><span class="p">,</span>
+        <span class="n">html_css_colorbar</span><span class="o">=</span><span class="n">css_colorbar_string</span><span class="p">,</span>
+
+        <span class="n">html_body_overlay</span><span class="o">=</span><span class="n">body_overlay_string</span><span class="p">,</span>
+        <span class="n">html_body_menu</span><span class="o">=</span><span class="n">body_menu_string</span><span class="p">,</span>
+        <span class="n">html_body_colorbar</span><span class="o">=</span><span class="n">body_colorbar_string</span><span class="p">,</span>
+
+        <span class="n">html_script_menu</span><span class="o">=</span><span class="n">script_menu_string</span><span class="p">,</span>
+        <span class="n">html_script_colorbar</span><span class="o">=</span><span class="n">script_colorbar_string</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">index_file</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    In case we want to test.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">make_index</span><span class="p">())</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Matthias Plock.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'alpha',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

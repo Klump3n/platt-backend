@@ -93,12 +93,24 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Packages and modules:</span></p>
+<p class="caption"><span class="caption-text">Visualisation Backend:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../main.html">Startup script</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../backend.html">backend package (Python code)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../util.html">util package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Visualisation Frontend:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../frontend.html">frontend package (JavaScript Code)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Control Terminal:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../client.html">client package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Misc:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../todo_general.html">General things to do</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../todo.html">Todo (collection of everything)</a></li>
 </ul>
 
             
@@ -171,7 +183,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">argparse</span>
-<span class="kn">from</span> <span class="nn">util.post_json</span> <span class="k">import</span> <span class="n">post_json_string</span>
+<span class="kn">from</span> <span class="nn">util_client.post_json</span> <span class="k">import</span> <span class="n">post_json_string</span>
 
 
 <div class="viewcode-block" id="scenes_help"><a class="viewcode-back" href="../../client._dos.html#_dos.do_scenes.scenes_help">[docs]</a><span class="k">def</span> <span class="nf">scenes_help</span><span class="p">(</span><span class="n">c_data</span><span class="p">):</span>
@@ -218,11 +230,6 @@
 <span class="sd">     the notes to scenes_help.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">host</span> <span class="o">=</span> <span class="n">c_data</span><span class="p">[</span><span class="s1">&#39;host&#39;</span><span class="p">]</span>
-    <span class="n">port</span> <span class="o">=</span> <span class="n">c_data</span><span class="p">[</span><span class="s1">&#39;port&#39;</span><span class="p">]</span>
-    <span class="n">headers</span> <span class="o">=</span> <span class="n">c_data</span><span class="p">[</span><span class="s1">&#39;headers&#39;</span><span class="p">]</span>
-
     <span class="n">scenes</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
         <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Handle scenes. This means creating, deleting, &#39;</span> <span class="o">+</span>
         <span class="s1">&#39;listing and selecting.&#39;</span><span class="p">,</span>
@@ -292,7 +299,7 @@
 
     <span class="c1"># If we want to create a new and empty scene</span>
     <span class="k">elif</span> <span class="n">scenes_action</span> <span class="o">==</span> <span class="s1">&#39;create&#39;</span><span class="p">:</span>
-        <span class="n">object_id</span> <span class="o">=</span>  <span class="n">parsed_args</span><span class="o">.</span><span class="n">object_id</span>
+        <span class="n">object_id</span> <span class="o">=</span> <span class="n">parsed_args</span><span class="o">.</span><span class="n">object_id</span>
         <span class="n">object_id</span> <span class="o">=</span> <span class="n">clean_list</span><span class="p">(</span><span class="n">object_id</span><span class="p">)</span>
         <span class="n">scenes_create</span><span class="p">(</span><span class="n">c_data</span><span class="p">,</span> <span class="n">object_id</span><span class="o">=</span><span class="n">object_id</span><span class="p">)</span>
 
@@ -395,8 +402,8 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">     c_data (dict): A dictionary containing host, port and headers.</span>
-<span class="sd">     just (list, optional, defaults to None): A list of scene_hashes of a</span>
-<span class="sd">     limited subset of the available scenes, we want to display.</span>
+<span class="sd">     just (None or list, optional, defaults to None): A list of scene_hashes</span>
+<span class="sd">      of a limited subset of the available scenes, we want to display.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">     None: Nothing.</span>
@@ -407,7 +414,7 @@
     <span class="n">headers</span> <span class="o">=</span> <span class="n">c_data</span><span class="p">[</span><span class="s1">&#39;headers&#39;</span><span class="p">]</span>
 
     <span class="n">api_call</span> <span class="o">=</span> <span class="s1">&#39;scenes_infos&#39;</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">answer</span> <span class="o">=</span> <span class="n">post_json_string</span><span class="p">(</span>
         <span class="n">api_call</span><span class="o">=</span><span class="n">api_call</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">connection_data</span><span class="o">=</span><span class="n">c_data</span><span class="p">)</span>
 
@@ -431,7 +438,7 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a new scene.</span>
 
-<span class="sd">    If object_id is an empty array, an empty scene will be created. After</span>
+<span class="sd">    If object_id is an empty list, an empty scene will be created. After</span>
 <span class="sd">    creation a link to the new scene is printed to the screen.</span>
 
 <span class="sd">    Args:</span>
@@ -469,8 +476,8 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">     c_data (dict): A dictionary containing host, port and headers.</span>
-<span class="sd">     scene_hash (str): The unique identifier of the scene that should be</span>
-<span class="sd">      deleted.</span>
+<span class="sd">     scene_hash (list): A list of unique identifier(s) of the scene(s) that</span>
+<span class="sd">      should be deleted.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">     None: Nothing.</span>
@@ -506,7 +513,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">api_call</span> <span class="o">=</span> <span class="s1">&#39;scenes_select&#39;</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">answer</span> <span class="o">=</span> <span class="n">post_json_string</span><span class="p">(</span>
         <span class="n">api_call</span><span class="o">=</span><span class="n">api_call</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">connection_data</span><span class="o">=</span><span class="n">c_data</span><span class="p">)</span>
 

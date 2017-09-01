@@ -27,14 +27,6 @@ backend\.global\_settings module
     :undoc-members:
     :show-inheritance:
 
-backend\.old\_web\_server\_api module
--------------------------------------
-
-.. automodule:: backend.old_web_server_api
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 backend\.scenes\_manager module
 -------------------------------
 
@@ -75,11 +67,20 @@ backend\.web\_server\_api module
     :undoc-members:
     :show-inheritance:
 
+backend\.web\_server\_control module
+------------------------------------
+
+.. automodule:: backend.web_server_control
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 backend\.web\_server\_display module
 ------------------------------------
 
 .. automodule:: backend.web_server_display
     :members:
+    :private-members:
     :undoc-members:
     :show-inheritance:
 

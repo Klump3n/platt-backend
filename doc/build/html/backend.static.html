@@ -37,7 +37,7 @@
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="TBD alpha documentation" href="index.html"/>
         <link rel="up" title="backend package (Python code)" href="backend.html"/>
-        <link rel="next" title="frontend package (JavaScript Code)" href="frontend.html"/>
+        <link rel="next" title="util package" href="util.html"/>
         <link rel="prev" title="backend package (Python code)" href="backend.html"/> 
 
   
@@ -95,14 +95,14 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Packages and modules:</span></p>
+<p class="caption"><span class="caption-text">Visualisation Backend:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="main.html">Startup script</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="backend.html">backend package (Python code)</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="backend.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#">backend.static package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-backend.static.gen_index">backend.static.gen_index module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-backend.static.make_index">backend.static.make_index module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-backend.static">Module contents</a></li>
 </ul>
 </li>
@@ -111,18 +111,30 @@
 <li class="toctree-l2"><a class="reference internal" href="backend.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.data_backend">backend.data_backend module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.global_settings">backend.global_settings module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.old_web_server_api">backend.old_web_server_api module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.scenes_manager">backend.scenes_manager module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.scenes_object_prototype">backend.scenes_object_prototype module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.scenes_scene_prototype">backend.scenes_scene_prototype module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.web_server">backend.web_server module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.web_server_api">backend.web_server_api module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.web_server_control">backend.web_server_control module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend.web_server_display">backend.web_server_display module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="backend.html#module-backend">Module contents</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="util.html">util package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Visualisation Frontend:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="frontend.html">frontend package (JavaScript Code)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Control Terminal:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="client.html">client package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Misc:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="todo_general.html">General things to do</a></li>
+<li class="toctree-l1"><a class="reference internal" href="todo.html">Todo (collection of everything)</a></li>
 </ul>
 
             
@@ -225,12 +237,12 @@ directives to load the control menu or the colorbar.</p>
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-backend.static.gen_index">
-<span id="backend-static-gen-index-module"></span><h2>backend.static.gen_index module<a class="headerlink" href="#module-backend.static.gen_index" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-backend.static.make_index">
+<span id="backend-static-make-index-module"></span><h2>backend.static.make_index module<a class="headerlink" href="#module-backend.static.make_index" title="Permalink to this headline">¶</a></h2>
 <p>Contains the function for generating taylored <code class="docutils literal"><span class="pre">index.html</span></code> files.</p>
 <dl class="function">
-<dt id="backend.static.gen_index.make_index">
-<code class="descclassname">backend.static.gen_index.</code><code class="descname">make_index</code><span class="sig-paren">(</span><em>scene_hash=''</em>, <em>with_menu=True</em>, <em>with_colorbar=True</em>, <em>overlay_message=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/static/gen_index.html#make_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.static.gen_index.make_index" title="Permalink to this definition">¶</a></dt>
+<dt id="backend.static.make_index.make_index">
+<code class="descclassname">backend.static.make_index.</code><code class="descname">make_index</code><span class="sig-paren">(</span><em>scene_hash=''</em>, <em>with_menu=True</em>, <em>with_colorbar=True</em>, <em>overlay_message=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/static/make_index.html#make_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.static.make_index.make_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a string with the <code class="docutils literal"><span class="pre">index.html</span></code> file.</p>
 <p>This string contains information about the scene_hash (if any) and whether
 or not we want to display the browser menu to add and remove simulation
@@ -277,7 +289,7 @@ message will be displayed in a centered overlay on the screen.</li>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="frontend.html" class="btn btn-neutral float-right" title="frontend package (JavaScript Code)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="util.html" class="btn btn-neutral float-right" title="util package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="backend.html" class="btn btn-neutral" title="backend package (Python code)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

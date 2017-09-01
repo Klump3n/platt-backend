@@ -93,12 +93,24 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Packages and modules:</span></p>
+<p class="caption"><span class="caption-text">Visualisation Backend:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../main.html">Startup script</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../backend.html">backend package (Python code)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../util.html">util package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Visualisation Frontend:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../frontend.html">frontend package (JavaScript Code)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Control Terminal:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../client.html">client package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Misc:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../todo_general.html">General things to do</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../todo.html">Todo (collection of everything)</a></li>
 </ul>
 
             
@@ -165,7 +177,7 @@
   <h1>Source code for client.command_line</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python3</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Terminal-like interface for interacting with calculix-clone.</span>
+<span class="sd">Terminal-like interface for interacting with the backend.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 
@@ -178,13 +190,11 @@
 <span class="kn">from</span> <span class="nn">_dos.do_objects</span> <span class="k">import</span> <span class="n">objects</span><span class="p">,</span> <span class="n">objects_help</span>
 
 <span class="c1"># Some utility functions</span>
-<span class="kn">from</span> <span class="nn">util.post_json</span> <span class="k">import</span> <span class="n">post_json_string</span>
-<span class="kn">from</span> <span class="nn">util.test_host</span> <span class="k">import</span> <span class="n">target_online_and_compatible</span>
+<span class="kn">from</span> <span class="nn">util_client.test_host</span> <span class="k">import</span> <span class="n">target_online_and_compatible</span>
 
-<span class="c1"># Get the version from the parent directory</span>
+<span class="c1"># # Get the version from the parent directory</span>
 <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">util.version</span> <span class="k">import</span> <span class="n">version</span>
-<span class="kn">from</span> <span class="nn">util.print_function_usage</span> <span class="k">import</span> <span class="n">print_help</span>
 
 
 <div class="viewcode-block" id="parse_commandline"><a class="viewcode-back" href="../../client.html#client.command_line.parse_commandline">[docs]</a><span class="k">def</span> <span class="nf">parse_commandline</span><span class="p">():</span>
@@ -279,7 +289,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">c_data</span><span class="p">[</span><span class="s1">&#39;headers&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">headers</span>
 
         <span class="c1"># Check if the host is running a compatible server</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">target_online_and_compatible</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">version_dict</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">target_online_and_compatible</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c_data</span><span class="p">):</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s1">&#39;Exiting.&#39;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="kc">None</span></div>
@@ -408,8 +418,6 @@
 
     <span class="n">CLI</span> <span class="o">=</span> <span class="n">Terminal</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">HOST</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">PORT</span><span class="p">)</span>
     <span class="n">CLI</span><span class="o">.</span><span class="n">cmdloop</span><span class="p">()</span>
-
-
 </pre></div>
 
            </div>

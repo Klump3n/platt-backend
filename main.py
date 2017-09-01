@@ -3,11 +3,13 @@
 """
 Start a web server. Direct your browser to [HOST_IP]:[PORT] with PORT being
 either 8008 or the supplied value.
+
 """
 
 import os
 import sys
 import argparse
+
 from util.version import version
 import backend.web_server as web_server
 
@@ -24,8 +26,8 @@ def parse_commandline():
 
     Notes:
      The default port for the web server is contained in this function.
-    """
 
+    """
     # HACK: Under certain conditions we don't want to supply a --data_dir, but
     # we still want to set it to required while parsing the command line. The
     # following will give True if we neither want to test nor have the version
@@ -74,8 +76,8 @@ def start_backend(data_dir, port):
 
     Returns:
      None: Nothing
-    """
 
+    """
     # Get the version information
     version_info = version()
     program_name = version_info['program']
@@ -129,7 +131,6 @@ def start_program():
      None: Nothing
 
     """
-
     # Parse the command line arguments
     ARGS = parse_commandline()
 
@@ -168,7 +169,6 @@ def print_version():
      None: Nothing.
 
     """
-
     # Get the version information
     version_info = version()
     program_name = version_info['program']
@@ -183,7 +183,7 @@ if __name__ == '__main__':
     """
     This is called when (e.g. always) we start this file as a standalone
     version.
-    """
 
+    """
     # Start the program
     start_program()
