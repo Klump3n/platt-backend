@@ -5,6 +5,12 @@ This package contains the modules for the functionality of the client program.
 Since the do_* functions in the Terminal class tend to be bigger, we place them
 into modules and import them into the clients main file.
 
+Todo
+----
+
+.. todo:: _dos is not part of the client program. This has to be fixed for
+          consistent links.
+
 Submodules
 ----------
 

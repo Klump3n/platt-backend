@@ -39,11 +39,14 @@ def objects(c_data):
     Returns:
      None: Nothing
 
+    See Also:
+     :py:obj:`backend.web_server_api.ServerAPI.list_of_fem_data`
+
     """
 
     # Call the host and ask for simulation data
     api_call = 'list_of_fem_data'
-    data = ''
+    data = None
     response = post_json_string(
         api_call=api_call, data=data, connection_data=c_data)
 

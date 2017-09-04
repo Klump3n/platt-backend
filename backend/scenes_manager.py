@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 """
-An instance for an empty scene.
+This module takes care of storing and manipulating scenes.
+
 """
 
 import pathlib
@@ -10,7 +11,14 @@ from backend.scenes_scene_prototype import _ScenePrototype
 
 class SceneManager:
     """
-    Takes care of registering scenes.
+    Stores scenes and contains methods for manipulating scenes.
+
+    Args:
+     data_dir (str): The (relative) path to some simulation data.
+
+    Raises:
+     TypeError: If `data_dir` is not of type `str`.
+
     """
 
     def __init__(
@@ -20,7 +28,10 @@ class SceneManager:
         """
         Initialise the manager.
 
-        E.g. set an empty scene list.
+        If initialization `data_dir` is not of type `str` a TypeError will be
+        raised. The `data_dir` is converted to a PathLike object.
+        self._scene_list is a dictionary for containing scenes.
+
         """
 
         if not isinstance(data_dir, str):  # Yes, string.
@@ -44,6 +55,8 @@ class SceneManager:
         'fo' in there. If that's the case we add it to the list we return
         in the end.
 
+        Todo:
+         Maybe put into objects module?
         """
 
         # Find all the folders in _data_dir
@@ -85,6 +98,7 @@ class SceneManager:
         if scene_id in self._scene_list:
             self._scene_list.pop(scene_id)
             return scene_id
+
         else:
             print('No scene found to delete.')
             return None
@@ -95,6 +109,10 @@ class SceneManager:
     ):
         """
         Create a new scene with an object.
+
+        Todo:
+         Make it impossible to create an empty scene.
+
         """
 
         # Type checking for object path

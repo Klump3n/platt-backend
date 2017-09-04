@@ -437,16 +437,62 @@ until after the backend is shut down.</p>
 </div>
 <div class="section" id="module-backend.web_server_api">
 <span id="backend-web-server-api-module"></span><h2>backend.web_server_api module<a class="headerlink" href="#module-backend.web_server_api" title="Permalink to this headline">¶</a></h2>
-<p>The api.</p>
+<p>This module contains the class for the API endpoints of the backend.</p>
 <dl class="class">
 <dt id="backend.web_server_api.ServerAPI">
 <em class="property">class </em><code class="descclassname">backend.web_server_api.</code><code class="descname">ServerAPI</code><a class="reference internal" href="_modules/backend/web_server_api.html#ServerAPI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_api.ServerAPI" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Expose an API to control the server.</p>
+<p>This class contains the API endpoints of the backend.</p>
+<p>Any method that is exposed via <cite>&#64;cherrypy.expose</cite> decorator can be reached
+under <code class="docutils literal"><span class="pre">http://HOST:PORT/api/METHOD</span></code>, with <code class="docutils literal"><span class="pre">METHOD</span></code> being the exposed
+method.</p>
+<p>A new method with JSON (<code class="docutils literal"><span class="pre">http://HOST:PORT/api/a_new_method_with_json</span></code>)
+should be implemented as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="nd">@cherrypy.expose</span>
+<span class="nd">@cherrypy.tools.json_in</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">a_new_method_with_json</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+    <span class="n">input_json_dict</span> <span class="o">=</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">json</span>
+    <span class="n">incoming_value</span> <span class="o">=</span> <span class="n">input_json_dict</span><span class="p">[</span><span class="s1">&#39;incoming_key&#39;</span><span class="p">]</span>
+
+    <span class="n">outgoing_value</span> <span class="o">=</span> <span class="n">some_function</span><span class="p">(</span><span class="n">incoming_value</span><span class="p">)</span>
+    <span class="n">output_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;outgoing_key&#39;</span><span class="p">:</span> <span class="n">outgoing_value</span><span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">outgoing_dict</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The decorator <cite>&#64;cherrypy.expose</cite> tells the class that we want this method
+to be reachable via the API. The decorator <cite>&#64;cherrypy.tools.json_in()</cite>
+enables the method to receive a JSON file.
+We can read this JSON file into a dictionary and extract a value.
+We then create an outgoing dictionary and return this with json.dumps().</p>
+<p>We can of course omit the JSON decorator if we don’t need to receive a
+JSON file.</p>
+<p class="rubric">Notes</p>
+<p>Any JSON package that should reach the API has to be delivered with a POST
+request.</p>
 <dl class="method">
 <dt id="backend.web_server_api.ServerAPI.connect_client">
 <code class="descname">connect_client</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server_api.html#ServerAPI.connect_client"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_api.ServerAPI.connect_client" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a jsoned string with version number. Maybe more later?</p>
+<dd><p>This returns a dictionary containing program name and version number.</p>
+<p>With this method a client can verify that the backend is running a
+compatible version.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>None</strong> – Nothing.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A dictionary containing program name and version.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">JSON dict</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="client.util_client.html#client.util_client.test_host.target_online_and_compatible" title="client.util_client.test_host.target_online_and_compatible"><code class="xref py py-meth docutils literal"><span class="pre">client.util_client.test_host.target_online_and_compatible()</span></code></a></p>
+</div>
 </dd></dl>
 
 <dl class="method">
@@ -505,6 +551,27 @@ the required data back.</p>
 <dt id="backend.web_server_api.ServerAPI.list_of_fem_data">
 <code class="descname">list_of_fem_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server_api.html#ServerAPI.list_of_fem_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_api.ServerAPI.list_of_fem_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>List the available fem simulation directories.</p>
+<p>A list of all available simulation data folders can be obtained from
+the scene_manager.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A dictionary containing available <cite>data_folders</cite>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">JSON dict</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">_dos is not part of the client module. Fix that!</p>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#backend.scenes_manager.SceneManager.get_femdata_dirs" title="backend.scenes_manager.SceneManager.get_femdata_dirs"><code class="xref py py-meth docutils literal"><span class="pre">backend.scenes_manager.SceneManager.get_femdata_dirs()</span></code></a>
+<a class="reference internal" href="client._dos.html#_dos.do_objects.objects" title="_dos.do_objects.objects"><code class="xref py py-func docutils literal"><span class="pre">_dos.do_objects.objects()</span></code></a></p>
+</div>
 </dd></dl>
 
 <dl class="method">
@@ -524,8 +591,30 @@ also non-indexed wireframe data for the surface.</p>
 <dl class="method">
 <dt id="backend.web_server_api.ServerAPI.scenes_create">
 <code class="descname">scenes_create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server_api.html#ServerAPI.scenes_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_api.ServerAPI.scenes_create" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a new scene with an initial object. We expect a json string like
-{‘object_path’: STRING_RELATIVE_TO_DATA_DIR_IN_GLOSET}</p>
+<dd><p>Create a new scene.</p>
+<p>We expect a JSON package with key ‘object_path’. The value has to be a
+list, containing valid objects. If the list is empty, an empty scene
+will be created.</p>
+<dl class="docutils">
+<dt>Expected JSON package:</dt>
+<dd><code class="docutils literal"><span class="pre">{'object_path':</span> <span class="pre">['list',</span> <span class="pre">'with',</span> <span class="pre">'objects']}</span></code></dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A dictionary containing a the unique hash of the scene,
+that has been created.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">JSON dict</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#backend.scenes_manager.SceneManager.new_scene" title="backend.scenes_manager.SceneManager.new_scene"><code class="xref py py-meth docutils literal"><span class="pre">backend.scenes_manager.SceneManager.new_scene()</span></code></a>
+<a class="reference internal" href="client._dos.html#_dos.do_scenes.scenes_create" title="_dos.do_scenes.scenes_create"><code class="xref py py-func docutils literal"><span class="pre">_dos.do_scenes.scenes_create()</span></code></a></p>
+</div>
 </dd></dl>
 
 <dl class="method">
@@ -538,6 +627,23 @@ also non-indexed wireframe data for the surface.</p>
 <dt id="backend.web_server_api.ServerAPI.scenes_infos">
 <code class="descname">scenes_infos</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/web_server_api.html#ServerAPI.scenes_infos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.web_server_api.ServerAPI.scenes_infos" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of scenes.</p>
+<p>A list of created scenes can be obtained from the scene_manager.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A dictionary containing a scenes and the objects within
+each scene.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">JSON dict</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#backend.scenes_manager.SceneManager.get_scene_infos" title="backend.scenes_manager.SceneManager.get_scene_infos"><code class="xref py py-meth docutils literal"><span class="pre">backend.scenes_manager.SceneManager.get_scene_infos()</span></code></a>
+<a class="reference internal" href="client._dos.html#_dos.do_scenes.scenes_list" title="_dos.do_scenes.scenes_list"><code class="xref py py-func docutils literal"><span class="pre">_dos.do_scenes.scenes_list()</span></code></a></p>
+</div>
 </dd></dl>
 
 </dd></dl>

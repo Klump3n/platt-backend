@@ -216,11 +216,14 @@
 <span class="sd">    Returns:</span>
 <span class="sd">     None: Nothing</span>
 
+<span class="sd">    See Also:</span>
+<span class="sd">     :py:obj:`backend.web_server_api.ServerAPI.list_of_fem_data`</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Call the host and ask for simulation data</span>
     <span class="n">api_call</span> <span class="o">=</span> <span class="s1">&#39;list_of_fem_data&#39;</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">post_json_string</span><span class="p">(</span>
         <span class="n">api_call</span><span class="o">=</span><span class="n">api_call</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">connection_data</span><span class="o">=</span><span class="n">c_data</span><span class="p">)</span>
 

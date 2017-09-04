@@ -177,7 +177,7 @@
   <h1>Source code for backend.web_server_api</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python3</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">The api.</span>
+<span class="sd">This module contains the class for the API endpoints of the backend.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 
@@ -201,16 +201,63 @@
 <div class="viewcode-block" id="ServerAPI"><a class="viewcode-back" href="../../backend.html#backend.web_server_api.ServerAPI">[docs]</a><span class="nd">@cherrypy</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">allow</span><span class="p">(</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
 <span class="k">class</span> <span class="nc">ServerAPI</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Expose an API to control the server.</span>
+<span class="sd">    This class contains the API endpoints of the backend.</span>
+
+<span class="sd">    Any method that is exposed via `@cherrypy.expose` decorator can be reached</span>
+<span class="sd">    under ``http://HOST:PORT/api/METHOD``, with ``METHOD`` being the exposed</span>
+<span class="sd">    method.</span>
+
+<span class="sd">    A new method with JSON (``http://HOST:PORT/api/a_new_method_with_json``)</span>
+<span class="sd">    should be implemented as follows:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        @cherrypy.expose</span>
+<span class="sd">        @cherrypy.tools.json_in()</span>
+<span class="sd">        def a_new_method_with_json(self):</span>
+
+<span class="sd">            input_json_dict = cherrypy.request.json</span>
+<span class="sd">            incoming_value = input_json_dict[&#39;incoming_key&#39;]</span>
+
+<span class="sd">            outgoing_value = some_function(incoming_value)</span>
+<span class="sd">            output_dict = {&#39;outgoing_key&#39;: outgoing_value}</span>
+
+<span class="sd">            return json.dumps(outgoing_dict)</span>
+
+<span class="sd">    The decorator `@cherrypy.expose` tells the class that we want this method</span>
+<span class="sd">    to be reachable via the API. The decorator `@cherrypy.tools.json_in()`</span>
+<span class="sd">    enables the method to receive a JSON file.</span>
+<span class="sd">    We can read this JSON file into a dictionary and extract a value.</span>
+<span class="sd">    We then create an outgoing dictionary and return this with json.dumps().</span>
+
+<span class="sd">    We can of course omit the JSON decorator if we don&#39;t need to receive a</span>
+<span class="sd">    JSON file.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">     Any JSON package that should reach the API has to be delivered with a POST</span>
+<span class="sd">     request.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="ServerAPI.connect_client"><a class="viewcode-back" href="../../backend.html#backend.web_server_api.ServerAPI.connect_client">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
     <span class="k">def</span> <span class="nf">connect_client</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Return a jsoned string with version number. Maybe more later?</span>
+<span class="sd">        This returns a dictionary containing program name and version number.</span>
+
+<span class="sd">        With this method a client can verify that the backend is running a</span>
+<span class="sd">        compatible version.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         None: Nothing.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         JSON dict: A dictionary containing program name and version.</span>
+
+<span class="sd">        See Also:</span>
+<span class="sd">         :py:meth:`client.util_client.test_host.target_online_and_compatible`</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1"># Version of the package</span>
         <span class="n">version_dict</span> <span class="o">=</span> <span class="n">version</span><span class="p">(</span><span class="n">detail</span><span class="o">=</span><span class="s1">&#39;long&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">version_dict</span><span class="p">)</span></div>
 
@@ -218,15 +265,41 @@
     <span class="k">def</span> <span class="nf">list_of_fem_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        List the available fem simulation directories.</span>
+
+<span class="sd">        A list of all available simulation data folders can be obtained from</span>
+<span class="sd">        the scene_manager.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         JSON dict: A dictionary containing available `data_folders`.</span>
+
+<span class="sd">        Todo:</span>
+<span class="sd">         _dos is not part of the client module. Fix that!</span>
+
+<span class="sd">        See Also:</span>
+<span class="sd">         :py:meth:`backend.scenes_manager.SceneManager.get_femdata_dirs`</span>
+<span class="sd">         :py:func:`_dos.do_objects.objects`</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">data_folders</span> <span class="o">=</span> <span class="n">gloset</span><span class="o">.</span><span class="n">scene_manager</span><span class="o">.</span><span class="n">get_femdata_dirs</span><span class="p">()</span>
+
         <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s1">&#39;data_folders&#39;</span><span class="p">:</span> <span class="n">data_folders</span><span class="p">})</span></div>
 
 <div class="viewcode-block" id="ServerAPI.scenes_infos"><a class="viewcode-back" href="../../backend.html#backend.web_server_api.ServerAPI.scenes_infos">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
     <span class="k">def</span> <span class="nf">scenes_infos</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return a list of scenes.</span>
+
+<span class="sd">        A list of created scenes can be obtained from the scene_manager.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         JSON dict: A dictionary containing a scenes and the objects within</span>
+<span class="sd">         each scene.</span>
+
+<span class="sd">        See Also:</span>
+<span class="sd">         :py:meth:`backend.scenes_manager.SceneManager.get_scene_infos`</span>
+<span class="sd">         :py:func:`_dos.do_scenes.scenes_list`</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">scenes</span> <span class="o">=</span> <span class="n">gloset</span><span class="o">.</span><span class="n">scene_manager</span><span class="o">.</span><span class="n">get_scene_infos</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">scenes</span><span class="p">)</span></div>
@@ -235,14 +308,28 @@
     <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">json_in</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">scenes_create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Create a new scene with an initial object. We expect a json string like</span>
-<span class="sd">        {&#39;object_path&#39;: STRING_RELATIVE_TO_DATA_DIR_IN_GLOSET}</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        Create a new scene.</span>
 
-        <span class="c1"># Parse JSON</span>
+<span class="sd">        We expect a JSON package with key &#39;object_path&#39;. The value has to be a</span>
+<span class="sd">        list, containing valid objects. If the list is empty, an empty scene</span>
+<span class="sd">        will be created.</span>
+
+<span class="sd">        Expected JSON package:</span>
+<span class="sd">         ``{&#39;object_path&#39;: [&#39;list&#39;, &#39;with&#39;, &#39;objects&#39;]}``</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         JSON dict: A dictionary containing a the unique hash of the scene,</span>
+<span class="sd">         that has been created.</span>
+
+<span class="sd">        See Also:</span>
+<span class="sd">         :py:meth:`backend.scenes_manager.SceneManager.new_scene`</span>
+<span class="sd">         :py:func:`_dos.do_scenes.scenes_create`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">json_input</span> <span class="o">=</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">json</span>
         <span class="n">object_path</span> <span class="o">=</span> <span class="n">json_input</span><span class="p">[</span><span class="s1">&#39;object_path&#39;</span><span class="p">]</span>
 
+        <span class="nb">print</span><span class="p">(</span><span class="n">json_input</span><span class="p">,</span> <span class="n">object_path</span><span class="p">)</span>
         <span class="n">scene_id</span> <span class="o">=</span> <span class="n">gloset</span><span class="o">.</span><span class="n">scene_manager</span><span class="o">.</span><span class="n">new_scene</span><span class="p">(</span><span class="n">object_path</span><span class="o">=</span><span class="n">object_path</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
             <span class="p">{</span><span class="s1">&#39;created&#39;</span><span class="p">:</span> <span class="n">scene_id</span><span class="p">}</span>
@@ -253,6 +340,8 @@
     <span class="k">def</span> <span class="nf">scenes_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Delete a scene.</span>
+
+
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Parse JSON</span>

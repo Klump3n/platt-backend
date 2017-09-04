@@ -176,7 +176,6 @@
             
   <h1>Source code for main</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python3</span>
-
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Start a web server. Direct your browser to [HOST_IP]:[PORT] with PORT being</span>
 <span class="sd">either 8008 or the supplied value.</span>
@@ -205,10 +204,11 @@
 <span class="sd">     The default port for the web server is contained in this function.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># HACK: Under certain conditions we don&#39;t want to supply a --data_dir, but</span>
-    <span class="c1"># we still want to set it to required while parsing the command line. The</span>
-    <span class="c1"># following will give True if we neither want to test nor have the version</span>
-    <span class="c1"># printed out, but False otherwise.</span>
+    <span class="c1"># HACK: Under certain conditions we don&#39;t want to supply a --data_dir (e.g.</span>
+    <span class="c1"># if we just want the version returned), but we still want to set it to</span>
+    <span class="c1"># required while parsing the command line. The following will give True if</span>
+    <span class="c1"># we neither want to test nor have the version printed out, but False</span>
+    <span class="c1"># otherwise.</span>
     <span class="n">no_data_dir_requirements</span> <span class="o">=</span> <span class="p">(</span>
         <span class="s1">&#39;--test&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span> <span class="ow">and</span>
         <span class="s1">&#39;--version&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span> <span class="ow">and</span>

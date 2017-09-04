@@ -22,6 +22,9 @@ def target_online_and_compatible(c_data):
      version than the client and True if the backend is online and has the
      same version as the client.
 
+    See Also:
+     :py:meth:`backend.web_server_api.ServerAPI.connect_client`
+    
     """
     # Call the about page of the host
     api_call = 'connect_client'

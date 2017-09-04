@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 Start a web server. Direct your browser to [HOST_IP]:[PORT] with PORT being
 either 8008 or the supplied value.
@@ -28,10 +27,11 @@ def parse_commandline():
      The default port for the web server is contained in this function.
 
     """
-    # HACK: Under certain conditions we don't want to supply a --data_dir, but
-    # we still want to set it to required while parsing the command line. The
-    # following will give True if we neither want to test nor have the version
-    # printed out, but False otherwise.
+    # HACK: Under certain conditions we don't want to supply a --data_dir (e.g.
+    # if we just want the version returned), but we still want to set it to
+    # required while parsing the command line. The following will give True if
+    # we neither want to test nor have the version printed out, but False
+    # otherwise.
     no_data_dir_requirements = (
         '--test' not in sys.argv and
         '--version' not in sys.argv and

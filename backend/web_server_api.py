@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-The api.
+This module contains the class for the API endpoints of the backend.
 
 """
 
@@ -24,16 +24,63 @@ import backend.global_settings as gloset
 @cherrypy.tools.allow(methods=['POST'])
 class ServerAPI:
     """
-    Expose an API to control the server.
+    This class contains the API endpoints of the backend.
+
+    Any method that is exposed via `@cherrypy.expose` decorator can be reached
+    under ``http://HOST:PORT/api/METHOD``, with ``METHOD`` being the exposed
+    method.
+
+    A new method with JSON (``http://HOST:PORT/api/a_new_method_with_json``)
+    should be implemented as follows:
+
+    .. code-block:: python
+
+        @cherrypy.expose
+        @cherrypy.tools.json_in()
+        def a_new_method_with_json(self):
+
+            input_json_dict = cherrypy.request.json
+            incoming_value = input_json_dict['incoming_key']
+
+            outgoing_value = some_function(incoming_value)
+            output_dict = {'outgoing_key': outgoing_value}
+
+            return json.dumps(outgoing_dict)
+
+    The decorator `@cherrypy.expose` tells the class that we want this method
+    to be reachable via the API. The decorator `@cherrypy.tools.json_in()`
+    enables the method to receive a JSON file.
+    We can read this JSON file into a dictionary and extract a value.
+    We then create an outgoing dictionary and return this with json.dumps().
+
+    We can of course omit the JSON decorator if we don't need to receive a
+    JSON file.
+
+    Notes:
+     Any JSON package that should reach the API has to be delivered with a POST
+     request.
+
     """
 
     @cherrypy.expose
     def connect_client(self):
         """
-        Return a jsoned string with version number. Maybe more later?
+        This returns a dictionary containing program name and version number.
+
+        With this method a client can verify that the backend is running a
+        compatible version.
+
+        Args:
+         None: Nothing.
+
+        Returns:
+         JSON dict: A dictionary containing program name and version.
+
+        See Also:
+         :py:meth:`client.util_client.test_host.target_online_and_compatible`
+
         """
 
-        # Version of the package
         version_dict = version(detail='long')
         return json.dumps(version_dict)
 
@@ -41,15 +88,41 @@ class ServerAPI:
     def list_of_fem_data(self):
         """
         List the available fem simulation directories.
+
+        A list of all available simulation data folders can be obtained from
+        the scene_manager.
+
+        Returns:
+         JSON dict: A dictionary containing available `data_folders`.
+
+        Todo:
+         _dos is not part of the client module. Fix that!
+
+        See Also:
+         :py:meth:`backend.scenes_manager.SceneManager.get_femdata_dirs`
+         :py:func:`_dos.do_objects.objects`
+
         """
 
         data_folders = gloset.scene_manager.get_femdata_dirs()
+
         return json.dumps({'data_folders': data_folders})
 
     @cherrypy.expose
     def scenes_infos(self):
         """
         Return a list of scenes.
+
+        A list of created scenes can be obtained from the scene_manager.
+
+        Returns:
+         JSON dict: A dictionary containing a scenes and the objects within
+         each scene.
+
+        See Also:
+         :py:meth:`backend.scenes_manager.SceneManager.get_scene_infos`
+         :py:func:`_dos.do_scenes.scenes_list`
+
         """
         scenes = gloset.scene_manager.get_scene_infos()
         return json.dumps(scenes)
@@ -58,14 +131,28 @@ class ServerAPI:
     @cherrypy.tools.json_in()
     def scenes_create(self):
         """
-        Create a new scene with an initial object. We expect a json string like
-        {'object_path': STRING_RELATIVE_TO_DATA_DIR_IN_GLOSET}
-        """
+        Create a new scene.
 
-        # Parse JSON
+        We expect a JSON package with key 'object_path'. The value has to be a
+        list, containing valid objects. If the list is empty, an empty scene
+        will be created.
+
+        Expected JSON package:
+         ``{'object_path': ['list', 'with', 'objects']}``
+
+        Returns:
+         JSON dict: A dictionary containing a the unique hash of the scene,
+         that has been created.
+
+        See Also:
+         :py:meth:`backend.scenes_manager.SceneManager.new_scene`
+         :py:func:`_dos.do_scenes.scenes_create`
+
+        """
         json_input = cherrypy.request.json
         object_path = json_input['object_path']
 
+        print(json_input, object_path)
         scene_id = gloset.scene_manager.new_scene(object_path=object_path)
         return json.dumps(
             {'created': scene_id}
@@ -76,6 +163,8 @@ class ServerAPI:
     def scenes_delete(self):
         """
         Delete a scene.
+
+
         """
 
         # Parse JSON
