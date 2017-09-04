@@ -178,7 +178,8 @@
 <span></span><span class="ch">#!/usr/bin/env python3</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">An instance for an empty scene.</span>
+<span class="sd">This module takes care of storing and manipulating scenes.</span>
+
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">pathlib</span>
@@ -187,7 +188,14 @@
 
 <div class="viewcode-block" id="SceneManager"><a class="viewcode-back" href="../../backend.html#backend.scenes_manager.SceneManager">[docs]</a><span class="k">class</span> <span class="nc">SceneManager</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Takes care of registering scenes.</span>
+<span class="sd">    Stores scenes and contains methods for manipulating scenes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     data_dir (str): The (relative) path to some simulation data.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">     TypeError: If `data_dir` is not of type `str`.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
@@ -197,7 +205,10 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialise the manager.</span>
 
-<span class="sd">        E.g. set an empty scene list.</span>
+<span class="sd">        If initialization `data_dir` is not of type `str` a TypeError will be</span>
+<span class="sd">        raised. The `data_dir` is converted to a PathLike object.</span>
+<span class="sd">        self._scene_list is a dictionary for containing scenes.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>  <span class="c1"># Yes, string.</span>
@@ -221,6 +232,8 @@
 <span class="sd">        &#39;fo&#39; in there. If that&#39;s the case we add it to the list we return</span>
 <span class="sd">        in the end.</span>
 
+<span class="sd">        Todo:</span>
+<span class="sd">         Maybe put into objects module?</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Find all the folders in _data_dir</span>
@@ -262,6 +275,7 @@
         <span class="k">if</span> <span class="n">scene_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scene_list</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_scene_list</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">scene_id</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">scene_id</span>
+
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No scene found to delete.&#39;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">None</span></div>
@@ -272,6 +286,10 @@
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a new scene with an object.</span>
+
+<span class="sd">        Todo:</span>
+<span class="sd">         Make it impossible to create an empty scene.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Type checking for object path</span>

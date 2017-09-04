@@ -318,12 +318,22 @@ to output it too. We dont want redundancy.</p>
 </div>
 <div class="section" id="module-backend.scenes_manager">
 <span id="backend-scenes-manager-module"></span><h2>backend.scenes_manager module<a class="headerlink" href="#module-backend.scenes_manager" title="Permalink to this headline">¶</a></h2>
-<p>An instance for an empty scene.</p>
+<p>This module takes care of storing and manipulating scenes.</p>
 <dl class="class">
 <dt id="backend.scenes_manager.SceneManager">
 <em class="property">class </em><code class="descclassname">backend.scenes_manager.</code><code class="descname">SceneManager</code><span class="sig-paren">(</span><em>data_dir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_manager.html#SceneManager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_manager.SceneManager" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Takes care of registering scenes.</p>
+<p>Stores scenes and contains methods for manipulating scenes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data_dir</strong> (<em>str</em>) – The (relative) path to some simulation data.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> – If <cite>data_dir</cite> is not of type <cite>str</cite>.</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="backend.scenes_manager.SceneManager.delete_scene">
 <code class="descname">delete_scene</code><span class="sig-paren">(</span><em>scene_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_manager.html#SceneManager.delete_scene"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_manager.SceneManager.delete_scene" title="Permalink to this definition">¶</a></dt>
@@ -339,6 +349,10 @@ _data_dir.</p>
 directory, if it’s a directory check if there is a directory called
 ‘fo’ in there. If that’s the case we add it to the list we return
 in the end.</p>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">Maybe put into objects module?</p>
+</div>
 </dd></dl>
 
 <dl class="method">
@@ -351,6 +365,10 @@ in the end.</p>
 <dt id="backend.scenes_manager.SceneManager.new_scene">
 <code class="descname">new_scene</code><span class="sig-paren">(</span><em>object_path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_manager.html#SceneManager.new_scene"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_manager.SceneManager.new_scene" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new scene with an object.</p>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">Make it impossible to create an empty scene.</p>
+</div>
 </dd></dl>
 
 <dl class="method">
@@ -395,7 +413,7 @@ backend listens to connections.</li>
 </tr>
 </tbody>
 </table>
-<div class="admonition-todo admonition" id="index-0">
+<div class="admonition-todo admonition" id="index-2">
 <p class="first admonition-title">Todo</p>
 <p class="last">Replace path strings with Pathlike objects.</p>
 </div>
@@ -563,7 +581,7 @@ the scene_manager.</p>
 </tr>
 </tbody>
 </table>
-<div class="admonition-todo admonition" id="index-1">
+<div class="admonition-todo admonition" id="index-3">
 <p class="first admonition-title">Todo</p>
 <p class="last">_dos is not part of the client module. Fix that!</p>
 </div>
