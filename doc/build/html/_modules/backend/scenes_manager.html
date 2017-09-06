@@ -190,6 +190,22 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Stores scenes and contains methods for manipulating scenes.</span>
 
+<span class="sd">    Some design notes:</span>
+<span class="sd">    self._scene_list is a dictionary that contains scene objects (see</span>
+<span class="sd">    :py:class:`backend.scenes_scene_prototype._ScenePrototype`). The dict will</span>
+<span class="sd">    look as follows:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">       self._scene_list = {</span>
+<span class="sd">           &#39;scene_hash_1&#39;: &lt;_ScenePrototype object for scene_hash_1&gt;,</span>
+<span class="sd">           &#39;scene_hash_2&#39;: &lt;_ScenePrototype object for scene_hash_2&gt;,</span>
+<span class="sd">           ...</span>
+<span class="sd">       }</span>
+
+<span class="sd">    To now get any information about the scenes (except for the keys) you must</span>
+<span class="sd">    use the methods contained in the _ScenePrototype objects.</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">     data_dir (str): The (relative) path to some simulation data.</span>
 
@@ -197,7 +213,6 @@
 <span class="sd">     TypeError: If `data_dir` is not of type `str`.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">data_dir</span><span class="o">=</span><span class="kc">None</span>
@@ -232,8 +247,19 @@
 <span class="sd">        &#39;fo&#39; in there. If that&#39;s the case we add it to the list we return</span>
 <span class="sd">        in the end.</span>
 
+<span class="sd">        Args:</span>
+<span class="sd">         None: No parameters.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         list: A list containing the names of all the folders in _data_dir</span>
+<span class="sd">         that potentially contain simulation data.</span>
+
 <span class="sd">        Todo:</span>
 <span class="sd">         Maybe put into objects module?</span>
+<span class="sd">         Make this a bit more secure. Just checking for the &#39;fo&#39; directory is a</span>
+<span class="sd">         bit optimistic and could probably be exploited (then again: for</span>
+<span class="sd">         what?).</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Find all the folders in _data_dir</span>
@@ -249,11 +275,28 @@
 
 <div class="viewcode-block" id="SceneManager.get_scene_infos"><a class="viewcode-back" href="../../backend.html#backend.scenes_manager.SceneManager.get_scene_infos">[docs]</a>    <span class="k">def</span> <span class="nf">get_scene_infos</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Return a dict with all the scenes and information regarding every scene.</span>
+<span class="sd">        Return a dict with all the scenes and information for every scene.</span>
+
+<span class="sd">        Go through every key (= scene_hash) in self._scene_list and get the</span>
+<span class="sd">        object information from the corresponding value (= _ScenePrototype</span>
+<span class="sd">        object) by calling the internal method for retrieving the list of</span>
+<span class="sd">        objects.</span>
+
+<span class="sd">        The returned dict looks as follows:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">         info_dict = {</span>
+<span class="sd">             &#39;scene_hash_1&#39;: {&#39;object_list&#39;: &#39;obj_1&#39;, &#39;obj_3&#39;},</span>
+<span class="sd">             &#39;scene_hash_2&#39;: {&#39;object_list&#39;: &#39;obj_1&#39;, &#39;obj_2&#39;},</span>
+<span class="sd">             ...</span>
+<span class="sd">         }</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         dict: A dictionary containing all the scenes and all the objects in</span>
+<span class="sd">         every scene.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="c1"># TODO: Make this better</span>
-
         <span class="n">info_dict</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="k">for</span> <span class="n">scene</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scene_list</span><span class="p">:</span>
@@ -266,6 +309,22 @@
 <div class="viewcode-block" id="SceneManager.delete_scene"><a class="viewcode-back" href="../../backend.html#backend.scenes_manager.SceneManager.delete_scene">[docs]</a>    <span class="k">def</span> <span class="nf">delete_scene</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scene_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Delete a scene.</span>
+
+<span class="sd">        If no `scene_id` is given, a message is printed.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         scene_id (str, None): The scene_hash of the scene to be deleted.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         str, None: Returns the `scene_id` that was deleted or None, if no</span>
+<span class="sd">         scene could be found to be deleted.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">         TypeError: If `scene_id` is not of type `str`.</span>
+
+<span class="sd">        Todo:</span>
+<span class="sd">         Make this work with more than one scene.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scene_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -286,6 +345,19 @@
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a new scene with an object.</span>
+
+<span class="sd">        This adds a ScenePrototype to `self._scene_list`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         object_path (None, str, list (of str), defaults to None): The path to</span>
+<span class="sd">          the objects we want to instantiate a new scene with.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         str: The name (scene_hash) of the newly created scene.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">         TypeError: If ``type(object_path)`` is not `list` and/or entries</span>
+<span class="sd">          thereof are not ``str``.</span>
 
 <span class="sd">        Todo:</span>
 <span class="sd">         Make it impossible to create an empty scene.</span>
@@ -325,6 +397,18 @@
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return a scene object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         scene_id (str or None, defaults to None): The unique identifier of</span>
+<span class="sd">          the scene that we want to return.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         None or _ScenePrototype object: None if no scene with a matching id</span>
+<span class="sd">         could be found, otherwise return the scene object.</span>
+
+<span class="sd">        See Also:</span>
+<span class="sd">         :py:class:`backend.scenes_scene_prototype._ScenePrototype`</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">try</span><span class="p">:</span>

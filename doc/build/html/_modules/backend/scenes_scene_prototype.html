@@ -1,0 +1,499 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>backend.scenes_scene_prototype &mdash; TBD alpha documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="TBD alpha documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> TBD
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Usage:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Visualisation Backend:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../main.html">Startup script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../backend.html">backend package (Python code)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../util.html">util package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Visualisation Frontend:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../frontend.html">frontend package (JavaScript Code)</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Control Terminal:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../client.html">client package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Misc:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../todo_general.html">General things to do</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../todo.html">Todo (collection of everything)</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">TBD</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>backend.scenes_scene_prototype</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for backend.scenes_scene_prototype</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The class for a scene.</span>
+
+<span class="sd">A scene contains a number of objects.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">from</span> <span class="nn">backend.scenes_object_prototype</span> <span class="k">import</span> <span class="n">_ObjectPrototype</span>
+
+
+<div class="viewcode-block" id="_ScenePrototype"><a class="viewcode-back" href="../../backend.html#backend.scenes_scene_prototype._ScenePrototype">[docs]</a><span class="k">class</span> <span class="nc">_ScenePrototype</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Contains a list of objects and methods for manipulating the scene.</span>
+
+<span class="sd">    On initialization a unique identifier is generated and assigned to the</span>
+<span class="sd">    scene.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     data_dir (os.PathLike): A path pointing to the directory containing our</span>
+<span class="sd">      simulation data.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">     TypeError: If ``type(data_dir)`` is not `os.PathLike`.</span>
+
+<span class="sd">    Todo:</span>
+<span class="sd">     Maybe it&#39;s worthwhile to declutter the add and delete functions by just</span>
+<span class="sd">     allowing them to add one function.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">data_dir</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialise an scene with some simulation data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;data_dir is </span><span class="si">{}</span><span class="s1">, expected os.PathLike&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="nb">type</span><span class="p">(</span><span class="n">data_dir</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_dir</span> <span class="o">=</span> <span class="n">data_dir</span>  <span class="c1"># This is already absolute</span>
+
+        <span class="c1"># This turns a linux timestamp into a sha1 hash, to uniquely identify a</span>
+        <span class="c1"># scene based on the time it was created.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scene_name</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha1</span><span class="p">(</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_object_list</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="_ScenePrototype.add_object"><a class="viewcode-back" href="../../backend.html#backend.scenes_scene_prototype._ScenePrototype.add_object">[docs]</a>    <span class="k">def</span> <span class="nf">add_object</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">object_path</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add one or multiple object(s) to the scene.</span>
+
+<span class="sd">        There are two helper functions implemented in this method:</span>
+
+<span class="sd">        * *verify_object_path*: Verify that the given object path contains</span>
+<span class="sd">          simulation data that we can add. Do this by checking for a /fo or</span>
+<span class="sd">          /frb subpath.</span>
+<span class="sd">        * *add_one_object*: Add one object to the _object_list.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         object_path (str, list (of str)): The relative path to the object</span>
+<span class="sd">          root, relative to `data_dir`.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">         TypeError: If ``type(object_path)`` is neither `os.PathLike` nor</span>
+<span class="sd">          `list`.</span>
+
+<span class="sd">        Todo:</span>
+<span class="sd">         verify_object_path throws an exception that is probably not necessary.</span>
+<span class="sd">         Assign a CRC32 hash to an object? Or CRC64?</span>
+<span class="sd">         Only allow one object to be added at a time?</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span>
+                <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">object_path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">)</span> <span class="ow">and</span>
+                <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">object_path</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s1">&#39;object_path is </span><span class="si">{}</span><span class="s1">, expected either os.PathLike or list&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="nb">type</span><span class="p">(</span><span class="n">object_path</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
+
+        <span class="c1"># This joins two os.PathLike objects</span>
+        <span class="n">object_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_dir</span> <span class="o">/</span> <span class="n">object_path</span>
+
+        <span class="k">def</span> <span class="nf">verify_object_path</span><span class="p">(</span><span class="n">object_path</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Verify that the given object path contains simulation data that we</span>
+<span class="sd">            can add.</span>
+
+<span class="sd">            Do this by checking for a /fo or /frb subpath.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">             object_path (str, list (of str)): The relative path to the object</span>
+<span class="sd">              root, relative to `data_dir`.</span>
+
+<span class="sd">            Raises:</span>
+<span class="sd">             ValueError: If `object_path` does not exist and/or `object_path`</span>
+<span class="sd">              is not a directory.</span>
+<span class="sd">             ValueError: If there is no &#39;fo&#39; and/or &#39;frb&#39; sub directory in</span>
+<span class="sd">              `object_path.`</span>
+
+<span class="sd">            Todo:</span>
+<span class="sd">             The second exception is not really an exception..?? Make this</span>
+<span class="sd">             return a boolean.</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">object_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;path </span><span class="se">\&#39;</span><span class="si">{}</span><span class="se">\&#39;</span><span class="s1"> does not exist&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">object_path</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">object_path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;object_path must point to a directory&#39;</span><span class="p">)</span>
+
+            <span class="n">fo_dir</span> <span class="o">=</span> <span class="n">object_path</span> <span class="o">/</span> <span class="s1">&#39;fo&#39;</span>
+            <span class="n">frb_dir</span> <span class="o">=</span> <span class="n">object_path</span> <span class="o">/</span> <span class="s1">&#39;frb&#39;</span>
+
+            <span class="c1"># Raise an exception in case there are no subfolders called &#39;fo&#39; or</span>
+            <span class="c1"># &#39;frb&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">fo_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">or</span> <span class="n">frb_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">()):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> neither contains </span><span class="se">\&#39;</span><span class="s1">fo</span><span class="se">\&#39;</span><span class="s1"> nor </span><span class="se">\&#39;</span><span class="s1">frb</span><span class="se">\&#39;</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">object_path</span><span class="p">))</span>
+
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">def</span> <span class="nf">add_one_object</span><span class="p">(</span><span class="n">object_path</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Add one object to the _object_list.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">             object_path (str, list (of str)): The relative path to the object</span>
+<span class="sd">              root, relative to `data_dir`.</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">             None: Nothing.</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">new_object</span> <span class="o">=</span> <span class="n">_ObjectPrototype</span><span class="p">(</span>
+                <span class="n">object_path</span><span class="o">=</span><span class="n">object_path</span><span class="p">)</span>
+            <span class="n">object_name</span> <span class="o">=</span> <span class="n">new_object</span><span class="o">.</span><span class="n">name</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">object_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_object_list</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_object_list</span><span class="p">[</span><span class="n">object_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_object</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> is already in object_list&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">object_name</span><span class="p">))</span>
+
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># Verify the object path</span>
+        <span class="n">verify_object_path</span><span class="p">(</span><span class="n">object_path</span><span class="p">)</span>
+
+        <span class="c1"># If we only have one object to add...</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">object_path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">):</span>
+            <span class="n">add_one_object</span><span class="p">(</span><span class="n">object_path</span><span class="o">=</span><span class="n">object_path</span><span class="p">)</span>
+
+        <span class="c1"># If we have a list of objects that we want to add...</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">it</span><span class="p">,</span> <span class="n">one_object_path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">object_path</span><span class="p">):</span>
+
+                <span class="c1"># Check for type of the single object in the list</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">one_object_path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                        <span class="s1">&#39;object_path[</span><span class="si">{}</span><span class="s1">] is </span><span class="si">{}</span><span class="s1">, expected os.PathLike&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">it</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">one_object_path</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
+
+                <span class="c1"># Add each object</span>
+                <span class="n">add_one_object</span><span class="p">(</span><span class="n">object_path</span><span class="o">=</span><span class="n">one_object_path</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="_ScenePrototype.delete_object"><a class="viewcode-back" href="../../backend.html#backend.scenes_scene_prototype._ScenePrototype.delete_object">[docs]</a>    <span class="k">def</span> <span class="nf">delete_object</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">object_id</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove one or multiple object(s) from the list of objects.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         object_id (str, list (of str)): The relative path to the object</span>
+<span class="sd">              root, relative to `data_dir`.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">         TypeError: If ``type(object_path)`` is neither `os.PathLike` nor</span>
+<span class="sd">          `list`.</span>
+<span class="sd">         TypeError: If ``type(object_path)`` is `list` but the type of one</span>
+<span class="sd">          list entry is not `os.PathLike`.</span>
+
+<span class="sd">        Todo:</span>
+<span class="sd">         See declutter todo in class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">object_id</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">)</span> <span class="ow">and</span>
+            <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">object_id</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s1">&#39;object_id is </span><span class="si">{}</span><span class="s1">, expected either os.PathLike or list&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="nb">type</span><span class="p">(</span><span class="n">object_id</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">object_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="c1"># If we only have one object to remove...</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_object_list</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">object_id</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># If we have a list of objects that we want to remove...</span>
+            <span class="k">for</span> <span class="n">it</span><span class="p">,</span> <span class="n">one_object_id</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">object_id</span><span class="p">):</span>
+
+                <span class="c1"># Check for type of the single object id in the list</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">one_object_id</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                        <span class="s1">&#39;object_id[</span><span class="si">{}</span><span class="s1">] is </span><span class="si">{}</span><span class="s1">, expected os.PathLike&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">it</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">one_object_id</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
+
+                <span class="c1"># Remove each object</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_object_list</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">one_object_id</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="_ScenePrototype.name"><a class="viewcode-back" href="../../backend.html#backend.scenes_scene_prototype._ScenePrototype.name">[docs]</a>    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the name for the scene.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">         None: No parameters.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         str: The name (scene_hash) of the scene. This is created on</span>
+<span class="sd">         initialization by creating a sha1 hash from the linux timestamp.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scene_name</span></div>
+
+<div class="viewcode-block" id="_ScenePrototype.object_list"><a class="viewcode-back" href="../../backend.html#backend.scenes_scene_prototype._ScenePrototype.object_list">[docs]</a>    <span class="k">def</span> <span class="nf">object_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a list of all the objects in this scene.</span>
+
+<span class="sd">        Create a sorted view (list) of the keys of the dict</span>
+<span class="sd">        `self._object_list`. If this list is empty, append a notice to this</span>
+<span class="sd">        list that there are no objects and return the list. Otherwise just</span>
+<span class="sd">        return the (non empty) list.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">         list: A list with objects in this scene or a notice, that there are</span>
+<span class="sd">         no objects in this scene.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">list_of_objects</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_object_list</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">list_of_objects</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">list_of_objects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;This scene is empty.&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">list_of_objects</span></div></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Matthias Plock.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'alpha',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

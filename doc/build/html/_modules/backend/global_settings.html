@@ -176,9 +176,11 @@
             
   <h1>Source code for backend.global_settings</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python3</span>
-
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">A list of globally available variables.</span>
+<span class="sd">A selection of globally available variables.</span>
+
+<span class="sd">So far it only contains the scene_manager.</span>
+
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">backend.scenes_manager</span> <span class="k">import</span> <span class="n">SceneManager</span>
@@ -187,10 +189,17 @@
 <div class="viewcode-block" id="init"><a class="viewcode-back" href="../../backend.html#backend.global_settings.init">[docs]</a><span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="n">data_dir</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initialise the global variables.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="c1"># An object that contains all the scenes on the server and exposes methods</span>
-    <span class="c1"># to manipulate them and the objects that are contained.</span>
+<span class="sd">    The scene_manager is an object that contains all the scenes on the server</span>
+<span class="sd">    and exposes methods to manipulate them and the objects that are contained.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     data_dir (str): The directory that contains the simulation data.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">     Import this module everywhere you need to manipulate scenes.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">scene_manager</span>
     <span class="n">scene_manager</span> <span class="o">=</span> <span class="n">SceneManager</span><span class="p">(</span><span class="n">data_dir</span><span class="o">=</span><span class="n">data_dir</span><span class="p">)</span></div>
 </pre></div>

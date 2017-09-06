@@ -4,7 +4,6 @@ Unpack some binary files and finds the surface of the mesh. Right now this is
 limited to C3D8 file format.
 
 """
-
 import struct
 import numpy as np
 import matplotlib.cm as cm
@@ -13,9 +12,9 @@ import matplotlib.cm as cm
 
 class UnpackMesh:
     """
-    Unpacks mesh data from two binary files and does some magic to it.
-    """
+    Unpack mesh data from two binary files and do some magic to it.
 
+    """
     def __init__(self, node_path, element_path):
         """
         Initialise the mesh unpacking class by:
@@ -27,6 +26,7 @@ class UnpackMesh:
 
         Args:
          node_path (str): The path to the data.
+
         """
         self.get_binary_data(node_path, do='unpack', what='nodes')
         self.get_binary_data(element_path, do='unpack', what='elements')

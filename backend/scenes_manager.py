@@ -13,6 +13,22 @@ class SceneManager:
     """
     Stores scenes and contains methods for manipulating scenes.
 
+    Some design notes:
+    self._scene_list is a dictionary that contains scene objects (see
+    :py:class:`backend.scenes_scene_prototype._ScenePrototype`). The dict will
+    look as follows:
+
+    .. code-block:: python
+
+       self._scene_list = {
+           'scene_hash_1': <_ScenePrototype object for scene_hash_1>,
+           'scene_hash_2': <_ScenePrototype object for scene_hash_2>,
+           ...
+       }
+
+    To now get any information about the scenes (except for the keys) you must
+    use the methods contained in the _ScenePrototype objects.
+
     Args:
      data_dir (str): The (relative) path to some simulation data.
 
@@ -20,7 +36,6 @@ class SceneManager:
      TypeError: If `data_dir` is not of type `str`.
 
     """
-
     def __init__(
             self,
             data_dir=None
@@ -55,8 +70,19 @@ class SceneManager:
         'fo' in there. If that's the case we add it to the list we return
         in the end.
 
+        Args:
+         None: No parameters.
+
+        Returns:
+         list: A list containing the names of all the folders in _data_dir
+         that potentially contain simulation data.
+
         Todo:
          Maybe put into objects module?
+         Make this a bit more secure. Just checking for the 'fo' directory is a
+         bit optimistic and could probably be exploited (then again: for
+         what?).
+
         """
 
         # Find all the folders in _data_dir
@@ -72,11 +98,31 @@ class SceneManager:
 
     def get_scene_infos(self):
         """
-        Return a dict with all the scenes and information regarding every scene.
+        Return a dict with all the scenes and information for every scene.
+
+        Go through every key (= scene_hash) in self._scene_list and get the
+        object information from the corresponding value (= _ScenePrototype
+        object) by calling the internal method for retrieving the list of
+        objects.
+
+        The returned dict looks as follows:
+
+        .. code-block:: python
+
+         info_dict = {
+             'scene_hash_1': {'object_list': 'obj_1', 'obj_3'},
+             'scene_hash_2': {'object_list': 'obj_1', 'obj_2'},
+             ...
+         }
+
+        Returns:
+         dict: A dictionary containing all the scenes and all the objects in
+         every scene.
+
+        Todo:
+         Rename to ``get_scenes_info``.
+
         """
-
-        # TODO: Make this better
-
         info_dict = {}
 
         for scene in self._scene_list:
@@ -89,6 +135,22 @@ class SceneManager:
     def delete_scene(self, scene_id=None):
         """
         Delete a scene.
+
+        If no `scene_id` is given, a message is printed.
+
+        Args:
+         scene_id (str, None): The scene_hash of the scene to be deleted.
+
+        Returns:
+         str, None: Returns the `scene_id` that was deleted or None, if no
+         scene could be found to be deleted.
+
+        Raises:
+         TypeError: If `scene_id` is not of type `str`.
+
+        Todo:
+         Make this work with more than one scene.
+
         """
 
         if not isinstance(scene_id, str):
@@ -109,6 +171,19 @@ class SceneManager:
     ):
         """
         Create a new scene with an object.
+
+        This adds a ScenePrototype to `self._scene_list`.
+
+        Args:
+         object_path (None, str, list (of str), defaults to None): The path to
+          the objects we want to instantiate a new scene with.
+
+        Returns:
+         str: The name (scene_hash) of the newly created scene.
+
+        Raises:
+         TypeError: If ``type(object_path)`` is not `list` and/or entries
+          thereof are not ``str``.
 
         Todo:
          Make it impossible to create an empty scene.
@@ -148,6 +223,18 @@ class SceneManager:
     ):
         """
         Return a scene object.
+
+        Args:
+         scene_id (str or None, defaults to None): The unique identifier of
+          the scene that we want to return.
+
+        Returns:
+         None or _ScenePrototype object: None if no scene with a matching id
+         could be found, otherwise return the scene object.
+
+        See Also:
+         :py:class:`backend.scenes_scene_prototype._ScenePrototype`
+
         """
 
         try:

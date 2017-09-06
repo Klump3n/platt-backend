@@ -308,11 +308,24 @@ to output it too. We dont want redundancy.</p>
 </div>
 <div class="section" id="module-backend.global_settings">
 <span id="backend-global-settings-module"></span><h2>backend.global_settings module<a class="headerlink" href="#module-backend.global_settings" title="Permalink to this headline">¶</a></h2>
-<p>A list of globally available variables.</p>
+<p>A selection of globally available variables.</p>
+<p>So far it only contains the scene_manager.</p>
 <dl class="function">
 <dt id="backend.global_settings.init">
 <code class="descclassname">backend.global_settings.</code><code class="descname">init</code><span class="sig-paren">(</span><em>data_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/global_settings.html#init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.global_settings.init" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialise the global variables.</p>
+<p>The scene_manager is an object that contains all the scenes on the server
+and exposes methods to manipulate them and the objects that are contained.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data_dir</strong> (<em>str</em>) – The directory that contains the simulation data.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Import this module everywhere you need to manipulate scenes.</p>
 </dd></dl>
 
 </div>
@@ -324,6 +337,19 @@ to output it too. We dont want redundancy.</p>
 <em class="property">class </em><code class="descclassname">backend.scenes_manager.</code><code class="descname">SceneManager</code><span class="sig-paren">(</span><em>data_dir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_manager.html#SceneManager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_manager.SceneManager" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Stores scenes and contains methods for manipulating scenes.</p>
+<p>Some design notes:
+self._scene_list is a dictionary that contains scene objects (see
+<a class="reference internal" href="#backend.scenes_scene_prototype._ScenePrototype" title="backend.scenes_scene_prototype._ScenePrototype"><code class="xref py py-class docutils literal"><span class="pre">backend.scenes_scene_prototype._ScenePrototype</span></code></a>). The dict will
+look as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">_scene_list</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;scene_hash_1&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">_ScenePrototype</span> <span class="nb">object</span> <span class="k">for</span> <span class="n">scene_hash_1</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s1">&#39;scene_hash_2&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">_ScenePrototype</span> <span class="nb">object</span> <span class="k">for</span> <span class="n">scene_hash_2</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>To now get any information about the scenes (except for the keys) you must
+use the methods contained in the _ScenePrototype objects.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -338,6 +364,26 @@ to output it too. We dont want redundancy.</p>
 <dt id="backend.scenes_manager.SceneManager.delete_scene">
 <code class="descname">delete_scene</code><span class="sig-paren">(</span><em>scene_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_manager.html#SceneManager.delete_scene"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_manager.SceneManager.delete_scene" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete a scene.</p>
+<p>If no <cite>scene_id</cite> is given, a message is printed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>scene_id</strong> (<em>str</em><em>, </em><em>None</em>) – The scene_hash of the scene to be deleted.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Returns the <cite>scene_id</cite> that was deleted or None, if no
+scene could be found to be deleted.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str, None</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> – If <cite>scene_id</cite> is not of type <cite>str</cite>.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">Make this work with more than one scene.</p>
+</div>
 </dd></dl>
 
 <dl class="method">
@@ -349,23 +395,79 @@ _data_dir.</p>
 directory, if it’s a directory check if there is a directory called
 ‘fo’ in there. If that’s the case we add it to the list we return
 in the end.</p>
-<div class="admonition-todo admonition" id="index-0">
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>None</strong> – No parameters.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A list containing the names of all the folders in _data_dir
+that potentially contain simulation data.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-todo admonition" id="index-1">
 <p class="first admonition-title">Todo</p>
-<p class="last">Maybe put into objects module?</p>
+<p class="last">Maybe put into objects module?
+Make this a bit more secure. Just checking for the ‘fo’ directory is a
+bit optimistic and could probably be exploited (then again: for
+what?).</p>
 </div>
 </dd></dl>
 
 <dl class="method">
 <dt id="backend.scenes_manager.SceneManager.get_scene_infos">
 <code class="descname">get_scene_infos</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_manager.html#SceneManager.get_scene_infos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_manager.SceneManager.get_scene_infos" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a dict with all the scenes and information regarding every scene.</p>
+<dd><p>Return a dict with all the scenes and information for every scene.</p>
+<p>Go through every key (= scene_hash) in self._scene_list and get the
+object information from the corresponding value (= _ScenePrototype
+object) by calling the internal method for retrieving the list of
+objects.</p>
+<p>The returned dict looks as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">info_dict</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;scene_hash_1&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;object_list&#39;</span><span class="p">:</span> <span class="s1">&#39;obj_1&#39;</span><span class="p">,</span> <span class="s1">&#39;obj_3&#39;</span><span class="p">},</span>
+    <span class="s1">&#39;scene_hash_2&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;object_list&#39;</span><span class="p">:</span> <span class="s1">&#39;obj_1&#39;</span><span class="p">,</span> <span class="s1">&#39;obj_2&#39;</span><span class="p">},</span>
+    <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A dictionary containing all the scenes and all the objects in
+every scene.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="backend.scenes_manager.SceneManager.new_scene">
 <code class="descname">new_scene</code><span class="sig-paren">(</span><em>object_path=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_manager.html#SceneManager.new_scene"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_manager.SceneManager.new_scene" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new scene with an object.</p>
-<div class="admonition-todo admonition" id="index-1">
+<p>This adds a ScenePrototype to <cite>self._scene_list</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>object_path</strong> (<em>None</em><em>, </em><em>str</em><em>, </em><em>list</em><em> (</em><em>of str</em><em>)</em><em>, </em><em>defaults to None</em>) – The path to
+the objects we want to instantiate a new scene with.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The name (scene_hash) of the newly created scene.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> – If <code class="docutils literal"><span class="pre">type(object_path)</span></code> is not <cite>list</cite> and/or entries
+thereof are not <code class="docutils literal"><span class="pre">str</span></code>.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-todo admonition" id="index-2">
 <p class="first admonition-title">Todo</p>
 <p class="last">Make it impossible to create an empty scene.</p>
 </div>
@@ -375,6 +477,24 @@ in the end.</p>
 <dt id="backend.scenes_manager.SceneManager.scene">
 <code class="descname">scene</code><span class="sig-paren">(</span><em>scene_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_manager.html#SceneManager.scene"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_manager.SceneManager.scene" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a scene object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>scene_id</strong> (<em>str</em><em> or </em><em>None</em><em>, </em><em>defaults to None</em>) – The unique identifier of
+the scene that we want to return.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None if no scene with a matching id
+could be found, otherwise return the scene object.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">None or _ScenePrototype object</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#backend.scenes_scene_prototype._ScenePrototype" title="backend.scenes_scene_prototype._ScenePrototype"><code class="xref py py-class docutils literal"><span class="pre">backend.scenes_scene_prototype._ScenePrototype</span></code></a></p>
+</div>
 </dd></dl>
 
 </dd></dl>
@@ -382,9 +502,235 @@ in the end.</p>
 </div>
 <div class="section" id="module-backend.scenes_object_prototype">
 <span id="backend-scenes-object-prototype-module"></span><h2>backend.scenes_object_prototype module<a class="headerlink" href="#module-backend.scenes_object_prototype" title="Permalink to this headline">¶</a></h2>
+<p>The class for an object.</p>
+<p>An object is all data we have about some simulation. That contains the name,
+all the data points, its orientation in R3 and so on.</p>
+<dl class="class">
+<dt id="backend.scenes_object_prototype._ObjectPrototype">
+<em class="property">class </em><code class="descclassname">backend.scenes_object_prototype.</code><code class="descname">_ObjectPrototype</code><span class="sig-paren">(</span><em>object_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_object_prototype.html#_ObjectPrototype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_object_prototype._ObjectPrototype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>The prototype class for a simulation object.</p>
+<p>On initialization the name of the object is set based on the path to the
+data. The initial orientation is set to an identity transformation and all
+the lists for containing data points are initialized.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>object_path</strong> (<cite>os.PathLike</cite>) – The path to some simulation data.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> – If <cite>object_path</cite> is not <cite>os.PathLike</cite></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-todo admonition" id="index-3">
+<p class="first admonition-title">Todo</p>
+<p class="last">Load all the simulation data on initialization.</p>
+</div>
+<dl class="method">
+<dt id="backend.scenes_object_prototype._ObjectPrototype.index_data">
+<code class="descname">index_data</code><span class="sig-paren">(</span><em>data=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_object_prototype.html#_ObjectPrototype.index_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_object_prototype._ObjectPrototype.index_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or set the index data.</p>
+<div class="admonition-todo admonition" id="index-4">
+<p class="first admonition-title">Todo</p>
+<p class="last">Everything about this. This is just a placeholder for now. We need to
+implement methods for doing this automatically. This should call a
+method for extracting index data.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.scenes_object_prototype._ObjectPrototype.name">
+<code class="descname">name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_object_prototype.html#_ObjectPrototype.name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_object_prototype._ObjectPrototype.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the name of the object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The name of the object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.scenes_object_prototype._ObjectPrototype.orientation">
+<code class="descname">orientation</code><span class="sig-paren">(</span><em>view_matrix=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_object_prototype.html#_ObjectPrototype.orientation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_object_prototype._ObjectPrototype.orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get (if view_matrix is None) or set (if view_matrix is not None)
+the orientation of an object in the scene.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>view_matrix</strong> (<em>np.ndarray</em><em> or </em><em>None</em><em>, </em><em>optional</em><em>, </em><em>defaults to None</em>) – A 4x4
+numpy matrix for setting the orientation of the object. The top-left
+3x3 matrix should be unitary, so rotation is represented. The rest
+can contain scaling values.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> – If <code class="docutils literal"><span class="pre">type(view_matrix)</span></code> is not None or np.ndarray and/or
+if the shape is not 4x4.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.scenes_object_prototype._ObjectPrototype.tetraeder_data">
+<code class="descname">tetraeder_data</code><span class="sig-paren">(</span><em>data=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_object_prototype.html#_ObjectPrototype.tetraeder_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_object_prototype._ObjectPrototype.tetraeder_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or set the tetraeder data.</p>
+<div class="admonition-todo admonition" id="index-5">
+<p class="first admonition-title">Todo</p>
+<p class="last">Everything about this. This is just a placeholder for now. We need to
+implement methods for doing this automatically. This should call a
+method for extracting tetraeder data.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.scenes_object_prototype._ObjectPrototype.wireframe_data">
+<code class="descname">wireframe_data</code><span class="sig-paren">(</span><em>data=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_object_prototype.html#_ObjectPrototype.wireframe_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_object_prototype._ObjectPrototype.wireframe_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or set the wireframe data.</p>
+<div class="admonition-todo admonition" id="index-6">
+<p class="first admonition-title">Todo</p>
+<p class="last">Everything about this. This is just a placeholder for now. We need to
+implement methods for doing this automatically. This should call a
+method for extracting wireframe data.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 <div class="section" id="module-backend.scenes_scene_prototype">
 <span id="backend-scenes-scene-prototype-module"></span><h2>backend.scenes_scene_prototype module<a class="headerlink" href="#module-backend.scenes_scene_prototype" title="Permalink to this headline">¶</a></h2>
+<p>The class for a scene.</p>
+<p>A scene contains a number of objects.</p>
+<dl class="class">
+<dt id="backend.scenes_scene_prototype._ScenePrototype">
+<em class="property">class </em><code class="descclassname">backend.scenes_scene_prototype.</code><code class="descname">_ScenePrototype</code><span class="sig-paren">(</span><em>data_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_scene_prototype.html#_ScenePrototype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_scene_prototype._ScenePrototype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Contains a list of objects and methods for manipulating the scene.</p>
+<p>On initialization a unique identifier is generated and assigned to the
+scene.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data_dir</strong> (<em>os.PathLike</em>) – A path pointing to the directory containing our
+simulation data.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> – If <code class="docutils literal"><span class="pre">type(data_dir)</span></code> is not <cite>os.PathLike</cite>.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-todo admonition" id="index-7">
+<p class="first admonition-title">Todo</p>
+<p class="last">Maybe it’s worthwhile to declutter the add and delete functions by just
+allowing them to add one function.</p>
+</div>
+<dl class="method">
+<dt id="backend.scenes_scene_prototype._ScenePrototype.add_object">
+<code class="descname">add_object</code><span class="sig-paren">(</span><em>object_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_scene_prototype.html#_ScenePrototype.add_object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_scene_prototype._ScenePrototype.add_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add one or multiple object(s) to the scene.</p>
+<p>There are two helper functions implemented in this method:</p>
+<ul class="simple">
+<li><em>verify_object_path</em>: Verify that the given object path contains
+simulation data that we can add. Do this by checking for a /fo or
+/frb subpath.</li>
+<li><em>add_one_object</em>: Add one object to the _object_list.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>object_path</strong> (<em>str</em><em>, </em><em>list</em><em> (</em><em>of str</em><em>)</em>) – The relative path to the object
+root, relative to <cite>data_dir</cite>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> – If <code class="docutils literal"><span class="pre">type(object_path)</span></code> is neither <cite>os.PathLike</cite> nor
+<cite>list</cite>.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-todo admonition" id="index-8">
+<p class="first admonition-title">Todo</p>
+<p class="last">verify_object_path throws an exception that is probably not necessary.
+Assign a CRC32 hash to an object? Or CRC64?
+Only allow one object to be added at a time?</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.scenes_scene_prototype._ScenePrototype.delete_object">
+<code class="descname">delete_object</code><span class="sig-paren">(</span><em>object_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_scene_prototype.html#_ScenePrototype.delete_object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_scene_prototype._ScenePrototype.delete_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove one or multiple object(s) from the list of objects.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>object_id</strong> (<em>str</em><em>, </em><em>list</em><em> (</em><em>of str</em><em>)</em>) – The relative path to the object
+root, relative to <cite>data_dir</cite>.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> – If <code class="docutils literal"><span class="pre">type(object_path)</span></code> is neither <cite>os.PathLike</cite> nor
+<cite>list</cite>.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> – If <code class="docutils literal"><span class="pre">type(object_path)</span></code> is <cite>list</cite> but the type of one
+list entry is not <cite>os.PathLike</cite>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-todo admonition" id="index-9">
+<p class="first admonition-title">Todo</p>
+<p class="last">See declutter todo in class.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.scenes_scene_prototype._ScenePrototype.name">
+<code class="descname">name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_scene_prototype.html#_ScenePrototype.name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_scene_prototype._ScenePrototype.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the name for the scene.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>None</strong> – No parameters.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The name (scene_hash) of the scene. This is created on
+initialization by creating a sha1 hash from the linux timestamp.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="backend.scenes_scene_prototype._ScenePrototype.object_list">
+<code class="descname">object_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_scene_prototype.html#_ScenePrototype.object_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_scene_prototype._ScenePrototype.object_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all the objects in this scene.</p>
+<p>Create a sorted view (list) of the keys of the dict
+<cite>self._object_list</cite>. If this list is empty, append a notice to this
+list that there are no objects and return the list. Otherwise just
+return the (non empty) list.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A list with objects in this scene or a notice, that there are
+no objects in this scene.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 <div class="section" id="module-backend.web_server">
 <span id="backend-web-server-module"></span><h2>backend.web_server module<a class="headerlink" href="#module-backend.web_server" title="Permalink to this headline">¶</a></h2>
@@ -413,7 +759,7 @@ backend listens to connections.</li>
 </tr>
 </tbody>
 </table>
-<div class="admonition-todo admonition" id="index-2">
+<div class="admonition-todo admonition" id="index-10">
 <p class="first admonition-title">Todo</p>
 <p class="last">Replace path strings with Pathlike objects.</p>
 </div>
@@ -581,7 +927,7 @@ the scene_manager.</p>
 </tr>
 </tbody>
 </table>
-<div class="admonition-todo admonition" id="index-3">
+<div class="admonition-todo admonition" id="index-11">
 <p class="first admonition-title">Todo</p>
 <p class="last">_dos is not part of the client module. Fix that!</p>
 </div>

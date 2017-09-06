@@ -40,6 +40,7 @@ backend\.scenes\_object\_prototype module
 
 .. automodule:: backend.scenes_object_prototype
     :members:
+    :private-members:
     :undoc-members:
     :show-inheritance:
 
@@ -48,6 +49,7 @@ backend\.scenes\_scene\_prototype module
 
 .. automodule:: backend.scenes_scene_prototype
     :members:
+    :private-members:
     :undoc-members:
     :show-inheritance:
 
