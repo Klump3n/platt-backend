@@ -167,4 +167,5 @@ def version(detail='dirty'):
         version_file.write('{}'.format(version))
 
     VERSION_DICT['version'] = version
+    print(VERSION_DICT)
     return VERSION_DICT

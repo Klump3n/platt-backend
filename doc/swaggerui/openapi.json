@@ -1,0 +1,494 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "version": "alpha",
+        "title": "norderney API",
+        "description": "This is the definition of the norderney API. Essentially it is a work in progress, so things are bound to change a lot. The specification for OpenAPI can be found [here](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md)",
+        "license": {
+            "name": "GPLv3"
+        },
+        "contact": {
+            "name": "Matthias Plock",
+            "email": "matthias.plock@bam.de",
+            "url": "http://www.github.com/klump3n/norderney"
+        }
+    },
+
+    "servers": [
+        {
+            "url": "{protocol}://{host_ip}:{port}/api",
+            "description": "The URL to the API service.",
+            "variables": {
+                "protocol": {
+                    "description": "HTTP or HTTPS",
+                    "enum": [
+                        "https",
+                        "http"
+                    ],
+                    "default": "http"
+                },
+                "host_ip": {
+                    "description": "The IP of the server.",
+                    "enum": [
+                        "141.63.178.52",
+                        "10.8.0.6"
+                    ],
+                    "default": "141.63.178.52"
+                },
+                "port": {
+                    "description": "The port of the server.",
+                    "enum": [
+                        "8008"
+                    ],
+                    "default": "8008"
+                }
+            }
+        }
+    ],
+    "paths": {
+
+        "/version": {
+            "get": {
+                "summary": "Returns program name and version.",
+                "description": "Returns the program name and version of the server, so the client can determine if he is compatible.",
+                "tags": [
+                    ""
+                ],
+                "externalDocs": {
+                    "description": "Link to documentation.",
+                    "url": "LINK HERE"
+                },
+                "parameters": [
+                    {
+                        "description": "An empty JSON request.",
+                        "in": "header",
+                        "name": "Accept"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Program name and version",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "programName": {
+                                            "type": "string",
+                                            "example": "norderney"
+                                        },
+                                        "programVersion": {
+                                            "type": "string",
+                                            "example": "alpha-1-gbfed333-dirty"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/defaultError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+
+        "/objects": {
+            "get": {
+                "summary": "Returns a list of all simulation data on the server.",
+                "description": "Returns a listing of all the simulation data that is available in the directory, that the server is serving from.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "description": "An empty JSON request.",
+                        "in": "header",
+                        "name": "Accept"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A list with the simulation data that is available on the server.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/availableObjects"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/defaultError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+
+        "/scenes": {
+
+            "get": {
+                "summary": "Returns a list of all active scenes on the server.",
+                "description": "Get a listing of all scene_hashes (that is: a listing of all scenes) available.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "description": "An empty JSON request.",
+                        "in": "header",
+                        "name": "Accept"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "An objectslist object",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/activeScenes"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/defaultError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+
+            "post": {
+                "summary": "Create a new scene.",
+                "description": "Create a new scene with a list of objects that are used for initialization.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "description": "An empty JSON request.",
+                        "in": "header",
+                        "name": "Accept"
+                    }
+                ],
+                "requestBody": {
+                    "description": "A list of objects to be added to the new scene.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "addObjects": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "object a"
+                                        },
+                                        "minItems": "1"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": "true"
+                },
+                "responses": {
+                    "200": {
+                        "description": "New scene created. Complete success, all objects could be added.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "addObjectsSuccess": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": "object a"
+                                            },
+                                            "minItems": "1"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "206": {
+                        "description": "New scene created. Partial success, some objects could not be added.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "addObjectsSuccess": {
+                                            "description": "A list of objects that could be added to the new scene.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": "object a"
+                                            },
+                                            "minItems": "1"
+                                        },
+                                        "addObjectsFail": {
+                                            "description": "A list of objects that could NOT be added to the new scene.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": "object z"
+                                            },
+                                            "minItems": "1"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Could not create new scene - none of the requested objects exist.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/defaultError"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/defaultError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+
+            "delete": {
+                "summary": "Delete a scene.",
+                "tags": [
+                    ""
+                ]
+            }
+        },
+
+        "/scenes/{scene_hash}": {
+            "get": {
+                "summary": "Get a listing of all objects in this scene.",
+                "tags": [
+                    ""
+                ]
+            },
+            "post": {
+                "summary": "Add one object to the scene.",
+                "tags": [
+                    ""
+                ]
+            }
+        },
+
+        "/scenes/{scene_hash}/{object}": {
+            "get": {
+                "summary": "Get all the information about this object.",
+                "description": "Returns information about this object. Like available timesteps, simulation subsets (temp, etc), orientation, ... unclear what exactly, so WIP.",
+                "tags": [
+                    ""
+                ]
+            },
+            "delete": {
+                "summary": "Delete this object from the scene.",
+                "tags": [
+                    ""
+                ]
+            }
+        },
+
+        "/scenes/{scene_hash}/{object}/orientation": {
+            "get": {
+                "summary": "Get the orientation of this object.",
+                "tags": [
+                    ""
+                ]
+            },
+            "put": {
+                "summary": "Alter the orientation of this object.",
+                "tags": [
+                    ""
+                ]
+            }
+        },
+
+        "/scenes/{scene_hash}/{object}/timesteps": {
+            "get": {
+                "summary": "Returns the current and selected timestep(s).",
+                "description": "Returns the currently selected and available timestep(s) of this object.",
+                "tags": [
+                    ""
+                ]
+            },
+            "put": {
+                "summary": "Sets the current timestep to one that is available.",
+                "tags": [
+                    ""
+                ]
+            }
+        },
+
+        "/scenes/{scene_hash}/{object}/fields": {
+            "get": {
+                "summary": "Returns the current and displayable field(s).",
+                "description": "Returns the currently displayed field and the displayable fields (temperature, etc) of this object.",
+                "tags": [
+                    ""
+                ]
+            },
+            "put": {
+                "summary": "Sets the displayed field to one that is available.",
+                "tags": [
+                    ""
+                ]
+            }
+        },
+
+        "/scenes/{scene_hash}/{object}/view": {
+            "get": {
+                "summary": "Returns the current and displayable view.",
+                "description": "Returns the currently displayed view and the displayable view (how much we can see) of this object.",
+                "tags": [
+                    ""
+                ]
+            },
+            "put": {
+                "summary": "Sets the displayed view.",
+                "tags": [
+                    ""
+                ]
+            }
+        }
+    },
+
+    "components": {
+        "schemas": {
+
+            "availableObjects": {
+                "description": "A list with objects.",
+                "required": [
+                    "objectList"
+                ],
+                "properties": {
+                    "objectList": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "object a"
+                        },
+                        "example": ["numsim.napf.tiefziehversuch", "object a", "numsim.singlepass.s355j2+n"]
+                    }
+                }
+            },
+
+            "activeScenes": {
+                "description": "A list with active scenes on the server.",
+                "required": [
+                    "sceneList"
+                ],
+                "properties": {
+                    "sceneList": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "77d8548a5def0e7a410259296eb24776ae19047c"
+                        },
+                        "example": [
+                            "babf090679cf7b50f1a52138dadc9ea50b6b0700",
+                            "77d8548a5def0e7a410259296eb24776ae19047c",
+                            "4c0e21b939da38778e76a03e284bb5ed92e6fdf7"
+                        ]
+                    }
+                }
+            },
+
+            "objectOrientation": {
+                "description": "The orientation of an object",
+                "required": [
+                    "objectOrientation",
+                    "objectHash"
+                ],
+                "properties": {
+                    "objectOrientation": {
+                        "type": "array",
+                        "items": {
+                            "type": "number",
+                            "format": "double",
+                            "example": "0.897123"
+                        },
+                        "minItems": "16",
+                        "maxItems": "16"
+                    },
+                    "objectHash": {
+                        "type": "string",
+                        "example": "47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    }
+                }
+            },
+
+            "defaultError": {
+                "description": "A default error message and code.",
+                "properties": {
+                    "error": {
+                        "properties": {
+                            "errorMessage": {
+                                "type": "string",
+                                "example": "An example default error message."
+                            },
+                            "errorCode": {
+                                "type": "string",
+                                "example": "An example default error code."
+                            }
+                        }
+                    }
+                }
+            },
+
+            "sceneObject": {
+                "description": "The name and unique identifier of an object that is loaded into a scene.",
+                "required": [
+                    "objectName",
+                    "objectHash"
+                ],
+                "properties": {
+                    "objectName": {
+                        "type": "string",
+                        "example": "numsim.napf.tiefziehversuch"
+                    },
+                    "objectHash": {
+                        "type": "string",
+                        "example": "47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    }
+                }
+            }
+
+        }
+    }
+}

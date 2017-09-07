@@ -10,6 +10,8 @@ This is a program to display simulation data from finite difference calculations
 
 .. include:: usage.rst
 
+.. include:: api.rst
+
 Contents
 ========
 

@@ -181,7 +181,6 @@
 <span class="sd">limited to C3D8 file format.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-
 <span class="kn">import</span> <span class="nn">struct</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">matplotlib.cm</span> <span class="k">as</span> <span class="nn">cm</span>
@@ -190,9 +189,9 @@
 
 <div class="viewcode-block" id="UnpackMesh"><a class="viewcode-back" href="../../backend.html#backend.data_backend.UnpackMesh">[docs]</a><span class="k">class</span> <span class="nc">UnpackMesh</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Unpacks mesh data from two binary files and does some magic to it.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    Unpack mesh data from two binary files and do some magic to it.</span>
 
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_path</span><span class="p">,</span> <span class="n">element_path</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialise the mesh unpacking class by:</span>
@@ -204,6 +203,7 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">         node_path (str): The path to the data.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">get_binary_data</span><span class="p">(</span><span class="n">node_path</span><span class="p">,</span> <span class="n">do</span><span class="o">=</span><span class="s1">&#39;unpack&#39;</span><span class="p">,</span> <span class="n">what</span><span class="o">=</span><span class="s1">&#39;nodes&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">get_binary_data</span><span class="p">(</span><span class="n">element_path</span><span class="p">,</span> <span class="n">do</span><span class="o">=</span><span class="s1">&#39;unpack&#39;</span><span class="p">,</span> <span class="n">what</span><span class="o">=</span><span class="s1">&#39;elements&#39;</span><span class="p">)</span>

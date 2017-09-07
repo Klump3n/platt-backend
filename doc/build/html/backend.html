@@ -218,7 +218,7 @@ limited to C3D8 file format.</p>
 <dt id="backend.data_backend.UnpackMesh">
 <em class="property">class </em><code class="descclassname">backend.data_backend.</code><code class="descname">UnpackMesh</code><span class="sig-paren">(</span><em>node_path</em>, <em>element_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/data_backend.html#UnpackMesh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.data_backend.UnpackMesh" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Unpacks mesh data from two binary files and does some magic to it.</p>
+<p>Unpack mesh data from two binary files and do some magic to it.</p>
 <dl class="method">
 <dt id="backend.data_backend.UnpackMesh.add_timestep">
 <code class="descname">add_timestep</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/data_backend.html#UnpackMesh.add_timestep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.data_backend.UnpackMesh.add_timestep" title="Permalink to this definition">¶</a></dt>
@@ -444,6 +444,10 @@ every scene.</td>
 </tr>
 </tbody>
 </table>
+<div class="admonition-todo admonition" id="index-2">
+<p class="first admonition-title">Todo</p>
+<p class="last">Rename to <code class="docutils literal"><span class="pre">get_scenes_info</span></code>.</p>
+</div>
 </dd></dl>
 
 <dl class="method">
@@ -467,7 +471,7 @@ thereof are not <code class="docutils literal"><span class="pre">str</span></cod
 </tr>
 </tbody>
 </table>
-<div class="admonition-todo admonition" id="index-2">
+<div class="admonition-todo admonition" id="index-3">
 <p class="first admonition-title">Todo</p>
 <p class="last">Make it impossible to create an empty scene.</p>
 </div>
@@ -523,7 +527,7 @@ the lists for containing data points are initialized.</p>
 </tr>
 </tbody>
 </table>
-<div class="admonition-todo admonition" id="index-3">
+<div class="admonition-todo admonition" id="index-4">
 <p class="first admonition-title">Todo</p>
 <p class="last">Load all the simulation data on initialization.</p>
 </div>
@@ -531,7 +535,7 @@ the lists for containing data points are initialized.</p>
 <dt id="backend.scenes_object_prototype._ObjectPrototype.index_data">
 <code class="descname">index_data</code><span class="sig-paren">(</span><em>data=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_object_prototype.html#_ObjectPrototype.index_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_object_prototype._ObjectPrototype.index_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get or set the index data.</p>
-<div class="admonition-todo admonition" id="index-4">
+<div class="admonition-todo admonition" id="index-5">
 <p class="first admonition-title">Todo</p>
 <p class="last">Everything about this. This is just a placeholder for now. We need to
 implement methods for doing this automatically. This should call a
@@ -580,7 +584,7 @@ if the shape is not 4x4.</td>
 <dt id="backend.scenes_object_prototype._ObjectPrototype.tetraeder_data">
 <code class="descname">tetraeder_data</code><span class="sig-paren">(</span><em>data=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_object_prototype.html#_ObjectPrototype.tetraeder_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_object_prototype._ObjectPrototype.tetraeder_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get or set the tetraeder data.</p>
-<div class="admonition-todo admonition" id="index-5">
+<div class="admonition-todo admonition" id="index-6">
 <p class="first admonition-title">Todo</p>
 <p class="last">Everything about this. This is just a placeholder for now. We need to
 implement methods for doing this automatically. This should call a
@@ -592,7 +596,7 @@ method for extracting tetraeder data.</p>
 <dt id="backend.scenes_object_prototype._ObjectPrototype.wireframe_data">
 <code class="descname">wireframe_data</code><span class="sig-paren">(</span><em>data=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/backend/scenes_object_prototype.html#_ObjectPrototype.wireframe_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#backend.scenes_object_prototype._ObjectPrototype.wireframe_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get or set the wireframe data.</p>
-<div class="admonition-todo admonition" id="index-6">
+<div class="admonition-todo admonition" id="index-7">
 <p class="first admonition-title">Todo</p>
 <p class="last">Everything about this. This is just a placeholder for now. We need to
 implement methods for doing this automatically. This should call a
@@ -625,7 +629,7 @@ simulation data.</td>
 </tr>
 </tbody>
 </table>
-<div class="admonition-todo admonition" id="index-7">
+<div class="admonition-todo admonition" id="index-8">
 <p class="first admonition-title">Todo</p>
 <p class="last">Maybe it’s worthwhile to declutter the add and delete functions by just
 allowing them to add one function.</p>
@@ -653,7 +657,7 @@ root, relative to <cite>data_dir</cite>.</td>
 </tr>
 </tbody>
 </table>
-<div class="admonition-todo admonition" id="index-8">
+<div class="admonition-todo admonition" id="index-9">
 <p class="first admonition-title">Todo</p>
 <p class="last">verify_object_path throws an exception that is probably not necessary.
 Assign a CRC32 hash to an object? Or CRC64?
@@ -683,7 +687,7 @@ list entry is not <cite>os.PathLike</cite>.</li>
 </tr>
 </tbody>
 </table>
-<div class="admonition-todo admonition" id="index-9">
+<div class="admonition-todo admonition" id="index-10">
 <p class="first admonition-title">Todo</p>
 <p class="last">See declutter todo in class.</p>
 </div>
@@ -759,7 +763,7 @@ backend listens to connections.</li>
 </tr>
 </tbody>
 </table>
-<div class="admonition-todo admonition" id="index-10">
+<div class="admonition-todo admonition" id="index-11">
 <p class="first admonition-title">Todo</p>
 <p class="last">Replace path strings with Pathlike objects.</p>
 </div>
@@ -927,7 +931,7 @@ the scene_manager.</p>
 </tr>
 </tbody>
 </table>
-<div class="admonition-todo admonition" id="index-11">
+<div class="admonition-todo admonition" id="index-12">
 <p class="first admonition-title">Todo</p>
 <p class="last">_dos is not part of the client module. Fix that!</p>
 </div>
