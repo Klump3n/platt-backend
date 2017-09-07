@@ -47,6 +47,16 @@
     ],
     "paths": {
 
+        "/": {
+            "options": {
+                "summary": "Return the API?",
+                "description": "Check this...",
+                "tags": [
+                    "verify"
+                ]
+            }
+        },
+
         "/version": {
             "get": {
                 "summary": "Returns program name and version.",
@@ -60,7 +70,7 @@
                 },
                 "parameters": [
                     {
-                        "description": "An empty JSON request.",
+                        "description": "",
                         "in": "header",
                         "name": "Accept"
                     }
@@ -108,7 +118,7 @@
                 ],
                 "parameters": [
                     {
-                        "description": "An empty JSON request.",
+                        "description": "",
                         "in": "header",
                         "name": "Accept"
                     }
@@ -148,7 +158,7 @@
                 ],
                 "parameters": [
                     {
-                        "description": "An empty JSON request.",
+                        "description": "",
                         "in": "header",
                         "name": "Accept"
                     }
@@ -185,13 +195,13 @@
                 ],
                 "parameters": [
                     {
-                        "description": "An empty JSON request.",
+                        "description": "",
                         "in": "header",
                         "name": "Accept"
                     }
                 ],
                 "requestBody": {
-                    "description": "A list of objects to be added to the new scene.",
+                    "description": "A list of objects to be added to the new scene. Duplicates are allowed.",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -213,51 +223,21 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "New scene created. Complete success, all objects could be added.",
+                        "description": "New scene created. Complete success, all objects could be added. The response contains a list with objects that were added to the simulation.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "addObjectsSuccess": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string",
-                                                "example": "object a"
-                                            },
-                                            "minItems": "1"
-                                        }
-                                    }
+                                    "$ref": "#/components/schemas/addObjectsSuccess"
                                 }
                             }
                         }
                     },
                     "206": {
-                        "description": "New scene created. Partial success, some objects could not be added.",
+                        "description": "New scene created. Partial success, some objects could not be added. The response contains a list with added objects and a list with objects, that could not be added.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "addObjectsSuccess": {
-                                            "description": "A list of objects that could be added to the new scene.",
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string",
-                                                "example": "object a"
-                                            },
-                                            "minItems": "1"
-                                        },
-                                        "addObjectsFail": {
-                                            "description": "A list of objects that could NOT be added to the new scene.",
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string",
-                                                "example": "object z"
-                                            },
-                                            "minItems": "1"
-                                        }
-                                    }
+                                    "$ref": "#/components/schemas/addObjectsPartial"
                                 }
                             }
                         }
@@ -267,7 +247,21 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/defaultError"
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "properties": {
+                                                "errorCode": {
+                                                    "type": "string",
+                                                    "example": "404"
+                                                },
+                                                "errorMessage": {
+                                                    "type": "string",
+                                                    "example": "A new scene could not be created, no objects found."
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -289,42 +283,466 @@
                 "summary": "Delete a scene.",
                 "tags": [
                     ""
-                ]
+                ],
+                "parameters": [
+                    {
+                        "description": "",
+                        "in": "header",
+                        "name": "Accept"
+                    }
+                ],
+                "requestBody": {
+                    "description": "A list of scenes to delete.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "deleteScenes": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a"
+                                        },
+                                        "minItems": "1"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": "true"
+                },
+                "responses": {
+                    "200": {
+                        "description": "Complete success. All scenes deleted. The response contains a list with the scenes that were deleted.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "deleteScenesSuccess": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": "21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a"
+                                            },
+                                            "minItems": "1"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "206": {
+                        "description": "Partial success. Some scenes were deleted but not every one. The response contains a list with the deleted scenes and a list with the scenes, that could not be deleted.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "deleteScenesSuccess": {
+                                            "description": "A list of scenes that were deleted.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": "21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a"
+                                            },
+                                            "minItems": "1"
+                                        },
+                                        "deleteScenesFail": {
+                                            "description": "A list of scenes that could NOT be deleted.",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": "21dfb0dbf1034ff897aebfa0b8058a5"
+                                            },
+                                            "minItems": "1"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No scenes were deleted. None of the scenes requested do exist.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "properties": {
+                                                "errorCode": {
+                                                    "type": "string",
+                                                    "example": "404"
+                                                },
+                                                "errorMessage": {
+                                                    "type": "string",
+                                                    "example": "Scenes were not found."
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/defaultError"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
 
         "/scenes/{scene_hash}": {
+
             "get": {
                 "summary": "Get a listing of all objects in this scene.",
                 "tags": [
                     ""
-                ]
+                ],
+                "parameters": [
+                    {
+                        "description": "The scene for which we want to get all objects.",
+                        "in": "path",
+                        "name": "scene_hash",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A list of all the objects in this scene.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "objectList": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "$ref": "#/components/schemas/sceneObject"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/defaultError"
+                                }
+                            }
+                        }
+                    }
+                }
             },
+
             "post": {
-                "summary": "Add one object to the scene.",
+                "summary": "Add one or more object(s) to the scene.",
                 "tags": [
                     ""
-                ]
+                ],
+                "parameters": [
+                    {
+                        "description": "The scene to which we want to add objects.",
+                        "in": "path",
+                        "name": "scene_hash",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "A list of objects to add to the scene.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "addObjects": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "object d"
+                                        },
+                                        "minItems": "1"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": "true"
+                },
+                "responses": {
+                    "200": {
+                        "description": "Complete success, all objects could be added. The response contains a list with objects that were added to the scene.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/addObjectsSuccess"
+                                }
+                            }
+                        }
+                    },
+                    "206": {
+                        "description": "New scene created. Partial success, some objects could not be added. The response contains a list with added objects and a list with objects, that could not be added.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/addObjectsPartial"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Could not create new scene - none of the requested objects exist.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "properties": {
+                                                "errorCode": {
+                                                    "type": "string",
+                                                    "example": "404"
+                                                },
+                                                "errorMessage": {
+                                                    "type": "string",
+                                                    "example": "A new scene could not be created, no objects found."
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/defaultError"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
 
-        "/scenes/{scene_hash}/{object}": {
+        "/scenes/{scene_hash}/{object_hash}": {
+
+            "options": {
+                "summary": "Return information about the methods that are exposed.",
+                "description": "Return information about the methods that are exposed. That means `/orientation`, `/timesteps`, `/fields` and `/view`. See about the implementation in cherrypy about this...",
+                "tags": [
+                    "verify"
+                ],
+
+            },
+
             "get": {
                 "summary": "Get all the information about this object.",
                 "description": "Returns information about this object. Like available timesteps, simulation subsets (temp, etc), orientation, ... unclear what exactly, so WIP.",
                 "tags": [
                     ""
-                ]
+                ],
+                "parameters": [
+                    {
+                        "description": "The scene containing the object.",
+                        "in": "path",
+                        "name": "scene_hash",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "The object.",
+                        "in": "path",
+                        "name": "object_hash",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The information about the object.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "$ref": "#/components/schemas/sceneObject"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/defaultError"
+                                }
+                            }
+                        }
+                    }
+                }
             },
             "delete": {
                 "summary": "Delete this object from the scene.",
                 "tags": [
                     ""
-                ]
+                ],
+                                "parameters": [
+                    {
+                        "description": "The scene containing the object.",
+                        "in": "path",
+                        "name": "scene_hash",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "The object.",
+                        "in": "path",
+                        "name": "object_hash",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "A list of objects to delete from the scene.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "deleteObjects": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a"
+                                        },
+                                        "minItems": "1"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": "true"
+                },
+                "responses": {
+                    "200": {
+                        "description": "Complete success. Returns a list with the hashes of the objects that were deleted from the scene.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "deleteObjectsSuccess": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": "21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "206": {
+                        "description": "Partial success. Returns a list with the hashes of the objects that were deleted from the scene and a list with the hashes that could not be deleted.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "deleteObjectsSuccess": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": "21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a"
+                                            }
+                                        },
+                                        "deleteObjectsFail": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": "21dfb0dbf1034ff897ef80a"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No success. Returns a list with the objects that could not be deleted and an error message.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "deleteObjectsFail": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": "21dfb0dbf1034ff897ef80a"
+                                            }
+                                        },
+                                        "error": {
+                                            "type": "object",
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "The objects could not be removed from the scene."
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/defaultError"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
 
-        "/scenes/{scene_hash}/{object}/orientation": {
+        "/scenes/{scene_hash}/{object_hash}/orientation": {
             "get": {
                 "summary": "Get the orientation of this object.",
                 "tags": [
@@ -339,7 +757,7 @@
             }
         },
 
-        "/scenes/{scene_hash}/{object}/timesteps": {
+        "/scenes/{scene_hash}/{object_hash}/timesteps": {
             "get": {
                 "summary": "Returns the current and selected timestep(s).",
                 "description": "Returns the currently selected and available timestep(s) of this object.",
@@ -355,7 +773,7 @@
             }
         },
 
-        "/scenes/{scene_hash}/{object}/fields": {
+        "/scenes/{scene_hash}/{object_hash}/fields": {
             "get": {
                 "summary": "Returns the current and displayable field(s).",
                 "description": "Returns the currently displayed field and the displayable fields (temperature, etc) of this object.",
@@ -371,7 +789,7 @@
             }
         },
 
-        "/scenes/{scene_hash}/{object}/view": {
+        "/scenes/{scene_hash}/{object_hash}/view": {
             "get": {
                 "summary": "Returns the current and displayable view.",
                 "description": "Returns the currently displayed view and the displayable view (how much we can see) of this object.",
@@ -400,8 +818,7 @@
                     "objectList": {
                         "type": "array",
                         "items": {
-                            "type": "string",
-                            "example": "object a"
+                            "type": "string"
                         },
                         "example": ["numsim.napf.tiefziehversuch", "object a", "numsim.singlepass.s355j2+n"]
                     }
@@ -417,8 +834,7 @@
                     "sceneList": {
                         "type": "array",
                         "items": {
-                            "type": "string",
-                            "example": "77d8548a5def0e7a410259296eb24776ae19047c"
+                            "type": "string"
                         },
                         "example": [
                             "babf090679cf7b50f1a52138dadc9ea50b6b0700",
@@ -432,10 +848,14 @@
             "objectOrientation": {
                 "description": "The orientation of an object",
                 "required": [
-                    "objectOrientation",
-                    "objectHash"
+                    "objectMeta",
+                    "objectOrientation"
                 ],
                 "properties": {
+                    "objectMeta": {
+                        "type": "object",
+                        "$ref": "#/components/schemas/sceneObject"
+                    },
                     "objectOrientation": {
                         "type": "array",
                         "items": {
@@ -445,10 +865,6 @@
                         },
                         "minItems": "16",
                         "maxItems": "16"
-                    },
-                    "objectHash": {
-                        "type": "string",
-                        "example": "47e9f7fc6d1522c552fffaf1803a0e1822620024"
                     }
                 }
             },
@@ -458,33 +874,93 @@
                 "properties": {
                     "error": {
                         "properties": {
-                            "errorMessage": {
-                                "type": "string",
-                                "example": "An example default error message."
-                            },
                             "errorCode": {
                                 "type": "string",
                                 "example": "An example default error code."
+                            },
+                            "errorMessage": {
+                                "type": "string",
+                                "example": "An example default error message."
                             }
                         }
                     }
                 }
             },
 
+            "addObjectsSuccess": {
+                "description": "The response on successfully creating a new scene.",
+                "type": "object",
+                "properties": {
+                    "href": {
+                        "description": "A link to the new scene.",
+                        "type": "string",
+                        "example": "/scenes/47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    },
+                    "addObjectsSuccess": {
+                        "description": "An array with JSON objects containing information about objects.",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "$ref": "#/components/schemas/sceneObject"
+                        }
+                    }
+                }
+            },
+
+            "addObjectsPartial": {
+                "description": "The response on partially creating a new scene.",
+                "type": "object",
+                "properties": {
+                    "href": {
+                        "description": "A link to the scene.",
+                        "type": "string",
+                        "example": "/scenes/47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    },
+                    "addObjectsSuccess": {
+                        "description": "An array with JSON objects containing information about objects.",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "$ref": "#/components/schemas/sceneObject"
+                        }
+                    },
+                    "addObjectsFail": {
+                        "description": "An array objects that could not be added to the scene.",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                        },
+                        "example": ["object z", "object k"]
+                    }
+                }
+            },
+
             "sceneObject": {
-                "description": "The name and unique identifier of an object that is loaded into a scene.",
+                "description": "The name, unique identifier and alias of an object that is loaded into a scene.",
                 "required": [
                     "objectName",
                     "objectHash"
                 ],
                 "properties": {
                     "objectName": {
+                        "description": "The folder name as present on the server.",
                         "type": "string",
                         "example": "numsim.napf.tiefziehversuch"
                     },
                     "objectHash": {
+                        "description": "A unique identifier assigned to the object on the time of adding it to the scene.",
                         "type": "string",
                         "example": "47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    },
+                    "objectAlias": {
+                        "description": "An alias for the object to be able to differentiate two identical objects in a scene.",
+                        "type": "string",
+                        "example": "alias for numsim.napf.tiefziehversuch"
+                    },
+                    "objectHref": {
+                        "description": "A link to the object in the scene.",
+                        "type": "string",
+                        "example": "/scenes/21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a/47e9f7fc6d1522c552fffaf1803a0e182262002"
                     }
                 }
             }

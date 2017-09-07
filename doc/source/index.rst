@@ -42,6 +42,7 @@ Contents
 
    todo_general
    todo
+   api
 
 Indices and tables
 ==================
