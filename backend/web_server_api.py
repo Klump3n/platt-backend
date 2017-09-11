@@ -20,8 +20,6 @@ import backend.data_backend as fem_mesh
 import backend.global_settings as gloset
 
 
-# We only want to allow people to POST to it.
-@cherrypy.tools.allow(methods=['POST'])
 class ServerAPI:
     """
     This class contains the API endpoints of the backend.
@@ -63,9 +61,17 @@ class ServerAPI:
     """
 
     @cherrypy.expose
-    def connect_client(self):
+    @cherrypy.tools.allow(methods=['GET'])
+    def version(self):
         """
-        This returns a dictionary containing program name and version number.
+        Returns a dictionary containing the programs name and version, e.g.
+
+        .. code-block:: python
+
+         {
+             "programName": "norderney",
+             "programVersion": "alpha-1-gbfed333-dirty"
+         }
 
         With this method a client can verify that the backend is running a
         compatible version.
@@ -80,9 +86,32 @@ class ServerAPI:
          :py:meth:`client.util_client.test_host.target_online_and_compatible`
 
         """
-
         version_dict = version(detail='long')
         return json.dumps(version_dict)
+
+    @cherrypy.expose
+    @cherrypy.tools.allow(methods=['GET'])
+    def datasets(self):
+        """
+        List the available fem simulation directories.
+
+        A list of all available simulation data folders can be obtained from
+        the scene_manager.
+
+        Returns:
+         JSON dict: A dictionary containing available `data_folders`.
+
+        Todo:
+         _dos is not part of the client module. Fix that!
+
+        See Also:
+         :py:meth:`backend.scenes_manager.SceneManager.get_femdata_dirs`
+         :py:func:`_dos.do_objects.objects`
+
+        """
+        data_folders = gloset.scene_manager.get_femdata_dirs()
+
+        return json.dumps({'availableDatasets': data_folders})
 
     @cherrypy.expose
     def list_of_fem_data(self):
@@ -103,7 +132,6 @@ class ServerAPI:
          :py:func:`_dos.do_objects.objects`
 
         """
-
         data_folders = gloset.scene_manager.get_femdata_dirs()
 
         return json.dumps({'data_folders': data_folders})

@@ -216,18 +216,20 @@ returns the response.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>http_method</strong> (<em>str</em><em>, </em><em>{GET</em><em>, </em><em>POST</em><em>, </em><em>DELETE</em><em>, </em><em>PATCH}</em>) – The http method we want to
 employ.</li>
-<li><strong>api_enpoint</strong> (<em>str</em>) – API endpoint, as in <code class="docutils literal"><span class="pre">http://HOST:PORT/api_enpoint</span></code>.</li>
+<li><strong>api_enpoint</strong> (<em>str</em>) – API endpoint, as in <code class="docutils literal"><span class="pre">http://HOST:PORT/api_endpoint</span></code>.</li>
 <li><strong>connection_data</strong> (<em>dict</em>) – The connection data, containing target address and
 port and program headers containing program name and version.</li>
-<li><strong>data_to_transmit</strong> (<em>dict</em>) – The data we want to transmit in JSON format. A
-dict or a ready-formatted JSON package will work.</li>
+<li><strong>data_to_transmit</strong> (<em>None</em><em> or </em><em>dict</em>) – None if we don’t want to send data, or
+the data we want to transmit in JSON format. A dict or a ready-formatted
+JSON package will work.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The JSON object as returned from the backend.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The JSON object (dict) as returned from the
+backend or None, if an error occured.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">JSON object, dict</p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">JSON object (dict) or None</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">

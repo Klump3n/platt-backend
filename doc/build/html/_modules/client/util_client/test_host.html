@@ -181,8 +181,8 @@
 <span class="sd">Check the target host.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-
 <span class="kn">from</span> <span class="nn">util_client.post_json</span> <span class="k">import</span> <span class="n">post_json_string</span>
+<span class="kn">from</span> <span class="nn">util_client.send_http_request</span> <span class="k">import</span> <span class="n">send_http_request</span>
 
 
 <div class="viewcode-block" id="target_online_and_compatible"><a class="viewcode-back" href="../../../client.util_client.html#client.util_client.test_host.target_online_and_compatible">[docs]</a><span class="k">def</span> <span class="nf">target_online_and_compatible</span><span class="p">(</span><span class="n">c_data</span><span class="p">):</span>
@@ -202,8 +202,19 @@
 
 <span class="sd">    See Also:</span>
 <span class="sd">     :py:meth:`backend.web_server_api.ServerAPI.connect_client`</span>
-<span class="sd">    </span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Get the version from the server</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">send_http_request</span><span class="p">(</span>
+        <span class="n">http_method</span><span class="o">=</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span>
+        <span class="n">api_endpoint</span><span class="o">=</span><span class="s1">&#39;version&#39;</span><span class="p">,</span>
+        <span class="n">connection_data</span><span class="o">=</span><span class="n">c_data</span><span class="p">,</span>
+        <span class="n">data_to_transmit</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">)</span>
+
+    <span class="c1"># if not response.status_code == 200:</span>
+    <span class="c1">#     print(&#39;whaddup&#39;)</span>
+
     <span class="c1"># Call the about page of the host</span>
     <span class="n">api_call</span> <span class="o">=</span> <span class="s1">&#39;connect_client&#39;</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">post_json_string</span><span class="p">(</span>

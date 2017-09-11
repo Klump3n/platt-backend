@@ -34,14 +34,13 @@ def target_online_and_compatible(c_data):
         data_to_transmit=None
     )
 
-    print(response)
     # if not response.status_code == 200:
     #     print('whaddup')
 
-    # Call the about page of the host
-    api_call = 'connect_client'
-    response = post_json_string(
-        api_call=api_call, connection_data=c_data)
+    # # Call the about page of the host
+    # api_call = 'connect_client'
+    # response = post_json_string(
+    #     api_call=api_call, connection_data=c_data)
 
     # Check if we see what we want to see. Get the version out of the headers
     # user-agent.
@@ -52,7 +51,7 @@ def target_online_and_compatible(c_data):
         return False
 
     # If the backend version is not as expected
-    elif (response['version'] != expected_version_response):
+    elif (response['programVersion'] != expected_version_response):
         warning_text = ('Server/client version mismatch. Do not expect ' +
                         'functionality.')
         print(warning_text)

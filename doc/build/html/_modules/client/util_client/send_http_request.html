@@ -182,7 +182,6 @@
 <span class="sd">returns the response.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-
 <span class="kn">import</span> <span class="nn">requests</span>
 
 
@@ -195,14 +194,16 @@
 <span class="sd">    Args:</span>
 <span class="sd">     http_method (str, {GET, POST, DELETE, PATCH}): The http method we want to</span>
 <span class="sd">      employ.</span>
-<span class="sd">     api_enpoint (str): API endpoint, as in ``http://HOST:PORT/api_enpoint``.</span>
+<span class="sd">     api_enpoint (str): API endpoint, as in ``http://HOST:PORT/api_endpoint``.</span>
 <span class="sd">     connection_data (dict): The connection data, containing target address and</span>
 <span class="sd">      port and program headers containing program name and version.</span>
-<span class="sd">     data_to_transmit (dict): The data we want to transmit in JSON format. A</span>
-<span class="sd">      dict or a ready-formatted JSON package will work.</span>
+<span class="sd">     data_to_transmit (None or dict): None if we don&#39;t want to send data, or</span>
+<span class="sd">      the data we want to transmit in JSON format. A dict or a ready-formatted</span>
+<span class="sd">      JSON package will work.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">     JSON object, dict: The JSON object as returned from the backend.</span>
+<span class="sd">     JSON object (dict) or None: The JSON object (dict) as returned from the</span>
+<span class="sd">     backend or None, if an error occured.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">     TypeError: If one of the input parameters is not of the expected type.</span>
@@ -226,9 +227,10 @@
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;connection_data is type </span><span class="si">{}</span><span class="s1">, is expected to be dict&#39;</span><span class="o">.</span>
                         <span class="nb">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">connection_data</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_to_transmit</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;data_to_transmit is type </span><span class="si">{}</span><span class="s1">, is expected to be dict&#39;</span><span class="o">.</span>
-                        <span class="nb">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_to_transmit</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_to_transmit</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">))):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;data_to_transmit is type </span><span class="si">{}</span><span class="s1">, is expected to be &#39;</span> <span class="o">+</span>
+                        <span class="s1">&#39;dict or None&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
 
     <span class="c1"># Unpack the connection_data dict</span>
     <span class="k">try</span><span class="p">:</span>
@@ -239,46 +241,74 @@
         <span class="c1"># In case host, port or headers don&#39;t exist</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;connection_data does not contain the data we expect.&#39;</span><span class="p">)</span>
 
-    <span class="c1"># Timeout for json requests</span>
+    <span class="c1"># Timeout for json requests in seconds</span>
     <span class="n">timeout</span> <span class="o">=</span> <span class="mf">3.5</span>
 
     <span class="n">target_path</span> <span class="o">=</span> <span class="s1">&#39;http://</span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1">/api/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">api_endpoint</span><span class="p">)</span>
 
     <span class="c1"># GET method</span>
     <span class="k">if</span> <span class="n">http_method</span> <span class="o">==</span> <span class="s1">&#39;GET&#39;</span><span class="p">:</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-            <span class="n">url</span><span class="o">=</span><span class="n">target_path</span><span class="p">,</span>
-            <span class="n">json</span><span class="o">=</span><span class="n">data_to_transmit</span><span class="p">,</span>
-            <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
-            <span class="n">headers</span><span class="o">=</span><span class="n">headers</span>
-        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="n">url</span><span class="o">=</span><span class="n">target_path</span><span class="p">,</span>
+                <span class="n">json</span><span class="o">=</span><span class="n">data_to_transmit</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+                <span class="n">headers</span><span class="o">=</span><span class="n">headers</span>
+            <span class="p">)</span>
+            <span class="c1"># Check status, if not ok an exception is raised ...</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="c1"># .. which is then caught.</span>
+        <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="k">return</span> <span class="kc">None</span>
 
     <span class="c1"># POST method</span>
     <span class="k">if</span> <span class="n">http_method</span> <span class="o">==</span> <span class="s1">&#39;POST&#39;</span><span class="p">:</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-            <span class="n">url</span><span class="o">=</span><span class="n">target_path</span><span class="p">,</span>
-            <span class="n">json</span><span class="o">=</span><span class="n">data_to_transmit</span><span class="p">,</span>
-            <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
-            <span class="n">headers</span><span class="o">=</span><span class="n">headers</span>
-        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+                <span class="n">url</span><span class="o">=</span><span class="n">target_path</span><span class="p">,</span>
+                <span class="n">json</span><span class="o">=</span><span class="n">data_to_transmit</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+                <span class="n">headers</span><span class="o">=</span><span class="n">headers</span>
+            <span class="p">)</span>
+            <span class="c1"># Check status, if not ok an exception is raised ...</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="c1"># .. which is then caught.</span>
+        <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="k">return</span> <span class="kc">None</span>
 
     <span class="c1"># PATCH method</span>
     <span class="k">if</span> <span class="n">http_method</span> <span class="o">==</span> <span class="s1">&#39;PATCH&#39;</span><span class="p">:</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span>
-            <span class="n">url</span><span class="o">=</span><span class="n">target_path</span><span class="p">,</span>
-            <span class="n">json</span><span class="o">=</span><span class="n">data_to_transmit</span><span class="p">,</span>
-            <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
-            <span class="n">headers</span><span class="o">=</span><span class="n">headers</span>
-        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span>
+                <span class="n">url</span><span class="o">=</span><span class="n">target_path</span><span class="p">,</span>
+                <span class="n">json</span><span class="o">=</span><span class="n">data_to_transmit</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+                <span class="n">headers</span><span class="o">=</span><span class="n">headers</span>
+            <span class="p">)</span>
+            <span class="c1"># Check status, if not ok an exception is raised ...</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="c1"># .. which is then caught.</span>
+        <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="k">return</span> <span class="kc">None</span>
 
     <span class="c1"># DELETE method</span>
     <span class="k">if</span> <span class="n">http_method</span> <span class="o">==</span> <span class="s1">&#39;DELETE&#39;</span><span class="p">:</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span>
-            <span class="n">url</span><span class="o">=</span><span class="n">target_path</span><span class="p">,</span>
-            <span class="n">json</span><span class="o">=</span><span class="n">data_to_transmit</span><span class="p">,</span>
-            <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
-            <span class="n">headers</span><span class="o">=</span><span class="n">headers</span>
-        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span>
+                <span class="n">url</span><span class="o">=</span><span class="n">target_path</span><span class="p">,</span>
+                <span class="n">json</span><span class="o">=</span><span class="n">data_to_transmit</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+                <span class="n">headers</span><span class="o">=</span><span class="n">headers</span>
+            <span class="p">)</span>
+            <span class="c1"># Check status, if not ok an exception is raised ...</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="c1"># .. which is then caught.</span>
+        <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="k">return</span> <span class="kc">None</span>
 
     <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
 </pre></div>

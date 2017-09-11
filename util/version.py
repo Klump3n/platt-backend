@@ -13,8 +13,8 @@ from warnings import warn
 # Version template. The programs name is defined here. version will be
 # overwritten by the functions in this module.
 VERSION_DICT = {
-    'program': 'norderney',
-    'version': ''
+    'programName': 'norderney',
+    'programVersion': ''
 }
 
 
@@ -166,6 +166,5 @@ def version(detail='dirty'):
     with open('_version.py', 'w') as version_file:
         version_file.write('{}'.format(version))
 
-    VERSION_DICT['version'] = version
-    print(VERSION_DICT)
+    VERSION_DICT['programVersion'] = version
     return VERSION_DICT

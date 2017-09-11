@@ -198,9 +198,7 @@
 <span class="kn">import</span> <span class="nn">backend.global_settings</span> <span class="k">as</span> <span class="nn">gloset</span>
 
 
-<span class="c1"># We only want to allow people to POST to it.</span>
-<div class="viewcode-block" id="ServerAPI"><a class="viewcode-back" href="../../backend.html#backend.web_server_api.ServerAPI">[docs]</a><span class="nd">@cherrypy</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">allow</span><span class="p">(</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
-<span class="k">class</span> <span class="nc">ServerAPI</span><span class="p">:</span>
+<div class="viewcode-block" id="ServerAPI"><a class="viewcode-back" href="../../backend.html#backend.web_server_api.ServerAPI">[docs]</a><span class="k">class</span> <span class="nc">ServerAPI</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class contains the API endpoints of the backend.</span>
 
@@ -240,6 +238,20 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
+<div class="viewcode-block" id="ServerAPI.version"><a class="viewcode-back" href="../../backend.html#backend.web_server_api.ServerAPI.version">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
+    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">allow</span><span class="p">(</span><span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+    <span class="k">def</span> <span class="nf">version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a dictionary containing the programs name and version, e.g.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">         {</span>
+<span class="sd">             &quot;programName&quot;: &quot;norderney&quot;,</span>
+<span class="sd">             &quot;programVersion&quot;: &quot;alpha-1-gbfed333-dirty&quot;</span>
+<span class="sd">         }</span>
+
+<span class="sd">        &quot;&quot;&quot;</span></div>
 <div class="viewcode-block" id="ServerAPI.connect_client"><a class="viewcode-back" href="../../backend.html#backend.web_server_api.ServerAPI.connect_client">[docs]</a>    <span class="nd">@cherrypy</span><span class="o">.</span><span class="n">expose</span>
     <span class="k">def</span> <span class="nf">connect_client</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>

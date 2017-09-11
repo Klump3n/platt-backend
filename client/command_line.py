@@ -86,8 +86,8 @@ class Terminal(cmd.Cmd):
         """
         # Version of the package
         self.version_dict = version(detail='long')
-        program_name = self.version_dict['program']
-        version_number = self.version_dict['version']
+        program_name = self.version_dict['programName']
+        version_number = self.version_dict['programVersion']
 
         # Initialise the class defaults
         cmd.Cmd.__init__(self)

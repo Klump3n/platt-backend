@@ -80,8 +80,8 @@ def start_backend(data_dir, port):
     """
     # Get the version information
     version_info = version()
-    program_name = version_info['program']
-    version_number = version_info['version']
+    program_name = version_info['programName']
+    version_number = version_info['programVersion']
 
     # Settings for the server
     data_dir = os.path.abspath(data_dir)

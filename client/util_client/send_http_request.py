@@ -19,12 +19,13 @@ def send_http_request(
      api_enpoint (str): API endpoint, as in ``http://HOST:PORT/api_endpoint``.
      connection_data (dict): The connection data, containing target address and
       port and program headers containing program name and version.
-     data_to_transmit (None or dict): None if we don't want to send data or the
-      data we want to transmit in JSON format. A dict or a ready-formatted JSON
-      package will work.
+     data_to_transmit (None or dict): None if we don't want to send data, or
+      the data we want to transmit in JSON format. A dict or a ready-formatted
+      JSON package will work.
 
     Returns:
-     JSON object, dict: The JSON object as returned from the backend.
+     JSON object (dict) or None: The JSON object (dict) as returned from the
+     backend or None, if an error occured.
 
     Raises:
      TypeError: If one of the input parameters is not of the expected type.
@@ -62,7 +63,7 @@ def send_http_request(
         # In case host, port or headers don't exist
         print('connection_data does not contain the data we expect.')
 
-    # Timeout for json requests
+    # Timeout for json requests in seconds
     timeout = 3.5
 
     target_path = 'http://{}:{}/api/{}'.format(host, port, api_endpoint)
@@ -76,7 +77,9 @@ def send_http_request(
                 timeout=timeout,
                 headers=headers
             )
+            # Check status, if not ok an exception is raised ...
             response.raise_for_status()
+        # .. which is then caught.
         except BaseException as e:
             print('{}'.format(e))
             return None
@@ -90,26 +93,43 @@ def send_http_request(
                 timeout=timeout,
                 headers=headers
             )
+            # Check status, if not ok an exception is raised ...
             response.raise_for_status()
+        # .. which is then caught.
         except BaseException as e:
-            return '{}'.format(e)
+            print('{}'.format(e))
+            return None
 
     # PATCH method
     if http_method == 'PATCH':
-        response = requests.patch(
-            url=target_path,
-            json=data_to_transmit,
-            timeout=timeout,
-            headers=headers
-        )
+        try:
+            response = requests.patch(
+                url=target_path,
+                json=data_to_transmit,
+                timeout=timeout,
+                headers=headers
+            )
+            # Check status, if not ok an exception is raised ...
+            response.raise_for_status()
+        # .. which is then caught.
+        except BaseException as e:
+            print('{}'.format(e))
+            return None
 
     # DELETE method
     if http_method == 'DELETE':
-        response = requests.delete(
-            url=target_path,
-            json=data_to_transmit,
-            timeout=timeout,
-            headers=headers
-        )
+        try:
+            response = requests.delete(
+                url=target_path,
+                json=data_to_transmit,
+                timeout=timeout,
+                headers=headers
+            )
+            # Check status, if not ok an exception is raised ...
+            response.raise_for_status()
+        # .. which is then caught.
+        except BaseException as e:
+            print('{}'.format(e))
+            return None
 
-    return response
+    return response.json()

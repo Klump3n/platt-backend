@@ -6,6 +6,7 @@ data from the backend and displaying it in the client.
 """
 
 from util_client.post_json import post_json_string
+from util_client.send_http_request import send_http_request
 from util_client.print_function_usage import print_help
 
 
@@ -43,16 +44,16 @@ def objects(c_data):
      :py:obj:`backend.web_server_api.ServerAPI.list_of_fem_data`
 
     """
-
-    # Call the host and ask for simulation data
-    api_call = 'list_of_fem_data'
-    data = None
-    response = post_json_string(
-        api_call=api_call, data=data, connection_data=c_data)
+    response = send_http_request(
+        http_method='GET',
+        api_endpoint='datasets',
+        connection_data=c_data,
+        data_to_transmit=None
+    )
 
     # Try to parse the available simulation files
     try:
-        object_folders = response['data_folders']
+        object_folders = response['availableDatasets']
         print('A list of valid objects is:')
         print()
         for folder in object_folders:
