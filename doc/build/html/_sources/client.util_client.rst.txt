@@ -4,10 +4,10 @@ client\.util\_client package
 Submodules
 ----------
 
-client\.util\_client\.post\_json module
----------------------------------------
+client\.util\_client\.send\_http\_request module
+------------------------------------------------
 
-.. automodule:: client.util_client.post_json
+.. automodule:: client.util_client.send_http_request
     :members:
     :undoc-members:
     :show-inheritance:

@@ -3,8 +3,8 @@
 Check the target host.
 
 """
-
 from util_client.post_json import post_json_string
+from util_client.send_http_request import send_http_request
 
 
 def target_online_and_compatible(c_data):
@@ -24,8 +24,20 @@ def target_online_and_compatible(c_data):
 
     See Also:
      :py:meth:`backend.web_server_api.ServerAPI.connect_client`
-    
+
     """
+    # Get the version from the server
+    response = send_http_request(
+        http_method='GET',
+        api_endpoint='version',
+        connection_data=c_data,
+        data_to_transmit=None
+    )
+
+    print(response)
+    # if not response.status_code == 200:
+    #     print('whaddup')
+
     # Call the about page of the host
     api_call = 'connect_client'
     response = post_json_string(

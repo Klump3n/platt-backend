@@ -84,7 +84,6 @@ class Terminal(cmd.Cmd):
          None: Nothing.
 
         """
-
         # Version of the package
         self.version_dict = version(detail='long')
         program_name = self.version_dict['program']

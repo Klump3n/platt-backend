@@ -112,7 +112,7 @@
 <li class="toctree-l3"><a class="reference internal" href="client._dos.html">_dos package</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">client.util_client package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-client.util_client.post_json">client.util_client.post_json module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-client.util_client.send_http_request">client.util_client.send_http_request module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-client.util_client.print_function_usage">client.util_client.print_function_usage module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-client.util_client.test_host">client.util_client.test_host module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-client.util_client">Module contents</a></li>
@@ -201,25 +201,26 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-client.util_client.post_json">
-<span id="client-util-client-post-json-module"></span><h2>client.util_client.post_json module<a class="headerlink" href="#module-client.util_client.post_json" title="Permalink to this headline">¶</a></h2>
-<p>Post a JSON string to the server.</p>
+<div class="section" id="module-client.util_client.send_http_request">
+<span id="client-util-client-send-http-request-module"></span><h2>client.util_client.send_http_request module<a class="headerlink" href="#module-client.util_client.send_http_request" title="Permalink to this headline">¶</a></h2>
+<p>This sends a HTTP request (POST, GET, DELETE, PATCH, …) to a server and
+returns the response.</p>
 <dl class="function">
-<dt id="client.util_client.post_json.post_json_string">
-<code class="descclassname">client.util_client.post_json.</code><code class="descname">post_json_string</code><span class="sig-paren">(</span><em>api_call</em>, <em>connection_data</em>, <em>data=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/client/util_client/post_json.html#post_json_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#client.util_client.post_json.post_json_string" title="Permalink to this definition">¶</a></dt>
-<dd><p>Prototype for sending a post request with error handling and so on.</p>
-<p>Send a JSON file <cite>data</cite> to <code class="docutils literal"><span class="pre">http://HOST:PORT/api_call</span></code> (<cite>host</cite> and <cite>port</cite>
-from <cite>connection_data</cite>).</p>
+<dt id="client.util_client.send_http_request.send_http_request">
+<code class="descclassname">client.util_client.send_http_request.</code><code class="descname">send_http_request</code><span class="sig-paren">(</span><em>http_method</em>, <em>api_endpoint</em>, <em>connection_data</em>, <em>data_to_transmit</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/client/util_client/send_http_request.html#send_http_request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#client.util_client.send_http_request.send_http_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>A prototype for sending JSON data to an API endpoint on a target host.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>api_call</strong> (<em>str</em>) – API endpoint, as in <code class="docutils literal"><span class="pre">http://HOST:PORT/api_call</span></code>.</li>
+<li><strong>http_method</strong> (<em>str</em><em>, </em><em>{GET</em><em>, </em><em>POST</em><em>, </em><em>DELETE</em><em>, </em><em>PATCH}</em>) – The http method we want to
+employ.</li>
+<li><strong>api_enpoint</strong> (<em>str</em>) – API endpoint, as in <code class="docutils literal"><span class="pre">http://HOST:PORT/api_enpoint</span></code>.</li>
 <li><strong>connection_data</strong> (<em>dict</em>) – The connection data, containing target address and
 port and program headers containing program name and version.</li>
-<li><strong>data</strong> (<em>dict</em><em>, </em><em>None</em>) – The data we want to transmit in JSON format. A dict or
-a ready-formatted JSON package will work.</li>
+<li><strong>data_to_transmit</strong> (<em>dict</em>) – The data we want to transmit in JSON format. A
+dict or a ready-formatted JSON package will work.</li>
 </ul>
 </td>
 </tr>
@@ -229,7 +230,10 @@ a ready-formatted JSON package will work.</li>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">JSON object, dict</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> – If one of the input parameters is not of the expected type.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> – If one of the input parameters is not of the expected type.</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – If the <cite>http_method</cite> is not on of GET, POST, DELETE, PATCH.</li>
+</ul>
 </td>
 </tr>
 </tbody>

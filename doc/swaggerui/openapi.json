@@ -3,7 +3,7 @@
     "info": {
         "version": "alpha",
         "title": "norderney API",
-        "description": "This is the definition of the norderney API. Essentially it is a work in progress, so things are bound to change a lot. The specification for OpenAPI can be found [here](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md)",
+        "description": "This is the definition of the norderney API. Essentially it is a work in progress, so things are bound to change a lot. The specification for OpenAPI can be found [here](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md). The rest of the documentation can be found [here](../build/html/index.html).",
         "license": {
             "name": "GPLv3"
         },
@@ -48,16 +48,6 @@
 
     "paths": {
 
-        "/": {
-            "options": {
-                "summary": "Return the API?",
-                "description": "Check this...",
-                "tags": [
-                    "verify"
-                ]
-            }
-        },
-
         "/version": {
             "get": {
                 "summary": "Returns program name and version.",
@@ -65,10 +55,6 @@
                 "tags": [
                     ""
                 ],
-                "externalDocs": {
-                    "description": "Link to documentation.",
-                    "url": "LINK HERE"
-                },
                 "parameters": [
                     {
                         "$ref": "#/components/parameters/acceptHeader"
@@ -80,16 +66,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "programName": {
-                                            "type": "string",
-                                            "example": "norderney"
-                                        },
-                                        "programVersion": {
-                                            "type": "string",
-                                            "example": "alpha-1-gbfed333-dirty"
-                                        }
-                                    }
+                                    "$ref": "#/components/schemas/version"
                                 }
                             }
                         }
@@ -101,7 +78,7 @@
             }
         },
 
-        "/objects": {
+        "/datasets": {
             "get": {
                 "summary": "Returns a list of all simulation data on the server.",
                 "description": "Returns a listing of all the simulation data that is available in the directory, that the server is serving from.",
@@ -119,8 +96,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "$ref": "#/components/schemas/availableObjects"
+                                    "$ref": "#/components/schemas/availableDatasets"
                                 }
                             }
                         }
@@ -147,7 +123,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "An objectslist object",
+                        "description": "An datasets list object",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -164,8 +140,8 @@
             },
 
             "post": {
-                "summary": "Create a new scene.",
-                "description": "Create a new scene with a list of objects that are used for initialization.",
+                "summary": "Create a new scene with some datasets.",
+                "description": "Create a new scene with a list of datasets that are used for initialization.",
                 "tags": [
                     ""
                 ],
@@ -175,21 +151,11 @@
                     }
                 ],
                 "requestBody": {
-                    "description": "A list of objects to be added to the new scene. Duplicates are allowed.",
+                    "description": "A list of datasets to be added to the new scene. Duplicates are allowed.",
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "addObjects": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string",
-                                            "example": "object a"
-                                        },
-                                        "minItems": 1
-                                    }
-                                }
+                                "$ref": "#/components/schemas/datasetsToAdd"
                             }
                         }
                     },
@@ -197,27 +163,27 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "New scene created. Complete success, all objects could be added. The response contains a list with objects that were added to the simulation.",
+                        "description": "New scene created. Complete success, all datasets could be added. The response contains a list with datasets that were added to the simulation.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/addObjectsSuccess"
+                                    "$ref": "#/components/schemas/addDatasetsSuccess"
                                 }
                             }
                         }
                     },
                     "206": {
-                        "description": "New scene created. Partial success, some objects could not be added. The response contains a list with added objects and a list with objects, that could not be added.",
+                        "description": "New scene created. Partial success, some datasets could not be added. The response contains a list with added datasets and a list with datasets, that could not be added.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/addObjectsPartial"
+                                    "$ref": "#/components/schemas/addDatasetsPartial"
                                 }
                             }
                         }
                     },
                     "404": {
-                        "description": "Could not create new scene - none of the requested objects exist.",
+                        "description": "Could not create new scene - none of the requested datasets exist.",
                         "$ref": "#/components/responses/404"
                     },
                     "default": {
@@ -230,7 +196,7 @@
         "/scenes/{scene_hash}": {
 
             "get": {
-                "summary": "Get a listing of all objects in this scene.",
+                "summary": "Get a listing of all datasets in this scene.",
                 "tags": [
                     ""
                 ],
@@ -241,19 +207,11 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "A list of all the objects in this scene.",
+                        "description": "A list of all the datasets in this scene.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "properties": {
-                                        "objectList": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "$ref": "#/components/schemas/sceneObject"
-                                            }
-                                        }
-                                    }
+                                    "$ref": "#/components/schemas/listOfLoadedDatasets"
                                 }
                             }
                         }
@@ -268,7 +226,7 @@
             },
 
             "post": {
-                "summary": "Add one or more object(s) to the scene.",
+                "summary": "Add one or more dataset(s) to the scene.",
                 "tags": [
                     ""
                 ],
@@ -278,21 +236,11 @@
                     }
                 ],
                 "requestBody": {
-                    "description": "A list of objects to add to the scene.",
+                    "description": "A list of datasets to add to the scene.",
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "addObjects": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string",
-                                            "example": "object d"
-                                        },
-                                        "minItems": 1
-                                    }
-                                }
+                                "$ref": "#/components/schemas/datasetsToAdd"
                             }
                         }
                     },
@@ -300,21 +248,21 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Complete success, all objects could be added. The response contains a list with objects that were added to the scene.",
+                        "description": "Complete success, all datasets could be added. The response contains a list with datasets that were added to the scene.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/addObjectsSuccess"
+                                    "$ref": "#/components/schemas/addDatasetsSuccess"
                                 }
                             }
                         }
                     },
                     "206": {
-                        "description": "New scene created. Partial success, some objects could not be added. The response contains a list with added objects and a list with objects, that could not be added.",
+                        "description": "New scene created. Partial success, some datasets could not be added. The response contains a list with added datasets and a list with datasets, that could not be added.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/addObjectsPartial"
+                                    "$ref": "#/components/schemas/addDatasetsPartial"
                                 }
                             }
                         }
@@ -340,54 +288,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Complete success. All scenes deleted. The response contains a list with the scenes that were deleted.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "deleteScenesSuccess": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string",
-                                                "example": "21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a"
-                                            },
-                                            "minItems": 1
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "206": {
-                        "description": "Partial success. Some scenes were deleted but not every one. The response contains a list with the deleted scenes and a list with the scenes, that could not be deleted.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "deleteScenesSuccess": {
-                                            "description": "A list of scenes that were deleted.",
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string",
-                                                "example": "21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a"
-                                            },
-                                            "minItems": 1
-                                        },
-                                        "deleteScenesFail": {
-                                            "description": "A list of scenes that could NOT be deleted.",
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string",
-                                                "example": "21dfb0dbf1034ff897aebfa0b8058a5"
-                                            },
-                                            "minItems": 1
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/sceneDeleted"
                     },
                     "404": {
                         "$ref": "#/components/responses/404"
@@ -399,20 +300,11 @@
             }
         },
 
-        "/scenes/{scene_hash}/{object_hash}": {
-
-            "options": {
-                "summary": "Return information about the methods that are exposed.",
-                "description": "Return information about the methods that are exposed. That means `/orientation`, `/timesteps`, `/fields` and `/view`. See about the implementation in cherrypy about this...",
-                "tags": [
-                    "verify"
-                ],
-
-            },
+        "/scenes/{scene_hash}/{dataset_hash}": {
 
             "get": {
-                "summary": "Get all the information about this object.",
-                "description": "Returns information about this object. Like available timesteps, simulation subsets (temp, etc), orientation, ... unclear what exactly, so WIP.",
+                "summary": "Get all the information about this dataset.",
+                "description": "Returns information about this dataset. Like available timesteps, simulation subsets (temp, etc), orientation, ... unclear what exactly, so WIP.",
                 "tags": [
                     ""
                 ],
@@ -421,17 +313,17 @@
                         "$ref": "#/components/parameters/scenePath"
                     },
                     {
-                        "$ref": "#/components/parameters/objectPath"
+                        "$ref": "#/components/parameters/datasetPath"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "The information about the object.",
+                        "description": "The information about the dataset.",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "type": "object",
-                                    "$ref": "#/components/schemas/sceneObject"
+                                    "$ref": "#/components/schemas/loadedDataset"
                                 }
                             }
                         }
@@ -446,7 +338,7 @@
             },
 
             "delete": {
-                "summary": "Delete this object from the scene.",
+                "summary": "Delete this dataset from the scene.",
                 "tags": [
                     ""
                 ],
@@ -455,54 +347,12 @@
                         "$ref": "#/components/parameters/scenePath"
                     },
                     {
-                        "$ref": "#/components/parameters/objectPath"
+                        "$ref": "#/components/parameters/datasetPath"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Complete success. Returns a list with the hashes of the objects that were deleted from the scene.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "deleteObjectsSuccess": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string",
-                                                "example": "21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "206": {
-                        "description": "Partial success. Returns a list with the hashes of the objects that were deleted from the scene and a list with the hashes that could not be deleted.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "deleteObjectsSuccess": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string",
-                                                "example": "21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a"
-                                            }
-                                        },
-                                        "deleteObjectsFail": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string",
-                                                "example": "21dfb0dbf1034ff897ef80a"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/datasetDeleted"
                     },
                     "404": {
                         "$ref": "#/components/responses/404"
@@ -514,10 +364,10 @@
             }
         },
 
-        "/scenes/{scene_hash}/{object_hash}/orientation": {
+        "/scenes/{scene_hash}/{dataset_hash}/orientation": {
 
             "get": {
-                "summary": "Get the orientation of this object.",
+                "summary": "Get the orientation of this dataset.",
                 "tags": [
                     ""
                 ],
@@ -526,20 +376,12 @@
                         "$ref": "#/components/parameters/scenePath"
                     },
                     {
-                        "$ref": "#/components/parameters/objectPath"
+                        "$ref": "#/components/parameters/datasetPath"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "The information about the object.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "$ref": "#/components/schemas/objectOrientation"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/orientation_200"
                     },
                     "default": {
                         "$ref": "#/components/responses/default"
@@ -548,7 +390,7 @@
             },
 
             "patch": {
-                "summary": "Alter the orientation of this object.",
+                "summary": "Alter the orientation of this dataset.",
                 "tags": [
                     ""
                 ],
@@ -557,21 +399,15 @@
                         "$ref": "#/components/parameters/scenePath"
                     },
                     {
-                        "$ref": "#/components/parameters/objectPath"
+                        "$ref": "#/components/parameters/datasetPath"
                     }
                 ],
                 "requestBody": {
-                    "description": "A list of objects to add to the scene.",
+                    "description": "A list of datasets to add to the scene.",
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "objectOrientation": {
-                                        "type": "object",
-                                        "$ref": "#/components/schemas/orientation"
-                                    }
-                                }
+                                "$ref": "#/components/schemas/orientation"
                             }
                         }
                     },
@@ -579,15 +415,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "The information about the object.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "$ref": "#/components/schemas/objectOrientation"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/orientation_200"
                     },
                     "404": {
                         "$ref": "#/components/responses/404"
@@ -599,11 +427,11 @@
             }
         },
 
-        "/scenes/{scene_hash}/{object_hash}/timesteps": {
+        "/scenes/{scene_hash}/{dataset_hash}/timesteps": {
 
             "get": {
                 "summary": "Returns the current and selected timestep(s).",
-                "description": "Returns the currently selected and available timestep(s) of this object.",
+                "description": "Returns the currently selected and available timestep(s) of this dataset.",
                 "tags": [
                     ""
                 ],
@@ -612,20 +440,12 @@
                         "$ref": "#/components/parameters/scenePath"
                     },
                     {
-                        "$ref": "#/components/parameters/objectPath"
+                        "$ref": "#/components/parameters/datasetPath"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Timestep information about an object.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "$ref": "#/components/schemas/objectTimesteps"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/timestep_200"
                     },
                     "default": {
                         "$ref": "#/components/responses/default"
@@ -644,17 +464,17 @@
                         "$ref": "#/components/parameters/scenePath"
                     },
                     {
-                        "$ref": "#/components/parameters/objectPath"
+                        "$ref": "#/components/parameters/datasetPath"
                     }
                 ],
                 "requestBody": {
-                    "description": "The timestep to select. The `index` is referring to the `objectTimesteps` array that has been returned in the GET method.",
+                    "description": "The timestep to select. The `index` is referring to the `datasetTimesteps` array that has been returned in the GET method.",
                     "content": {
                         "application/json": {
                             "schema": {
                                 "type": "object",
                                 "properties": {
-                                    "objectTimestepCurrent": {
+                                    "datasetTimestepCurrent": {
                                         "type": "object",
                                         "properties": {
                                             "index": {
@@ -663,8 +483,7 @@
                                             }
                                         }
                                     }
-                                },
-                                "required": true
+                                }
                             }
                         }
                     },
@@ -672,15 +491,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Timestep information about an object.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "$ref": "#/components/schemas/objectTimesteps"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/timestep_200"
                     },
                     "404": {
                         "$ref": "#/components/responses/404"
@@ -693,11 +504,11 @@
             }
         },
 
-        "/scenes/{scene_hash}/{object_hash}/fields": {
+        "/scenes/{scene_hash}/{dataset_hash}/fields": {
 
             "get": {
                 "summary": "Returns the current and displayable field(s).",
-                "description": "Returns the currently displayed field and the displayable fields (temperature, etc) of this object.",
+                "description": "Returns the currently displayed field and the displayable fields (temperature, etc) of this dataset.",
                 "tags": [
                     ""
                 ],
@@ -706,20 +517,12 @@
                         "$ref": "#/components/parameters/scenePath"
                     },
                     {
-                        "$ref": "#/components/parameters/objectPath"
+                        "$ref": "#/components/parameters/datasetPath"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Field information about an object.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "$ref": "#/components/schemas/objectFields"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/fields_200"
                     },
                     "default": {
                         "$ref": "#/components/responses/default"
@@ -739,27 +542,15 @@
                         "$ref": "#/components/parameters/scenePath"
                     },
                     {
-                        "$ref": "#/components/parameters/objectPath"
+                        "$ref": "#/components/parameters/datasetPath"
                     }
                 ],
                 "requestBody": {
-                    "description": "A list of objects to add to the scene.",
+                    "description": "A list of datasets to add to the scene.",
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "objectTimestepCurrent": {
-                                        "type": "object",
-                                        "properties": {
-                                            "index": {
-                                                "type": "string",
-                                                "example": "temp"
-                                            }
-                                        }
-                                    }
-                                },
-                                "required": true
+                                "$ref": "#/components/schemas/datasetFieldSelected"
                             }
                         }
                     },
@@ -767,15 +558,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Field information about an object.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "$ref": "#/components/schemas/objectFields"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/fields_200"
                     },
                     "404": {
                         "$ref": "#/components/responses/404"
@@ -792,38 +575,159 @@
     "components": {
         "schemas": {
 
-            "sceneObject": {
-                "description": "The name, unique identifier and alias of an object that is loaded into a scene.",
+            "version": {
+                "description": "The program name and version.",
                 "required": [
-                    "objectName",
-                    "objectHash"
+                    "programName",
+                    "programVersion"
                 ],
                 "properties": {
-                    "objectName": {
+                    "programName": {
+                        "type": "string",
+                        "example": "norderney"
+                    },
+                    "programVersion": {
+                        "type": "string",
+                        "example": "alpha-1-gbfed333-dirty"
+                    }
+                }
+
+            },
+
+            "availableDatasets": {
+                "description": "A list of available datasets on the server.",
+                "required": [
+                    "availableDatasets"
+                ],
+                "properties": {
+                    "availableDatasets": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                        },
+                        "example": [
+                            "numsim.napf.tiefziehversuch", "dataset a", "numsim.singlepass.s355j2+n"
+                        ]
+                    }
+                }
+            },
+
+            "activeScenes": {
+                "description": "A list with active scenes on the server.",
+                "required": [
+                    "activeScenes"
+                ],
+                "properties": {
+                    "activeScenes": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "babf090679cf7b50f1a52138dadc9ea50b6b0700",
+                            "77d8548a5def0e7a410259296eb24776ae19047c",
+                            "4c0e21b939da38778e76a03e284bb5ed92e6fdf7"
+                        ]
+                    }
+                }
+            },
+
+            "datasetsToAdd": {
+                "description": "Datasets that should be added.",
+                "required": [
+                    "datasetsToAdd"
+                ],
+                "properties": {
+                    "datasetsToAdd": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                        },
+                        "example": [
+                            "numsim.napf.tiefziehversuch", "dataset a", "dataset a", "numsim.singlepass.s355j2+n"
+                        ]
+                    }
+                }
+            },
+
+            "loadedDataset": {
+                "description": "The name, unique identifier and alias of a dataset that is loaded into a scene.",
+                "required": [
+                    "datasetName",
+                    "datasetHash"
+                ],
+                "properties": {
+                    "datasetName": {
                         "description": "The folder name as present on the server.",
                         "type": "string",
                         "example": "numsim.napf.tiefziehversuch"
                     },
-                    "objectHash": {
-                        "description": "A unique identifier assigned to the object on the time of adding it to the scene.",
+                    "datasetHash": {
+                        "description": "A unique identifier assigned to the dataset on the time of adding it to the scene.",
                         "type": "string",
                         "example": "47e9f7fc6d1522c552fffaf1803a0e1822620024"
                     },
-                    "objectAlias": {
-                        "description": "An alias for the object to be able to differentiate two identical objects in a scene.",
+                    "datasetAlias": {
+                        "description": "An alias for the dataset to be able to differentiate two identical datasets in a scene.",
                         "type": "string",
                         "example": "alias for numsim.napf.tiefziehversuch"
                     },
-                    "objectHref": {
-                        "description": "A link to the object in the scene.",
+                    "datasetHref": {
+                        "description": "A link to the dataset in the scene.",
                         "type": "string",
                         "example": "/scenes/21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a/47e9f7fc6d1522c552fffaf1803a0e182262002"
                     }
                 }
             },
 
+            "sceneDelete": {
+                "type": "object",
+                "properties": {
+                    "sceneDeleted": {
+                        "type": "string",
+                        "example": "21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a"
+                    },
+                    "href": {
+                        "description": "A link to a page that exists.",
+                        "type": "string",
+                        "example": "/scenes"
+                    }
+                }
+            },
+
+            "listOfLoadedDatasets": {
+                "description": "Get the datasets that are loaded in a scene",
+                "required": [
+                    "loadedDatasets"
+                ],
+                "properties": {
+                    "loadedDatasets": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "$ref": "#/components/schemas/loadedDataset"
+                        }
+                    }
+                }
+            },
+
+            "datasetDelete": {
+                "type": "object",
+                "properties": {
+                    "datasetDeleted": {
+                        "type": "string",
+                        "example": "47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    },
+                    "href": {
+                        "description": "A link to the scene that the object belonged to.",
+                        "type": "string",
+                        "example": "/scenes/21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a"
+                    }
+                }
+            },
+
             "orientation": {
-                "description": "The orientation of an object",
+                "description": "The orientation of a dataset",
                 "required": [
                     "orientation"
                 ],
@@ -841,37 +745,55 @@
                 }
             },
 
-            "objectOrientation": {
-                "description": "The metadata and orientation of an object",
+            "datasetOrientation": {
+                "description": "The metadata and orientation of an dataset",
                 "required": [
-                    "objectMeta",
-                    "objectOrientation"
+                    "datasetMeta",
+                    "datasetOrientation"
                 ],
                 "properties": {
-                    "objectMeta": {
+                    "datasetMeta": {
                         "type": "object",
-                        "$ref": "#/components/schemas/sceneObject"
+                        "$ref": "#/components/schemas/loadedDataset"
                     },
-                    "objectOrientation": {
+                    "datasetOrientation": {
                         "type": "object",
                         "$ref": "#/components/schemas/orientation"
                     }
                 }
             },
 
-            "objectTimesteps": {
-                "description": "The metadata and timestep information of an object",
+            "datasetTimestepCurrent": {
+                "description": "A single timestep in a dataset",
                 "required": [
-                    "objectMeta",
-                    "objectTimesteps",
-                    "objectTimestepCurrent"
+                    "index"
                 ],
                 "properties": {
-                    "objectMeta": {
-                        "type": "object",
-                        "$ref": "#/components/schemas/sceneObject"
+                    "index": {
+                        "description": "The index that refers to the datasetTimesteps list.",
+                        "type": integer,
+                        "example": 2
                     },
-                    "objectTimesteps": {
+                    "string": {
+                        "type": "string",
+                        "example": "000.02"
+                    }
+                }
+            },
+
+            "datasetTimesteps": {
+                "description": "The metadata and timestep information of an dataset",
+                "required": [
+                    "datasetMeta",
+                    "datasetTimestepList",
+                    "datasetTimestepCurrent"
+                ],
+                "properties": {
+                    "datasetMeta": {
+                        "type": "object",
+                        "$ref": "#/components/schemas/loadedDataset"
+                    },
+                    "datasetTimestepList": {
                         "description": "A sorted list of timesteps.",
                         "type": "array",
                         "items": {
@@ -879,88 +801,53 @@
                         },
                         "example": ["000.00", "000.01", "000.02"]
                     },
-                    "objectTimestepCurrent": {
+                    "datasetTimestepCurrent": {
                         "type": "object",
-                        "properties": {
-                            "index": {
-                                "description": "The index that refers to the objectTimesteps list.",
-                                "type": integer,
-                                "example": 2,
-                                "required": true
-                            },
-                            "string": {
-                                "type": "string",
-                                "example": "000.02"
-                            }
-                        }
+                        "$ref": "#/components/schemas/datasetTimestepCurrent"
                     }
                 }
             },
 
-            "objectFields": {
-                "description": "The metadata and field information of an object",
+            "datasetFieldSelected": {
+                "description": "A single field in a dataset.",
                 "required": [
-                    "objectMeta",
-                    "objectFields",
-                    "objectFieldSelected"
+                    "datasetFieldSelected"
                 ],
                 "properties": {
-                    "objectMeta": {
-                        "type": "object",
-                        "$ref": "#/components/schemas/sceneObject"
-                    },
-                    "objectFields": {
-                        "description": "A list of available fields for an object.",
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "example": ["temp", "t1", "t2", "e1"]
-                    },
-                    "objectFieldSelected": {
+                    "datasetFieldSelected": {
                         "type": "string",
                         "example": "temp"
                     }
                 }
             },
 
-            "availableObjects": {
-                "description": "A list with objects.",
+            "datasetFields": {
+                "description": "The metadata and field information of an dataset",
                 "required": [
-                    "objectList"
+                    "datasetMeta",
+                    "datasetFieldList",
+                    "datasetFieldSelected"
                 ],
                 "properties": {
-                    "objectList": {
+                    "datasetMeta": {
+                        "type": "object",
+                        "$ref": "#/components/schemas/loadedDataset"
+                    },
+                    "datasetFieldList": {
+                        "description": "A list of available fields for an dataset.",
                         "type": "array",
                         "items": {
                             "type": "string"
                         },
-                        "example": ["numsim.napf.tiefziehversuch", "object a", "numsim.singlepass.s355j2+n"]
+                        "example": ["temp", "t1", "t2", "e1"]
+                    },
+                    "datasetFieldSelected": {
+                        "$ref": "#/components/schemas/datasetFieldSelected"
                     }
                 }
             },
 
-            "activeScenes": {
-                "description": "A list with active scenes on the server.",
-                "required": [
-                    "sceneList"
-                ],
-                "properties": {
-                    "sceneList": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "example": [
-                            "babf090679cf7b50f1a52138dadc9ea50b6b0700",
-                            "77d8548a5def0e7a410259296eb24776ae19047c",
-                            "4c0e21b939da38778e76a03e284bb5ed92e6fdf7"
-                        ]
-                    }
-                }
-            },
-
-            "addObjectsSuccess": {
+            "addDatasetsSuccess": {
                 "description": "The response on successfully creating a new scene.",
                 "type": "object",
                 "properties": {
@@ -969,18 +856,18 @@
                         "type": "string",
                         "example": "/scenes/47e9f7fc6d1522c552fffaf1803a0e1822620024"
                     },
-                    "addObjectsSuccess": {
-                        "description": "An array with JSON objects containing information about objects.",
+                    "addDatasetsSuccess": {
+                        "description": "An array with JSON objects containing information about datasets.",
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "$ref": "#/components/schemas/sceneObject"
+                            "$ref": "#/components/schemas/loadedDataset"
                         }
                     }
                 }
             },
 
-            "addObjectsPartial": {
+            "addDatasetsPartial": {
                 "description": "The response on partially creating a new scene.",
                 "type": "object",
                 "properties": {
@@ -989,21 +876,21 @@
                         "type": "string",
                         "example": "/scenes/47e9f7fc6d1522c552fffaf1803a0e1822620024"
                     },
-                    "addObjectsSuccess": {
-                        "description": "An array with JSON objects containing information about objects.",
+                    "addDatasetsSuccess": {
+                        "description": "An array with JSON objects containing information about datasets.",
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "$ref": "#/components/schemas/sceneObject"
+                            "$ref": "#/components/schemas/loadedDataset"
                         }
                     },
-                    "addObjectsFail": {
-                        "description": "An array objects that could not be added to the scene.",
+                    "addDatasetsFail": {
+                        "description": "An array of datasets that could not be added to the scene.",
                         "type": "array",
                         "items": {
                             "type": "string",
                         },
-                        "example": ["object z", "object k"]
+                        "example": ["dataset z", "dataset k"]
                     }
                 }
             },
@@ -1028,10 +915,10 @@
                 }
             },
 
-            "objectPath": {
-                "description": "The object_hash path variable.",
+            "datasetPath": {
+                "description": "The dataset_hash path variable.",
                 "in": "path",
-                "name": "object_hash",
+                "name": "dataset_hash",
                 "required": true,
                 "schema": {
                     "type": "string"
@@ -1040,9 +927,66 @@
 
         },
 
-        "requestBodies": {},
-
         "responses": {
+
+            "sceneDeleted": {
+                "description": "Scene was deleted.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/sceneDelete"
+                        }
+                    }
+                }
+            },
+
+            "datasetDeleted": {
+                "description": "Dataset was deleted.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/datasetDelete"
+                        }
+                    }
+                }
+            },
+
+            "orientation_200": {
+                "description": "The information about the dataset.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/components/schemas/datasetOrientation"
+                        }
+                    }
+                }
+            },
+
+            "timestep_200": {
+                "description": "Timestep information about an dataset.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/components/schemas/datasetTimesteps"
+                        }
+                    }
+                }
+            },
+
+            "fields_200": {
+                "description": "Field information about an dataset.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/components/schemas/datasetFields"
+                        }
+                    }
+                }
+            },
+
             "404": {
                 "description": "Not found",
                 "content": {
