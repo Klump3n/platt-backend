@@ -70,8 +70,8 @@ class _ObjectPrototype:
           can contain scaling values.
 
         Raises:
-         TypeError: If ``type(view_matrix)`` is not None or np.ndarray and/or
-          if the shape is not 4x4.
+         TypeError: If ``type(view_matrix)`` is not None or np.ndarray.
+         ValueError: If the shape of ``view_matrix`` is not 4x4.
 
         """
         if view_matrix is not None:
@@ -82,7 +82,7 @@ class _ObjectPrototype:
             if not is_np_array:
                 raise TypeError('view_matrix is wrong type')
             if not is_4x4:
-                raise TypeError('view_matrix is not 4x4')
+                raise ValueError('view_matrix is not 4x4')
 
             try:
                 self._view_matrix = view_matrix

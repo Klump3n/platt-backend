@@ -5,6 +5,7 @@ returns the response.
 
 """
 import requests
+import json
 
 
 def send_http_request(
@@ -81,7 +82,7 @@ def send_http_request(
             response.raise_for_status()
         # .. which is then caught.
         except BaseException as e:
-            print('{}'.format(e))
+            return '{}'.format(e)
             return None
 
     # POST method
@@ -132,4 +133,11 @@ def send_http_request(
             print('{}'.format(e))
             return None
 
-    return response.json()
+    # Try to parse the response, assuming it is JSON
+    try:
+        parsed_response = json.loads(response.json())
+        return parsed_response
+    except TypeError as e:
+        print('{}'.format(e))
+        print('Client expects JSON response.')
+        return None

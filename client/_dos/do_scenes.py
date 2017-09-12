@@ -7,6 +7,7 @@ creating, selecting) scenes on the backend via the client.
 
 import argparse
 from util_client.post_json import post_json_string
+from util_client.send_http_request import send_http_request
 
 
 def scenes_help(c_data):
@@ -232,27 +233,33 @@ def scenes_list(c_data, just=None):
      None: Nothing.
 
     """
+
+    response = send_http_request(
+        http_method='GET',
+        api_endpoint='scenes',
+        connection_data=c_data,
+        data_to_transmit=None
+    )
+
     host = c_data['host']
     port = c_data['port']
-    headers = c_data['headers']
 
-    api_call = 'scenes_infos'
-    data = None
-    answer = post_json_string(
-        api_call=api_call, data=data, connection_data=c_data)
-
-    if answer == {}:
+    if response == {}:
         # If there are no scenes to display on the server
         print('There are no scenes to display.')
 
+    print(response)
+
     if just is None:
         # If we only want to list a limited amount of scenes
-        for scene_hash in answer.keys():
-            pretty_print_scene(scene_hash, answer.get(scene_hash), host, port)
+        for scene_hash in response.keys():
+            pretty_print_scene(
+                scene_hash, response.get(scene_hash), host, port)
     else:
         # List everything we have
         for scene_hash in just:
-            pretty_print_scene(scene_hash, answer.get(scene_hash), host, port)
+            pretty_print_scene(
+                scene_hash, response.get(scene_hash), host, port)
 
     return None
 

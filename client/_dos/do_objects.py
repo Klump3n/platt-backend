@@ -4,8 +4,6 @@ A small module containing the function for getting the available simulation
 data from the backend and displaying it in the client.
 
 """
-
-from util_client.post_json import post_json_string
 from util_client.send_http_request import send_http_request
 from util_client.print_function_usage import print_help
 
@@ -28,7 +26,7 @@ def objects(c_data):
     """
     List all the available simulation data directories.
 
-    Sends an empty JSON request to the ``api/list_of_fem_data``. The returned
+    Sends an empty HTTP GET request to the ``api/datasets``. The returned
     response is then parsed and printed out nicely formatted. In case of an
     exception (that means no response is returned) a message is printed to the
     screen, informing us that no response came back.

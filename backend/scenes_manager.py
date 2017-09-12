@@ -96,6 +96,109 @@ class SceneManager:
 
         return data_folders
 
+    def scene_create(
+            self,
+            datasets
+    ):
+        """
+        Create a new scene with at least one object.
+
+        This adds a ScenePrototype to `self._scene_list`.
+
+        Args:
+         object_path (list (of str)): A list of datasets we want to append to
+          the scene.
+
+        Returns:
+         dict: A dict containing a link to the scene, a list of loaded datasets
+         and potentially a list of datasets that for some reason could not be
+         added.
+
+        Raises:
+         TypeError: If ``type(datasets)`` is not `list` and of it are not
+          ``str``.
+
+        Todo:
+         Make it impossible to create an empty scene.
+
+        """
+        if not isinstance(datasets, list):
+            raise TypeError('datasets is {}, expected list'.format(
+                type(datasets).__name__))
+
+        # Get a new instance of a scene
+        new_scene = _ScenePrototype(data_dir=self._data_dir)
+        scene_name = new_scene.name()
+
+        # Cast each path to a os.Pathlike object and add the object to the scene
+        for entry in datasets:
+
+            if not isinstance(entry, str):
+                raise TypeError('datasets entry is {}, expected str'.format(
+                    type(entry).__name__))
+
+            # Cast to pathlike object
+            add_entry = pathlib.Path(entry)
+            new_scene.add_object(object_path=add_entry)
+
+        # # Append to scene with object to the list
+        # self._scene_list[scene_name] = new_scene
+
+        # # Return the name of the new scene so we keep our sanity.
+        # return scene_name
+
+
+    def new_scene(
+            self,
+            object_path=None
+    ):
+        """
+        Create a new scene with an object.
+
+        This adds a ScenePrototype to `self._scene_list`.
+
+        Args:
+         object_path (None, str, list (of str), defaults to None): The path to
+          the objects we want to instantiate a new scene with.
+
+        Returns:
+         str: The name (scene_hash) of the newly created scene.
+
+        Raises:
+         TypeError: If ``type(object_path)`` is not `list` and/or entries
+          thereof are not ``str``.
+
+        Todo:
+         Make it impossible to create an empty scene.
+
+        """
+        # Type checking for object path
+        if not isinstance(object_path, list):  # Yes, string.
+            raise TypeError('object_path is {}, expected list'.format(
+                type(object_path).__name__))
+
+        # Get a new instance of a scene
+        new_scene = _ScenePrototype(data_dir=self._data_dir)
+        scene_name = new_scene.name()
+
+        # Cast each path to a os.Pathlike object and add the object to the scene
+        for entry in object_path:
+
+            # Type checking, if path is string
+            if not isinstance(entry, str):  # Yes, string.
+                raise TypeError('object_path entry is {}, expected str'.format(
+                    type(entry).__name__))
+
+            # Cast to pathlike object
+            add_entry = pathlib.Path(entry)
+            new_scene.add_object(object_path=add_entry)
+
+        # Append to scene with object to the list
+        self._scene_list[scene_name] = new_scene
+
+        # Return the name of the new scene so we keep our sanity.
+        return scene_name
+
     def get_scene_infos(self):
         """
         Return a dict with all the scenes and information for every scene.
@@ -164,58 +267,6 @@ class SceneManager:
         else:
             print('No scene found to delete.')
             return None
-
-    def new_scene(
-            self,
-            object_path=None
-    ):
-        """
-        Create a new scene with an object.
-
-        This adds a ScenePrototype to `self._scene_list`.
-
-        Args:
-         object_path (None, str, list (of str), defaults to None): The path to
-          the objects we want to instantiate a new scene with.
-
-        Returns:
-         str: The name (scene_hash) of the newly created scene.
-
-        Raises:
-         TypeError: If ``type(object_path)`` is not `list` and/or entries
-          thereof are not ``str``.
-
-        Todo:
-         Make it impossible to create an empty scene.
-
-        """
-
-        # Type checking for object path
-        if not isinstance(object_path, list):  # Yes, string.
-            raise TypeError('object_path is {}, expected list'.format(
-                type(object_path).__name__))
-
-        # Get a new instance of a scene
-        new_scene = _ScenePrototype(data_dir=self._data_dir)
-        scene_name = new_scene.name()
-
-        # Cast each path to a os.Pathlike object and add the object to the scene
-        for entry in object_path:
-
-            # Type checking, if path is string
-            if not isinstance(entry, str):  # Yes, string.
-                raise TypeError('object_path entry is {}, expected str'.format(
-                    type(entry).__name__))
-
-            # Cast to pathlike object
-            add_entry = pathlib.Path(entry)
-            new_scene.add_object(object_path=add_entry)
-
-        # Append to scene with object to the list
-        self._scene_list[scene_name] = new_scene
-
-        # Return the name of the new scene so we keep our sanity.
-        return scene_name
 
     def scene(
             self,

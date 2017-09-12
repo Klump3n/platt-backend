@@ -62,6 +62,7 @@ class ServerAPI:
 
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['GET'])
+    @cherrypy.tools.json_out()
     def version(self):
         """
         Returns a dictionary containing the programs name and version, e.g.
@@ -91,6 +92,7 @@ class ServerAPI:
 
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['GET'])
+    @cherrypy.tools.json_out()
     def datasets(self):
         """
         List the available fem simulation directories.
@@ -110,41 +112,108 @@ class ServerAPI:
 
         """
         data_folders = gloset.scene_manager.get_femdata_dirs()
-
         return json.dumps({'availableDatasets': data_folders})
 
     @cherrypy.expose
-    def list_of_fem_data(self):
+    @cherrypy.tools.allow(methods=['GET', 'POST', 'DELETE', 'PATCH'])
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def scenes(
+            self,
+            scene_hash=None, dataset_hash=None, dataset_operation=None
+    ):
         """
-        List the available fem simulation directories.
+        Contains the logic for manipulating scenes over the API.
 
-        A list of all available simulation data folders can be obtained from
-        the scene_manager.
-
-        Returns:
-         JSON dict: A dictionary containing available `data_folders`.
-
-        Todo:
-         _dos is not part of the client module. Fix that!
-
-        See Also:
-         :py:meth:`backend.scenes_manager.SceneManager.get_femdata_dirs`
-         :py:func:`_dos.do_objects.objects`
+        Distributes the call parameters to subfunctions.
 
         """
-        data_folders = gloset.scene_manager.get_femdata_dirs()
+        # Parse the HTTP method
+        http_method = cherrypy.request.method
 
-        return json.dumps({'data_folders': data_folders})
+        ##################################################
 
-    @cherrypy.expose
-    def scenes_infos(self):
+        if (scene_hash is None and
+            dataset_hash is None and
+            dataset_operation is None
+        ):
+            # GET
+            if http_method == 'GET':
+                # There is nothing to parse
+                output = self.get_scenes()
+
+            # POST
+            if http_method == 'POST':
+
+                # Parse datasetsToAdd from JSON
+                try:
+                    json_input = cherrypy.request.json
+                    datasets = json_input['datasetsToAdd']
+                    output = self.post_scenes(datasets)
+
+                except ValueError as e:
+                    print('{}'.format(e))
+                    output = None
+
+        ##################################################
+
+        if (scene_hash is not None and
+            dataset_hash is None and
+            dataset_operation is None
+        ):
+            # GET
+            if http_method == 'GET':
+                pass
+
+            # POST
+            if http_method == 'POST':
+                pass
+
+            # DELETE
+            if http_method == 'DELETE':
+                pass
+
+        ##################################################
+
+        if (scene_hash is not None and
+            dataset_hash is not None and
+            dataset_operation is None
+        ):
+            # GET
+            if http_method == 'GET':
+                pass
+
+            # DELETE
+            if http_method == 'DELETE':
+                pass
+
+        ##################################################
+
+        if (scene_hash is not None and
+            dataset_hash is not None and
+            dataset_operation is not None
+        ):
+            # GET
+            if http_method == 'GET':
+                pass
+
+            # PATCH
+            if http_method == 'PATCH':
+                pass
+
+        ##################################################
+
+        # Return valid JSON
+        return json.dumps(output)
+
+    def get_scenes(self):
         """
         Return a list of scenes.
 
         A list of created scenes can be obtained from the scene_manager.
 
         Returns:
-         JSON dict: A dictionary containing a scenes and the objects within
+         dict: A dictionary containing a scenes and the objects within
          each scene.
 
         See Also:
@@ -153,7 +222,50 @@ class ServerAPI:
 
         """
         scenes = gloset.scene_manager.get_scene_infos()
-        return json.dumps(scenes)
+        return scenes
+
+    def post_scenes(self, datasets):
+        """
+        Create a new scene.
+
+        We expect a JSON package with key 'object_path'. The value has to be a
+        list, containing valid objects. If the list is empty, an empty scene
+        will be created.
+
+        Args:
+         datasets (list): A list of datasets that are to be appended to the
+          new scene.
+
+        Returns:
+         dict: A dictionary containing a the unique hash of the scene,
+         that has been created.
+
+        See Also:
+         :py:meth:`backend.scenes_manager.SceneManager.new_scene`
+         :py:func:`_dos.do_scenes.scenes_create`
+
+        """
+        scene_id = gloset.scene_manager.new_scene(object_path=object_path)
+        return {'created': scene_id}
+
+    # @cherrypy.expose
+    # def scenes_infos(self):
+    #     """
+    #     Return a list of scenes.
+
+    #     A list of created scenes can be obtained from the scene_manager.
+
+    #     Returns:
+    #      JSON dict: A dictionary containing a scenes and the objects within
+    #      each scene.
+
+    #     See Also:
+    #      :py:meth:`backend.scenes_manager.SceneManager.get_scene_infos`
+    #      :py:func:`_dos.do_scenes.scenes_list`
+
+    #     """
+    #     scenes = gloset.scene_manager.get_scene_infos()
+    #     return json.dumps(scenes)
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -180,7 +292,6 @@ class ServerAPI:
         json_input = cherrypy.request.json
         object_path = json_input['object_path']
 
-        print(json_input, object_path)
         scene_id = gloset.scene_manager.new_scene(object_path=object_path)
         return json.dumps(
             {'created': scene_id}
@@ -192,9 +303,7 @@ class ServerAPI:
         """
         Delete a scene.
 
-
         """
-
         # Parse JSON
         json_input = cherrypy.request.json
         # print(json_input)

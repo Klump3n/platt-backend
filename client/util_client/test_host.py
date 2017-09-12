@@ -34,13 +34,9 @@ def target_online_and_compatible(c_data):
         data_to_transmit=None
     )
 
-    # if not response.status_code == 200:
-    #     print('whaddup')
-
-    # # Call the about page of the host
-    # api_call = 'connect_client'
-    # response = post_json_string(
-    #     api_call=api_call, connection_data=c_data)
+    if response is None:
+        print('Invalid response from server.')
+        return False
 
     # Check if we see what we want to see. Get the version out of the headers
     # user-agent.
