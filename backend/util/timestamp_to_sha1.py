@@ -12,6 +12,9 @@ def timestamp_to_sha1():
     This turns a linux timestamp into a sha1 hash, to uniquely identify a scene
     or a dataset based on the time it was created.
 
+    Returns:
+     str: The hashed timestamp.
+
     """
     return hashlib.sha1(str(time.time()).encode('utf-8')).hexdigest()
 
