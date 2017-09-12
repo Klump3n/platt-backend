@@ -18,7 +18,7 @@ class Test_DatasetPrototype(unittest.TestCase):
 
     def setUp(self):
         # Set the path to a mock dataset
-        self.valid_dir_name = 'test_DatasetPrototype_data'
+        self.valid_dir_name = 'scenes_dataset_prototype_mock_data'
         self.valid_path = pathlib.Path(self.valid_dir_name)
         self.invalid_path = pathlib.Path('dir_does_not_exist')
         self.string_path = self.valid_dir_name
