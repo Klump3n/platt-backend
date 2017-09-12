@@ -14,14 +14,21 @@ sys.path.append(os.path.join('..', '..'))  # Append the program root dir
 from backend.scenes_dataset_prototype import _DatasetPrototype
 
 
-class Test_DatasetPrototype(unittest.TestCase):
+class Test_scenes_dataset_prototype(unittest.TestCase):
 
     def setUp(self):
+        """
+        Set up the test case.
+
+        """
         # Set the path to a mock dataset
+        file_path = os.path.dirname(__file__)
         self.valid_dir_name = 'scenes_dataset_prototype_mock_data'
-        self.valid_path = pathlib.Path(self.valid_dir_name)
+        self.string_path = '{}/mock_data/{}'.format(
+            file_path, self.valid_dir_name)
+
+        self.valid_path = pathlib.Path(self.string_path)
         self.invalid_path = pathlib.Path('dir_does_not_exist')
-        self.string_path = self.valid_dir_name
         self.test_dataset_object = _DatasetPrototype(self.valid_path)
 
     def test_valid_path_instatiates_dataset(self):
