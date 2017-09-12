@@ -6,8 +6,7 @@ A scene contains a number of objects.
 
 """
 import os
-import time
-import hashlib
+from backend.util.timestamp_to_sha1 import timestamp_to_sha1
 from backend.scenes_object_prototype import _ObjectPrototype
 
 
@@ -46,8 +45,7 @@ class _ScenePrototype:
 
         # This turns a linux timestamp into a sha1 hash, to uniquely identify a
         # scene based on the time it was created.
-        self._scene_name = hashlib.sha1(
-            str(time.time()).encode('utf-8')).hexdigest()
+        self._scene_name = timestamp_to_sha1()
         self._object_list = {}
 
     def add_object(
