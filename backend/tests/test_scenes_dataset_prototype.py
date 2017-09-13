@@ -23,7 +23,7 @@ class Test_scenes_dataset_prototype(unittest.TestCase):
         """
         # Set the path to a mock dataset
         file_path = os.path.dirname(__file__)
-        self.valid_dir_name = 'scenes_dataset_prototype_mock_data'
+        self.valid_dir_name = 'just_fo'
         self.string_path = '{}/mock_data/{}'.format(
             file_path, self.valid_dir_name)
 
