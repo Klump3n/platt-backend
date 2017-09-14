@@ -3,7 +3,6 @@
 Check the target host.
 
 """
-from util_client.post_json import post_json_string
 from util_client.send_http_request import send_http_request
 
 

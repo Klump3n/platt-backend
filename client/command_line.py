@@ -13,7 +13,7 @@ from _dos.do_scenes import scenes, scenes_help
 from _dos.do_objects import objects, objects_help
 
 # Some utility functions
-from util_client.test_host import target_online_and_compatible
+from util_client.host_test import target_online_and_compatible
 
 # # Get the version from the parent directory
 sys.path.append('..')
