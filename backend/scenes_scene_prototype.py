@@ -2,7 +2,7 @@
 """
 The class for a scene.
 
-A scene contains a number of objects.
+A scene contains a number of datasets.
 
 """
 import os
@@ -12,7 +12,7 @@ from backend.scenes_dataset_prototype import _DatasetPrototype
 
 class _ScenePrototype:
     """
-    Contains a list of objects and methods for manipulating the scene.
+    Contains a list of datasets and methods for manipulating the scene.
 
     On initialization a unique identifier is generated and assigned to the
     scene.
@@ -30,7 +30,6 @@ class _ScenePrototype:
      allowing them to add one function.
 
     """
-
     def __init__(
             self,
             data_dir
@@ -54,6 +53,19 @@ class _ScenePrototype:
 
         self._dataset_list = {}
 
+    def name(self):
+        """
+        Get the name for the scene.
+
+        Args:
+         None: No parameters.
+
+        Returns:
+         str: The name (scene_hash) of the scene.
+
+        """
+        return self._scene_name
+
     def _add_one_dataset(self, dataset_path):
         """
         Add one dataset.
@@ -69,10 +81,10 @@ class _ScenePrototype:
 
         Raises:
          TypeError: If `dataset_path` is not `os.Pathlike`.
-         ValueError: If `dataset_path` does not exist and/or `object_path`
-          is not a directory.
+         ValueError: If `dataset_path` does not exist.
+         ValueError: If `dataset_path` is not a directory.
          ValueError: If there is no 'fo' and/or 'frb' sub directory in
-          `object_path.`
+          `dataset_path.`
 
         """
         if not isinstance(dataset_path, os.PathLike):
@@ -106,12 +118,12 @@ class _ScenePrototype:
 
         return dataset_meta
 
-    def add_dataset(
+    def add_datasets(
             self,
             dataset_list
     ):
         """
-        Add one or multiple object(s) to the scene.
+        Add one or multiple dataset(s) to the scene.
 
         Args:
          dataset_list (list (of str)): The relative path to the object
@@ -122,6 +134,9 @@ class _ScenePrototype:
          TypeError: If ``type(dataset_list)`` is not `list`.
          ValueError: If ``len(dataset_list)`` is `0`.
 
+        Notes:
+         See FIXME in code.
+
         """
         if not isinstance(dataset_list, list):
             raise TypeError(
@@ -131,6 +146,7 @@ class _ScenePrototype:
         if len(dataset_list) == 0:
             raise ValueError('dataset_list is empty')
 
+        # Encode the scene hash into the return_dict
         return_dict = {
             'href': '/scenes/{}'.format(self._scene_name),
             'addDatasetsSuccess': []
@@ -150,7 +166,10 @@ class _ScenePrototype:
                 return_dict['addDatasetsSuccess'].append(dataset_meta)
 
             # Catch everything that could have gone wrong and just report that
-            # the dataset could not be added.
+            # the dataset could not be added. NOTE: This also catches the case
+            # that an entry in the list was not a string, so we might run in to
+            # trouble? But it came from a list, so it can also go back into a
+            # list I guess... Maybe FIXME.
             except (TypeError, ValueError):
                 try:
                     return_dict['addDatasetsFail'].append(one_dataset)
@@ -158,88 +177,78 @@ class _ScenePrototype:
                     return_dict['addDatasetsFail'] = []
                     return_dict['addDatasetsFail'].append(one_dataset)
 
+        # If we have nothing to return..
         if len(return_dict['addDatasetsSuccess']) == 0:
-            # If we have nothing to return..
             return None
         else:
             return return_dict
 
-    def delete_object(
-            self,
-            object_id
-    ):
-        """
-        Remove one or multiple object(s) from the list of objects.
-
-        Args:
-         object_id (str, list (of str)): The relative path to the object
-              root, relative to `data_dir`.
-
-        Raises:
-         TypeError: If ``type(object_path)`` is neither `os.PathLike` nor
-          `list`.
-         TypeError: If ``type(object_path)`` is `list` but the type of one
-          list entry is not `os.PathLike`.
-
-        Todo:
-         See declutter todo in class.
-        """
-
-        if (not isinstance(object_id, os.PathLike) and
-            not isinstance(object_id, list)):
-            raise TypeError(
-                'object_id is {}, expected either os.PathLike or list'.format(
-                    type(object_id).__name__))
-
-        if isinstance(object_id, str):
-            # If we only have one object to remove...
-            self._dataset_list.pop(object_id)
-
-        else:
-            # If we have a list of objects that we want to remove...
-            for it, one_object_id in enumerate(object_id):
-
-                # Check for type of the single object id in the list
-                if not isinstance(one_object_id, os.PathLike):
-                    raise TypeError(
-                        'object_id[{}] is {}, expected os.PathLike'.format(
-                            it, type(one_object_id).__name__))
-
-                # Remove each object
-                self._dataset_list.pop(one_object_id)
-
-        return None
-
-    def name(self):
-        """
-        Get the name for the scene.
-
-        Args:
-         None: No parameters.
-
-        Returns:
-         str: The name (scene_hash) of the scene. This is created on
-         initialization by creating a sha1 hash from the linux timestamp.
-
-        """
-        return self._scene_name
-
-    def dataset_list(self):
+    def list_datasets(self):
         """
         Returns a list of all the objects in this scene.
 
         Create a sorted view (list) of the keys of the dict
-        `self._dataset_list`. If this list is empty, append a notice to this
-        list that there are no objects and return the list. Otherwise just
-        return the (non empty) list.
+        `self._dataset_list`.
 
         Returns:
-         list: A list with objects in this scene or a notice, that there are
-         no objects in this scene.
+         list: A list with objects in this scene.
 
         """
-        list_of_objects = sorted(self._dataset_list.keys())
-        if len(list_of_objects) == 0:
-            list_of_objects.append('This scene is empty.')
+        list_of_datasets = sorted(self._dataset_list.keys())
+        return list_of_datasets
 
-        return list_of_objects
+    def delete_dataset(self, dataset_hash):
+        """
+        Remove one dataset from the scene.
+
+        Returns:
+         bool: True if the dataset could be removed, False if the dataset
+         could not be removed (e.g. did not exist in the first place).
+
+        Raises:
+         TypeError: If ``type(dataset_hash)`` is not `str`.
+
+        """
+        if not isinstance(dataset_hash, str):
+            raise TypeError('dataset_hash is {}, expected str'.format(
+                type(dataset_hash).__name__))
+
+        try:
+            self._dataset_list.pop(dataset_hash)
+            return True
+        except KeyError:
+            return False
+
+    # DELETING MULTIPLE DATASETS IS NOT NECESSARY BY DEFINITION OF THE API.
+    # def delete_datasets(self, dataset_hash_list):
+    #     """
+    #     Remove one or multiple dataset(s) from the scene.
+
+    #     Args:
+    #      dataset_hash (list (of str)): A list of dataset hashes that shall be
+    #       removed from the scene.
+
+    #     Raises:
+    #      TypeError: If ``type(dataset_hash)`` is neither `os.PathLike` nor
+    #       `list`.
+    #      TypeError: If ``type(object_path)`` is `list` but the type of one
+    #       list entry is not `os.PathLike`.
+
+    #     Todo:
+    #      See declutter todo in class.
+
+    #     """
+    #     if not isinstance(dataset_hash_list, list):
+    #         raise TypeError(
+    #             'dataset_hash_list is {}, expected list'.format(
+    #                 type(dataset_hash_list).__name__))
+
+
+    #     # TODO: If the scene is going to be empty we have to remove the scene?
+    #     # For this we would have to send a message......
+    #     # Also: rework this shit...
+
+    #     for dataset_hash in dataset_hash_list:
+    #         result = self._delete_one_dataset(dataset_hash)
+
+    #     return None
