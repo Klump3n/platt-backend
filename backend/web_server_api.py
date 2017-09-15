@@ -111,8 +111,8 @@ class ServerAPI:
          :py:func:`_dos.do_objects.objects`
 
         """
-        data_folders = gloset.scene_manager.get_femdata_dirs()
-        return json.dumps({'availableDatasets': data_folders})
+        available_datasets_dict = gloset.scene_manager.list_available_datasets()
+        return json.dumps(available_datasets_dict)
 
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['GET', 'POST', 'DELETE', 'PATCH'])
@@ -221,7 +221,8 @@ class ServerAPI:
          :py:func:`_dos.do_scenes.scenes_list`
 
         """
-        scenes = gloset.scene_manager.get_scene_infos()
+        # scenes = gloset.scene_manager.get_scene_infos()
+        scenes = gloset.scene_manager.list_scenes()
         return scenes
 
     def post_scenes(self, datasets):

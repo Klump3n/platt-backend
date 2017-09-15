@@ -3,7 +3,6 @@
 Terminal-like interface for interacting with the backend.
 
 """
-
 import cmd
 import sys
 import argparse
@@ -165,7 +164,7 @@ class Terminal(cmd.Cmd):
 
     def do_scenes(self, line):
         """
-        Calls the imported scenes function and returns the result.
+        Calls the imported scenes function and returns https://github.com/syl20bnr/spacemacs.gitthe result.
 
         See ``_dos.do_scenes.scenes`` for full documentation.
 

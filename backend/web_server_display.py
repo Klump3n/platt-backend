@@ -70,7 +70,7 @@ class ServerScenesDispatcher:
         """
 
         # If the first argument is a scene hash ...
-        if vpath[0] in gloset.scene_manager.get_scene_infos():
+        if vpath[0] in gloset.scene_manager.list_scenes()['activeScenes']:
 
             # ... pop the first argument from the stack (store in calling
             # parameter)
