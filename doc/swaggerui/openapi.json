@@ -851,6 +851,11 @@
                 "description": "The response on successfully creating a new scene.",
                 "type": "object",
                 "properties": {
+                    "sceneHash": {
+                        "description": "The unique identifier for the scene.",
+                        "type": "string",
+                        "example": "47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    },
                     "href": {
                         "description": "A link to the new scene.",
                         "type": "string",
@@ -871,6 +876,11 @@
                 "description": "The response on partially creating a new scene.",
                 "type": "object",
                 "properties": {
+                    "sceneHash": {
+                        "description": "The unique identifier for the scene.",
+                        "type": "string",
+                        "example": "47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    },
                     "href": {
                         "description": "A link to the scene.",
                         "type": "string",
