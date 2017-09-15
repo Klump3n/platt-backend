@@ -4,7 +4,7 @@
 This module takes care of storing and manipulating scenes.
 
 """
-
+import os
 import pathlib
 from backend.scenes_scene_prototype import _ScenePrototype
 
@@ -36,10 +36,7 @@ class SceneManager:
      TypeError: If `data_dir` is not of type `str`.
 
     """
-    def __init__(
-            self,
-            data_dir=None
-    ):
+    def __init__(self, data_dir):
         """
         Initialise the manager.
 
@@ -48,13 +45,21 @@ class SceneManager:
         self._scene_list is a dictionary for containing scenes.
 
         """
-
-        if not isinstance(data_dir, str):  # Yes, string.
-            raise TypeError('data_dir is {}, expected str'.format(
+        if not isinstance(data_dir, os.PathLike):
+            raise TypeError('data_dir is {}, expected os.PathLike'.format(
                 type(data_dir).__name__))
 
+        # Check if the path exists
+        if not data_dir.exists():
+            raise ValueError(
+                '{} does not exist'.format(data_dir.absolute()))
+
+        # if not isinstance(data_dir, str):  # Yes, string.
+        #     raise TypeError('data_dir is {}, expected str'.format(
+        #         type(data_dir).__name__))
+
         # Set the data dir
-        self._data_dir = pathlib.Path(data_dir).absolute()
+        self._data_dir = data_dir.absolute()
 
         self._scene_list = {}
 
@@ -147,10 +152,9 @@ class SceneManager:
         # # Return the name of the new scene so we keep our sanity.
         # return scene_name
 
-
     def new_scene(
             self,
-            object_path=None
+            dataset_list
     ):
         """
         Create a new scene with an object.
@@ -158,46 +162,90 @@ class SceneManager:
         This adds a ScenePrototype to `self._scene_list`.
 
         Args:
-         object_path (None, str, list (of str), defaults to None): The path to
-          the objects we want to instantiate a new scene with.
+         dataset_list (list (of str)): The path to the datasets we want to
+          instantiate a new scene with.
 
         Returns:
-         str: The name (scene_hash) of the newly created scene.
+         None, dict: `None` if no dataset could be added to a new scene and a
+         dict with information what could be added and what not in the case
+         that we could add dataset(s) to a new scene.
 
         Raises:
-         TypeError: If ``type(object_path)`` is not `list` and/or entries
-          thereof are not ``str``.
+         TypeError: If ``type(object_path)`` is not `list`.
 
         Todo:
          Make it impossible to create an empty scene.
 
         """
         # Type checking for object path
-        if not isinstance(object_path, list):  # Yes, string.
-            raise TypeError('object_path is {}, expected list'.format(
-                type(object_path).__name__))
+        if not isinstance(dataset_list, list):  # Yes, string.
+            raise TypeError('dataset_list is {}, expected list'.format(
+                type(dataset_list).__name__))
+
+        # Do nothing if the dataset list is empty
+        if len(dataset_list) == 0:
+            return None
 
         # Get a new instance of a scene
         new_scene = _ScenePrototype(data_dir=self._data_dir)
-        scene_name = new_scene.name()
 
-        # Cast each path to a os.Pathlike object and add the object to the scene
-        for entry in object_path:
+        try:
+            return_dict = new_scene.add_datasets(dataset_list)
+        except (ValueError, TypeError):
+            return None
 
-            # Type checking, if path is string
-            if not isinstance(entry, str):  # Yes, string.
-                raise TypeError('object_path entry is {}, expected str'.format(
-                    type(entry).__name__))
+        if return_dict is not None:
+            # Get the name and append it to the _scene_list
+            scene_name = new_scene.name()
+            self._scene_list[scene_name] = new_scene
+            return return_dict
+        else:
+            return None
 
-            # Cast to pathlike object
-            add_entry = pathlib.Path(entry)
-            new_scene.add_object(object_path=add_entry)
+    def scene(
+            self,
+            scene_hash
+    ):
+        """
+        Return a scene object.
 
-        # Append to scene with object to the list
-        self._scene_list[scene_name] = new_scene
+        Args:
+         scene_id (str): The unique identifier of the scene that we want to
+          return.
 
-        # Return the name of the new scene so we keep our sanity.
-        return scene_name
+        Returns:
+         None or _ScenePrototype object: None if no scene with a matching id
+         could be found, otherwise return the scene object.
+
+        See Also:
+         :py:class:`backend.scenes_scene_prototype._ScenePrototype`
+
+        """
+
+        try:
+            # See which index fits to the provided scene id
+            index = list(self._scene_list.keys()).index(scene_hash)
+
+            # Get all the scene objects out of the _scene_list
+            scenes = list(self._scene_list.values())
+
+            return scenes[index]
+
+        except ValueError:
+            return None
+
+    def list_scenes(self):
+        """
+        Return a dict containing the active scenes in the SceneManager.
+
+        """
+        return_dict = {
+            'activeScenes': []
+        }
+        for active_scene in self._scene_list:
+            return_dict['activeScenes'].append(active_scene)
+
+        return return_dict
 
     def get_scene_infos(self):
         """
@@ -239,10 +287,8 @@ class SceneManager:
         """
         Delete a scene.
 
-        If no `scene_id` is given, a message is printed.
-
         Args:
-         scene_id (str, None): The scene_hash of the scene to be deleted.
+         scene_hash (str): The scene_hash of the scene to be deleted.
 
         Returns:
          str, None: Returns the `scene_id` that was deleted or None, if no
@@ -255,49 +301,13 @@ class SceneManager:
          Make this work with more than one scene.
 
         """
-
         if not isinstance(scene_id, str):
             raise TypeError('scene_id is {}, expected str'.format(
                 type(scene_id).__name__))
 
         if scene_id in self._scene_list:
-            self._scene_list.pop(scene_id)
-            return scene_id
-
+            return self._scene_list.pop(scene_id)
         else:
-            print('No scene found to delete.')
-            return None
-
-    def scene(
-            self,
-            scene_id=None
-    ):
-        """
-        Return a scene object.
-
-        Args:
-         scene_id (str or None, defaults to None): The unique identifier of
-          the scene that we want to return.
-
-        Returns:
-         None or _ScenePrototype object: None if no scene with a matching id
-         could be found, otherwise return the scene object.
-
-        See Also:
-         :py:class:`backend.scenes_scene_prototype._ScenePrototype`
-
-        """
-
-        try:
-            # See which index fits to the provided scene id
-            index = list(self._scene_list.keys()).index(scene_id)
-
-            # Get all the scene objects out of the _scene_list
-            scenes = list(self._scene_list.values())
-
-            return scenes[index]
-
-        except ValueError:
             return None
 
 

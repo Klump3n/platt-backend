@@ -4,10 +4,10 @@ Start a web server. Direct your browser to [HOST_IP]:[PORT] with PORT being
 either 8008 or the supplied value.
 
 """
-
 import os
 import sys
 import argparse
+import pathlib
 
 from util.version import version
 import backend.web_server as web_server
@@ -84,10 +84,11 @@ def start_backend(data_dir, port):
     version_number = version_info['programVersion']
 
     # Settings for the server
-    data_dir = os.path.abspath(data_dir)
-
-    working_dir = os.path.dirname(os.path.realpath(__file__))
-    frontend_dir = os.path.join(working_dir, 'frontend')
+    #
+    # Convert paths to os.PathLike
+    data_dir = pathlib.Path(data_dir)
+    working_dir = pathlib.Path(__file__).cwd()
+    frontend_dir = working_dir / 'frontend'
 
     # Change working directory in case we are not there yet
     os.chdir(working_dir)

@@ -16,11 +16,11 @@ def init(data_dir):
     and exposes methods to manipulate them and the objects that are contained.
 
     Args:
-     data_dir (str): The directory that contains the simulation data.
+     data_dir (os.PathLike): The directory that contains the simulation data.
 
     Notes:
      Import this module everywhere you need to manipulate scenes.
 
     """
     global scene_manager
-    scene_manager = SceneManager(data_dir=data_dir)
+    scene_manager = SceneManager(data_dir)

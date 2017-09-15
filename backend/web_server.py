@@ -3,7 +3,6 @@
 The web server class. This will host a web server at a given port.
 
 """
-
 import os
 
 # conda install cherrypy
@@ -50,8 +49,8 @@ class Web_Server:
 
         Args:
          frontend_directory (str): The path to the frontend.
-         data_directory (str): The path to the directory, that contains the
-          simulation data.
+         data_directory (os.PathLike): The path to the directory, that contains
+          the simulation data.
          port (int, optional, defaults to 8008): The port on which the
           backend listens to connections.
 
