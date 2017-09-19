@@ -50,10 +50,10 @@ def send_http_request(
         raise TypeError('connection_data is type {}, is expected to be dict'.
                         format(type(connection_data).__name__))
 
-    if not (not isinstance(data_to_transmit, dict) and
+    if not (isinstance(data_to_transmit, dict) or
             isinstance(data_to_transmit, type(None))):
         raise TypeError('data_to_transmit is type {}, is expected to be ' +
-                        'dict or None'.format(type(data).__name__))
+                        'dict or None'.format(type(data_to_transmit).__name__))
 
     # Unpack the connection_data dict
     try:
@@ -62,65 +62,24 @@ def send_http_request(
         headers = connection_data['headers']
     except KeyError:
         # In case host, port or headers don't exist
-        print('connection_data does not contain the data we expect.')
+        raise ValueError('malformed connection_data -- check that host, ' +
+                         'port and headers are contained')
 
     # Timeout for json requests in seconds
     timeout = 3.5
 
     target_path = 'http://{}:{}/api/{}'.format(host, port, api_endpoint)
 
-    # GET method
-    if http_method == 'GET':
-        try:
-            response = requests.get(
-                url=target_path,
-                json=data_to_transmit,
-                timeout=timeout,
-                headers=headers
-            )
-            # Check status, if not ok an exception is raised ...
-            response.raise_for_status()
-        # .. which is then caught.
-        except BaseException as e:
-            return '{}'.format(e)
-            return None
+    http_methods = {
+        'GET': requests.get,
+        'POST': requests.post,
+        'PATCH': requests.patch,
+        'DELETE': requests.delete
+    }
 
-    # POST method
-    if http_method == 'POST':
+    if http_method in sorted(http_methods.keys()):
         try:
-            response = requests.post(
-                url=target_path,
-                json=data_to_transmit,
-                timeout=timeout,
-                headers=headers
-            )
-            # Check status, if not ok an exception is raised ...
-            response.raise_for_status()
-        # .. which is then caught.
-        except BaseException as e:
-            print('{}'.format(e))
-            return None
-
-    # PATCH method
-    if http_method == 'PATCH':
-        try:
-            response = requests.patch(
-                url=target_path,
-                json=data_to_transmit,
-                timeout=timeout,
-                headers=headers
-            )
-            # Check status, if not ok an exception is raised ...
-            response.raise_for_status()
-        # .. which is then caught.
-        except BaseException as e:
-            print('{}'.format(e))
-            return None
-
-    # DELETE method
-    if http_method == 'DELETE':
-        try:
-            response = requests.delete(
+            response = http_methods[http_method](
                 url=target_path,
                 json=data_to_transmit,
                 timeout=timeout,
