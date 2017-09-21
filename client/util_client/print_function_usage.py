@@ -3,7 +3,6 @@
 This module contains a function to reformat long strings.
 
 """
-
 import textwrap
 
 

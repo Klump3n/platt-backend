@@ -5,7 +5,6 @@ For example: call the server on SERVER_ADRESS/get_object_list to get a list
 of the available objects in the data directory.
 
 """
-
 import cherrypy
 
 import backend.global_settings as gloset
@@ -21,10 +20,10 @@ class ServerScenesDispatcher:
     but with an text overlay.
 
     """
-
     def __init__(self):
         """
         Initialise the dispatcher.
+
         """
         pass
         # self.ServerDisplayScene = ServerDisplayScene()
@@ -43,8 +42,8 @@ class ServerScenesDispatcher:
         Returns:
          str: A string containing the HTML source for generating the
          ``index.html`` file.
-        """
 
+        """
         return make_index(
             scene_hash=None,
             with_menu=False, with_colorbar=False,
@@ -67,8 +66,8 @@ class ServerScenesDispatcher:
         Returns:
          ServerDisplayScene or error: Return the visualization class or an
          error message.
-        """
 
+        """
         # If the first argument is a scene hash ...
         if vpath[0] in gloset.scene_manager.list_scenes()['activeScenes']:
 
@@ -103,7 +102,6 @@ class ServerScenesDispatcher:
          ``index.html`` file.
 
         """
-
         return make_index(
             scene_hash=None,
             with_menu=False, with_colorbar=False,
@@ -116,7 +114,6 @@ class ServerDisplayScene:
     The class for the actual visualization of scenes that exist in the backend.
 
     """
-
     @cherrypy.expose
     def default(self, scene_hash):
         """

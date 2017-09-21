@@ -9,7 +9,7 @@ import argparse
 
 # Command line interface functionality
 from _dos.do_scenes import scenes, scenes_help
-from _dos.do_objects import objects, objects_help
+from _dos.do_datasets import datasets, datasets_help
 
 # Some utility functions
 from util_client.host_test import target_online_and_compatible
@@ -140,31 +140,31 @@ class Terminal(cmd.Cmd):
 
         return None
 
-    def do_objects(self, line):
+    def do_datasets(self, line):
         """
-        Calls the imported object function and returns the result.
+        Calls the imported datasets function and returns the result.
 
-        See ``_dos.do_objects.objects`` for full documentation.
+        See ``_dos.do_datasets.datasets`` for full documentation.
 
         Args:
          line (str): The parsed line from the command line.
 
         Returns:
-         str: A formatted string containing all the objects available.
+         str: A formatted string containing all the datasets available.
 
         """
-        return objects(self.c_data)
+        datasets(self.c_data)
 
-    def help_objects(self):
+    def help_datasets(self):
         """
-        Print help string for 'objects'.
+        Print help string for 'datasetsx'.
 
         """
-        return objects_help()
+        datasets_help()
 
     def do_scenes(self, line):
         """
-        Calls the imported scenes function and returns https://github.com/syl20bnr/spacemacs.gitthe result.
+        Calls the imported scenes function and returns the result.
 
         See ``_dos.do_scenes.scenes`` for full documentation.
 
@@ -176,14 +176,14 @@ class Terminal(cmd.Cmd):
           scenes.
 
         """
-        return scenes(line, self.c_data)
+        scenes(line, self.c_data)
 
     def help_scenes(self):
         """
         Print the usage message for scenes.
 
         """
-        return(scenes_help(self.c_data))
+        scenes_help(self.c_data)
 
     def do_exit(self, line):
         """
@@ -217,14 +217,14 @@ class Terminal(cmd.Cmd):
          int: -1, since exit returns -1.
 
         """
-        return(self.do_exit(line))
+        return self.do_exit(line)
 
     def help_quit(self):
         """
         Print the help message for 'quit'.
 
         """
-        return self.help_exit()
+        self.help_exit()
 
 
 if __name__ == '__main__':

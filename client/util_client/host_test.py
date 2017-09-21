@@ -3,7 +3,7 @@
 Check the target host.
 
 """
-from util_client.send_http_request import send_http_request
+from client.util_client.send_http_request import send_http_request
 
 
 def target_online_and_compatible(c_data):

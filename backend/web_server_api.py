@@ -163,15 +163,23 @@ class ServerAPI:
         ):
             # GET
             if http_method == 'GET':
-                pass
+                output = self.get_scenes_scenehash(scene_hash)
 
             # POST
             if http_method == 'POST':
-                pass
+                # Parse datasetsToAdd from JSON
+                try:
+                    json_input = cherrypy.request.json
+                    datasets = json_input['datasetsToAdd']
+                    output = self.post_scenes_scenehash(scene_hash, datasets)
+
+                except ValueError as e:
+                    print('{}'.format(e))
+                    output = None
 
             # DELETE
             if http_method == 'DELETE':
-                pass
+                output = self.delete_scenes_scenehash(scene_hash)
 
         ##################################################
 
@@ -246,9 +254,32 @@ class ServerAPI:
          :py:func:`_dos.do_scenes.scenes_create`
 
         """
-        scene_id = gloset.scene_manager.new_scene(object_path=object_path)
-        return {'created': scene_id}
+        return gloset.scene_manager.new_scene(datasets)
 
+    def get_scenes_scenehash(self, scene_hash):
+        """
+        Get information about a scene.
+
+        """
+        loaded_datasets = gloset.scene_manager.list_loaded_datasets(scene_hash)
+        return loaded_datasets
+
+    def post_scenes_scenehash(self, scene_hash, datasets):
+        """
+        Add datasets to a scene.
+
+        """
+        added_datasets = gloset.scene_manager.add_datasets(scene_hash, datasets)
+        return added_datasets
+
+    def delete_scenes_scenehash(self, scene_hash):
+        """
+        Delete a scene.
+
+        """
+        deleted_scene = gloset.scene_manager.delete_scene(scene_hash)
+        return deleted_scene
+    
     # @cherrypy.expose
     # def scenes_infos(self):
     #     """
@@ -268,262 +299,262 @@ class ServerAPI:
     #     scenes = gloset.scene_manager.get_scene_infos()
     #     return json.dumps(scenes)
 
-    @cherrypy.expose
-    @cherrypy.tools.json_in()
-    def scenes_create(self):
-        """
-        Create a new scene.
+    # @cherrypy.expose
+    # @cherrypy.tools.json_in()
+    # def scenes_create(self):
+    #     """
+    #     Create a new scene.
 
-        We expect a JSON package with key 'object_path'. The value has to be a
-        list, containing valid objects. If the list is empty, an empty scene
-        will be created.
+    #     We expect a JSON package with key 'object_path'. The value has to be a
+    #     list, containing valid objects. If the list is empty, an empty scene
+    #     will be created.
 
-        Expected JSON package:
-         ``{'object_path': ['list', 'with', 'objects']}``
+    #     Expected JSON package:
+    #      ``{'object_path': ['list', 'with', 'objects']}``
 
-        Returns:
-         JSON dict: A dictionary containing a the unique hash of the scene,
-         that has been created.
+    #     Returns:
+    #      JSON dict: A dictionary containing a the unique hash of the scene,
+    #      that has been created.
 
-        See Also:
-         :py:meth:`backend.scenes_manager.SceneManager.new_scene`
-         :py:func:`_dos.do_scenes.scenes_create`
+    #     See Also:
+    #      :py:meth:`backend.scenes_manager.SceneManager.new_scene`
+    #      :py:func:`_dos.do_scenes.scenes_create`
 
-        """
-        json_input = cherrypy.request.json
-        object_path = json_input['object_path']
+    #     """
+    #     json_input = cherrypy.request.json
+    #     object_path = json_input['object_path']
 
-        scene_id = gloset.scene_manager.new_scene(object_path=object_path)
-        return json.dumps(
-            {'created': scene_id}
-        )
+    #     scene_id = gloset.scene_manager.new_scene(object_path=object_path)
+    #     return json.dumps(
+    #         {'created': scene_id}
+    #     )
 
-    @cherrypy.expose
-    @cherrypy.tools.json_in()
-    def scenes_delete(self):
-        """
-        Delete a scene.
+    # @cherrypy.expose
+    # @cherrypy.tools.json_in()
+    # def scenes_delete(self):
+    #     """
+    #     Delete a scene.
 
-        """
-        # Parse JSON
-        json_input = cherrypy.request.json
-        # print(json_input)
-        scene_hash = json_input['scene_hash']
+    #     """
+    #     # Parse JSON
+    #     json_input = cherrypy.request.json
+    #     # print(json_input)
+    #     scene_hash = json_input['scene_hash']
 
-        deleted_scene_hash = gloset.scene_manager.delete_scene(scene_hash)
+    #     deleted_scene_hash = gloset.scene_manager.delete_scene(scene_hash)
 
-        return json.dumps({'deleted': deleted_scene_hash})
+    #     return json.dumps({'deleted': deleted_scene_hash})
 
-    @cherrypy.expose
-    @cherrypy.tools.json_in()
-    def get_object_properties(self):
-        """
-        Return a list of properties for a given element on catching
-        'get_object_properties'
+    # @cherrypy.expose
+    # @cherrypy.tools.json_in()
+    # def get_object_properties(self):
+    #     """
+    #     Return a list of properties for a given element on catching
+    #     'get_object_properties'
 
-        Go through all timestep folders and look in every ef- and nf-folder
-        for files. Append every file to an array, afterwards find the unique
-        files in that array. Append this list to a list containing an entry
-        for a simple wireframe (i.e. no field values, just the bare mesh).
+    #     Go through all timestep folders and look in every ef- and nf-folder
+    #     for files. Append every file to an array, afterwards find the unique
+    #     files in that array. Append this list to a list containing an entry
+    #     for a simple wireframe (i.e. no field values, just the bare mesh).
 
-        Returns a json file.
-        """
+    #     Returns a json file.
+    #     """
 
-        # Parse JSON
-        json_input = cherrypy.request.json
-        object_name = json_input['object_name']
+    #     # Parse JSON
+    #     json_input = cherrypy.request.json
+    #     object_name = json_input['object_name']
 
-        object_directory = os.path.join(self.data_directory, object_name, 'fo')
+    #     object_directory = os.path.join(self.data_directory, object_name, 'fo')
 
-        # Get the smallest timestep.
-        dirs_in_fo = os.listdir(object_directory)
+    #     # Get the smallest timestep.
+    #     dirs_in_fo = os.listdir(object_directory)
 
-        object_timesteps = []
+    #     object_timesteps = []
 
-        for timestep in dirs_in_fo:
-            timestep_path = os.path.join(object_directory, timestep)
-            if os.path.isdir(timestep_path):
-                object_timesteps.append(timestep)
-        object_timesteps = sorted(object_timesteps)
+    #     for timestep in dirs_in_fo:
+    #         timestep_path = os.path.join(object_directory, timestep)
+    #         if os.path.isdir(timestep_path):
+    #             object_timesteps.append(timestep)
+    #     object_timesteps = sorted(object_timesteps)
 
-        initial_timestep = object_timesteps[0]
+    #     initial_timestep = object_timesteps[0]
 
-        # Get all available properties.
-        file_array = []
-        for path, _, files in os.walk(object_directory):
-            if (os.path.basename(path) == 'no' or
-                os.path.basename(path) == 'eo'):
-            # if (os.path.basename(path) == 'nf' or
-            #     os.path.basename(path) == 'ef'):
-                for single_file in files:
-                    if re.match(r'(.*)\.bin', single_file):
-                        file_array.append(single_file)
-        unique_field_names = np.unique(file_array)
+    #     # Get all available properties.
+    #     file_array = []
+    #     for path, _, files in os.walk(object_directory):
+    #         if (os.path.basename(path) == 'no' or
+    #             os.path.basename(path) == 'eo'):
+    #         # if (os.path.basename(path) == 'nf' or
+    #         #     os.path.basename(path) == 'ef'):
+    #             for single_file in files:
+    #                 if re.match(r'(.*)\.bin', single_file):
+    #                     file_array.append(single_file)
+    #     unique_field_names = np.unique(file_array)
 
-        object_properties = ['wireframe']
+    #     object_properties = ['wireframe']
 
-        for field_name in unique_field_names:
-            # Remove the .bin ending from the file.
-            name_without_ending = re.match(r'(.*)\.bin', field_name).groups(0)[0]
-            object_properties.append(name_without_ending)
+    #     for field_name in unique_field_names:
+    #         # Remove the .bin ending from the file.
+    #         name_without_ending = re.match(r'(.*)\.bin', field_name).groups(0)[0]
+    #         object_properties.append(name_without_ending)
 
-        return json.dumps({'object_properties': object_properties,
-                           'initial_timestep': initial_timestep})
+    #     return json.dumps({'object_properties': object_properties,
+    #                        'initial_timestep': initial_timestep})
 
 
-    def get_sorted_timesteps(self, object_name):
-        """
-        Generate a sorted list of timesteps.
+    # def get_sorted_timesteps(self, object_name):
+    #     """
+    #     Generate a sorted list of timesteps.
 
-        Go through all the folders in the object/fo folder. Every folder
-        here is a timestep.
+    #     Go through all the folders in the object/fo folder. Every folder
+    #     here is a timestep.
         
-        Returns a list of lists.
-        """
+    #     Returns a list of lists.
+    #     """
 
-        object_directory = os.path.join(self.data_directory, object_name, 'fo')
+    #     object_directory = os.path.join(self.data_directory, object_name, 'fo')
 
-        object_timesteps = []
-        sorted_timesteps = []
+    #     object_timesteps = []
+    #     sorted_timesteps = []
 
-        dirs_in_fo = os.listdir(object_directory)
+    #     dirs_in_fo = os.listdir(object_directory)
 
-        for timestep in dirs_in_fo:
-            timestep_path = os.path.join(object_directory, timestep)
-            if os.path.isdir(timestep_path):
-                object_timesteps.append([float(timestep), timestep])
+    #     for timestep in dirs_in_fo:
+    #         timestep_path = os.path.join(object_directory, timestep)
+    #         if os.path.isdir(timestep_path):
+    #             object_timesteps.append([float(timestep), timestep])
 
-        sorted_timesteps = sorted(object_timesteps)
-        return sorted_timesteps
+    #     sorted_timesteps = sorted(object_timesteps)
+    #     return sorted_timesteps
 
-    @cherrypy.expose
-    @cherrypy.tools.json_in()
-    def get_object_timesteps(self):
-        """
-        Return a list of the available timesteps for a given element on
-        catching 'get_object_timesteps'
+    # @cherrypy.expose
+    # @cherrypy.tools.json_in()
+    # def get_object_timesteps(self):
+    #     """
+    #     Return a list of the available timesteps for a given element on
+    #     catching 'get_object_timesteps'
 
-        Go through all the folders in the object/fo folder. Every folder
-        here is a timestep.
+    #     Go through all the folders in the object/fo folder. Every folder
+    #     here is a timestep.
 
-        Returns a json file.
-        """
+    #     Returns a json file.
+    #     """
 
-        json_input = cherrypy.request.json
-        object_name = json_input['object_name']
+    #     json_input = cherrypy.request.json
+    #     object_name = json_input['object_name']
 
-        object_timesteps = self.get_sorted_timesteps(object_name)
-        sorted_timesteps = []
-        for timestep in object_timesteps:
-            sorted_timesteps.append(timestep[1])
-        return json.dumps({'object_timesteps': sorted_timesteps})
+    #     object_timesteps = self.get_sorted_timesteps(object_name)
+    #     sorted_timesteps = []
+    #     for timestep in object_timesteps:
+    #         sorted_timesteps.append(timestep[1])
+    #     return json.dumps({'object_timesteps': sorted_timesteps})
 
-    @cherrypy.expose
-    @cherrypy.tools.json_in()
-    def get_timestep_before(self):
-        """
-        Given a timestep, find the previous timestep.
+    # @cherrypy.expose
+    # @cherrypy.tools.json_in()
+    # def get_timestep_before(self):
+    #     """
+    #     Given a timestep, find the previous timestep.
 
-        Return the same timestep if there is no timestep before.
-        """
+    #     Return the same timestep if there is no timestep before.
+    #     """
 
-        json_input = cherrypy.request.json
-        object_name = json_input['object_name']
-        current_timestep = json_input['current_timestep']
+    #     json_input = cherrypy.request.json
+    #     object_name = json_input['object_name']
+    #     current_timestep = json_input['current_timestep']
 
-        object_timesteps = self.get_sorted_timesteps(object_name)
-        sorted_timesteps = []
-        for it in object_timesteps:
-            sorted_timesteps.append(it[1])
-        object_index = sorted_timesteps.index(current_timestep)
-        if object_index == 0:
-            return json.dumps({'previous_timestep': sorted_timesteps[0]})
-        else:
-            return json.dumps({'previous_timestep': sorted_timesteps[object_index - 1]})
+    #     object_timesteps = self.get_sorted_timesteps(object_name)
+    #     sorted_timesteps = []
+    #     for it in object_timesteps:
+    #         sorted_timesteps.append(it[1])
+    #     object_index = sorted_timesteps.index(current_timestep)
+    #     if object_index == 0:
+    #         return json.dumps({'previous_timestep': sorted_timesteps[0]})
+    #     else:
+    #         return json.dumps({'previous_timestep': sorted_timesteps[object_index - 1]})
 
-    @cherrypy.expose
-    @cherrypy.tools.json_in()
-    def get_timestep_after(self):
-        """
-        Given a timestep, find the next timestep.
+    # @cherrypy.expose
+    # @cherrypy.tools.json_in()
+    # def get_timestep_after(self):
+    #     """
+    #     Given a timestep, find the next timestep.
 
-        Return the same timestep if there is no timestep after.
-        """
+    #     Return the same timestep if there is no timestep after.
+    #     """
 
-        json_input = cherrypy.request.json
-        object_name = json_input['object_name']
-        current_timestep = json_input['current_timestep']
+    #     json_input = cherrypy.request.json
+    #     object_name = json_input['object_name']
+    #     current_timestep = json_input['current_timestep']
 
-        object_timesteps = self.get_sorted_timesteps(object_name)
-        sorted_timesteps = []
-        for it in object_timesteps:
-            sorted_timesteps.append(it[1])
+    #     object_timesteps = self.get_sorted_timesteps(object_name)
+    #     sorted_timesteps = []
+    #     for it in object_timesteps:
+    #         sorted_timesteps.append(it[1])
 
-        number_of_timesteps = len(sorted_timesteps)
-        object_index = sorted_timesteps.index(current_timestep)
-        if object_index == number_of_timesteps - 1:
-            return json.dumps({'next_timestep': sorted_timesteps[number_of_timesteps - 1]})
-        else:
-            return json.dumps({'next_timestep': sorted_timesteps[object_index + 1]})
+    #     number_of_timesteps = len(sorted_timesteps)
+    #     object_index = sorted_timesteps.index(current_timestep)
+    #     if object_index == number_of_timesteps - 1:
+    #         return json.dumps({'next_timestep': sorted_timesteps[number_of_timesteps - 1]})
+    #     else:
+    #         return json.dumps({'next_timestep': sorted_timesteps[object_index + 1]})
 
-    @cherrypy.expose
-    @cherrypy.tools.json_in()
-    def mesher_init(self):
-        """
-        Load the mesher class.
-        """
+    # @cherrypy.expose
+    # @cherrypy.tools.json_in()
+    # def mesher_init(self):
+    #     """
+    #     Load the mesher class.
+    #     """
 
-        json_input = cherrypy.request.json
-        nodepath = json_input['nodepath']
-        elementpath = json_input['elementpath']
+    #     json_input = cherrypy.request.json
+    #     nodepath = json_input['nodepath']
+    #     elementpath = json_input['elementpath']
 
-        os.chdir(self.data_directory)
-        self.mesh_index = fem_mesh.UnpackMesh(
-            node_path=nodepath,
-            element_path=elementpath
-        )
+    #     os.chdir(self.data_directory)
+    #     self.mesh_index = fem_mesh.UnpackMesh(
+    #         node_path=nodepath,
+    #         element_path=elementpath
+    #     )
 
-        surface_nodes = self.mesh_index.return_unique_surface_nodes()
-        surface_indexfile = self.mesh_index.return_surface_indices()
-        surface_metadata = self.mesh_index.return_metadata()
+    #     surface_nodes = self.mesh_index.return_unique_surface_nodes()
+    #     surface_indexfile = self.mesh_index.return_surface_indices()
+    #     surface_metadata = self.mesh_index.return_metadata()
 
-        return json.dumps({'surface_nodes': surface_nodes,
-                           'surface_indexfile': surface_indexfile,
-                           'surface_metadata': surface_metadata.tolist()})
+    #     return json.dumps({'surface_nodes': surface_nodes,
+    #                        'surface_indexfile': surface_indexfile,
+    #                        'surface_metadata': surface_metadata.tolist()})
 
-    @cherrypy.expose
-    @cherrypy.tools.json_in()
-    def get_timestep_data(self):
-        """
-        On getting a POST:get_some_data from the webserver we give
-        the required data back.
-        """
+    # @cherrypy.expose
+    # @cherrypy.tools.json_in()
+    # def get_timestep_data(self):
+    #     """
+    #     On getting a POST:get_some_data from the webserver we give
+    #     the required data back.
+    #     """
 
-        json_input = cherrypy.request.json
-        object_name = json_input['object_name']
-        field = json_input['field']
-        timestep = json_input['timestep']
+    #     json_input = cherrypy.request.json
+    #     object_name = json_input['object_name']
+    #     field = json_input['field']
+    #     timestep = json_input['timestep']
 
-        timestep_data = self.mesh_index.return_data_for_unique_nodes(object_name, field, timestep)
+    #     timestep_data = self.mesh_index.return_data_for_unique_nodes(object_name, field, timestep)
 
-        output_data = []
-        for datapoint in timestep_data:
-            output_data.append(datapoint[0])
+    #     output_data = []
+    #     for datapoint in timestep_data:
+    #         output_data.append(datapoint[0])
 
-        return json.dumps({'timestep_data': output_data})
+    #     return json.dumps({'timestep_data': output_data})
 
-    @cherrypy.expose
-    @cherrypy.tools.json_in()
-    def requestTimestepData(self):
-        """
-        Deliver a JSON file to the caller containing an indexed list of
-        surface triangles, surface node data, corresponding index data and
-        also non-indexed wireframe data for the surface.
-        """
+    # @cherrypy.expose
+    # @cherrypy.tools.json_in()
+    # def requestTimestepData(self):
+    #     """
+    #     Deliver a JSON file to the caller containing an indexed list of
+    #     surface triangles, surface node data, corresponding index data and
+    #     also non-indexed wireframe data for the surface.
+    #     """
 
-        json_input = cherrypy.request.json
-        meshName = json_input['meshName']
-        timestep = json_input['timestep']
+    #     json_input = cherrypy.request.json
+    #     meshName = json_input['meshName']
+    #     timestep = json_input['timestep']
 
-        pass
+    #     pass
 

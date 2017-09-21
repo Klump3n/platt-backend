@@ -149,7 +149,7 @@ def start_program():
     if do_unittest:
         import unittest
         tests = unittest.TestLoader().discover('.')
-        unittest.runner.TextTestRunner(verbosity=2).run(tests)
+        unittest.runner.TextTestRunner(verbosity=2, buffer=True).run(tests)
 
         sys.exit('\nPerformed unittests -- exiting.')
 

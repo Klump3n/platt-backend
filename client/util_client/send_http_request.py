@@ -63,7 +63,7 @@ def send_http_request(
     except KeyError:
         # In case host, port or headers don't exist
         raise ValueError('malformed connection_data -- check that host, ' +
-                         'port and headers are contained')
+                         'port and headers exist')
 
     # Timeout for json requests in seconds
     timeout = 3.5
@@ -77,20 +77,20 @@ def send_http_request(
         'DELETE': requests.delete
     }
 
-    if http_method in sorted(http_methods.keys()):
-        try:
-            response = http_methods[http_method](
-                url=target_path,
-                json=data_to_transmit,
-                timeout=timeout,
-                headers=headers
-            )
-            # Check status, if not ok an exception is raised ...
-            response.raise_for_status()
+    # Send the requests to the server
+    try:
+        response = http_methods[http_method](
+            url=target_path,
+            json=data_to_transmit,
+            timeout=timeout,
+            headers=headers
+        )
+        # Check status, if not ok an exception is raised ...
+        response.raise_for_status()
         # .. which is then caught.
-        except BaseException as e:
-            print('{}'.format(e))
-            return None
+    except BaseException as e:
+        print('{}'.format(e))
+        return None
 
     # Try to parse the response, assuming it is JSON
     try:

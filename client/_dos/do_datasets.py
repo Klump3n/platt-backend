@@ -4,11 +4,11 @@ A small module containing the function for getting the available simulation
 data from the backend and displaying it in the client.
 
 """
-from util_client.send_http_request import send_http_request
-from util_client.print_function_usage import print_help
+from client.util_client.send_http_request import send_http_request
+from client.util_client.print_function_usage import print_help
 
 
-def objects_help():
+def datasets_help():
     """
     Print the help message for the objects function.
 
@@ -22,7 +22,7 @@ def objects_help():
     return None
 
 
-def objects(c_data):
+def datasets(c_data):
     """
     List all the available simulation data directories.
 
@@ -36,7 +36,7 @@ def objects(c_data):
       target host, target port and a header.
 
     Returns:
-     None: Nothing
+     dict: The dictionary obtained from the backend.
 
     See Also:
      :py:obj:`backend.web_server_api.ServerAPI.list_of_fem_data`
@@ -49,18 +49,23 @@ def objects(c_data):
         data_to_transmit=None
     )
 
-    # Try to parse the available simulation files
+    if response is None:
+        print('No data returned')
+        return None
+
+    # Try to parse whatever came back
     try:
-        object_folders = response['availableDatasets']
-        print('A list of valid objects is:')
+        available_datasets = response['availableDatasets']
+        print('A list of valid datasets is:')
         print()
-        for folder in object_folders:
-            print('  \'{}\''.format(folder))
+        for dataset in available_datasets:
+            print('  \'{}\''.format(dataset))
         print()
 
-    # If none are returned, so be it
-    except:
-        print('No data returned.')
+    except KeyError:
+        print('Returned data could not be processed')
+        return None
 
     # Return nothing
-    return None
+    return response
+    # return None

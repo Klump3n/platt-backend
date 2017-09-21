@@ -6,8 +6,12 @@ creating, selecting) scenes on the backend via the client.
 """
 
 import argparse
-from util_client.post_json import post_json_string
-from util_client.send_http_request import send_http_request
+
+import os
+import sys
+sys.path.append('..')
+# from client.util_client.post_json import post_json_string
+from client.util_client.send_http_request import send_http_request
 
 
 def scenes_help(c_data):
@@ -74,7 +78,7 @@ def scenes(line, c_data):
         'create',
         help='Create an empty scene.'
     )
-    create_parser.add_argument('object_id', type=str, nargs='*',
+    create_parser.add_argument('dataset_list', type=str, nargs='*',
                                help='The id of the object we want to ' +
                                'instantiate the scene with. Valid ' +
                                'identifiers are available via the command ' +
@@ -102,7 +106,7 @@ def scenes(line, c_data):
     try:
         # Parse the arguments.
         parsed_args = scenes.parse_args(line_split)
-    except:
+    except SystemExit:
         # Something went wrong. argparse will tell us anyway so no need to
         # report anything here.
         #
@@ -123,9 +127,9 @@ def scenes(line, c_data):
 
     # If we want to create a new and empty scene
     elif scenes_action == 'create':
-        object_id = parsed_args.object_id
-        object_id = clean_list(object_id)
-        scenes_create(c_data, object_id=object_id)
+        dataset_list = parsed_args.dataset_list
+        dataset_list = clean_list(dataset_list)
+        scenes_create(c_data, dataset_list=dataset_list)
 
     # If we want to delete a scene
     elif scenes_action == 'delete':
@@ -179,7 +183,7 @@ def clean_list(dirty_list):
     return clean_list
 
 
-def pretty_print_scene(scene_hash, scene, host, port):
+def pretty_print_scene(scene_hash, c_data):
     """
     Pretty print a scene.
 
@@ -187,23 +191,34 @@ def pretty_print_scene(scene_hash, scene, host, port):
 
     Args:
      scene_hash (str): The unique identifier of the scene.
-     scene (dict): Contains all the information about the scene.
      host (str): The address of the backend server, for printing a URL.
      port (int): The port of the backend server, for printing a URL.
 
     Returns:
      None: Nothing.
 
-    Todo:
-     Maybe rework this to make it even prettier!
-
     """
-    print()             # Newline
+    if not isinstance(scene_hash, str):
+        raise TypeError('scene_hash is {}, expected str'.format(
+            type(scene_hash).__name__))
 
-    if scene is None:
-        print('Invalid scene: {}'.format(scene_hash))
+    if not isinstance(c_data, dict):
+        raise TypeError('c_data is {}, expected dict'.format(
+            type(c_data).__name__))
 
-    else:
+    host = c_data['host']
+    port = c_data['port']
+
+    datasets_in_scene = send_http_request(
+        http_method='GET',
+        api_endpoint='scenes/{}'.format(scene_hash),
+        connection_data=c_data,
+        data_to_transmit=None
+    )
+
+    if datasets_in_scene is not None:
+        print()             # Newline
+
         print('Scene {} can be found at'.format(scene_hash))
         print('  http://{}:{}/scenes/{}'. format(
             host, port, scene_hash))
@@ -211,13 +226,17 @@ def pretty_print_scene(scene_hash, scene, host, port):
         print('----------------------------------------' +
               '----------------------------------------')
 
-        for entry in scene['object_list']:
-            print('  {}'.format(entry))
+        for entry in datasets_in_scene['loadedDatasets']:
+            print('  {} / {}'.format(
+                entry['datasetHash'],
+                entry['datasetName']))
 
-            print('========================================' +
-                  '========================================')
+        print('========================================' +
+              '========================================')
 
-    return None
+        return scene_hash
+    else:
+        return None
 
 
 def scenes_list(c_data, just=None):
@@ -230,9 +249,13 @@ def scenes_list(c_data, just=None):
       of a limited subset of the available scenes, we want to display.
 
     Returns:
-     None: Nothing.
+     dict: The returned dictionary.
 
     """
+    if just is not None:
+        if not isinstance(just, list):
+            raise TypeError('just is {}, expected None or list'.format(
+                type(just).__name__))
 
     response = send_http_request(
         http_method='GET',
@@ -241,63 +264,101 @@ def scenes_list(c_data, just=None):
         data_to_transmit=None
     )
 
-    host = c_data['host']
-    port = c_data['port']
+    if response is None:
+        print('Could not get data from the backend.')
+        return None
 
-    if response == {}:
+    # Extract activeScenes
+    active_scenes = response['activeScenes']
+
+    listed_scenes = []
+
+    if active_scenes == []:
         # If there are no scenes to display on the server
         print('There are no scenes to display.')
 
-    print(response)
-
     if just is None:
         # If we only want to list a limited amount of scenes
-        for scene_hash in response.keys():
-            pretty_print_scene(
-                scene_hash, response.get(scene_hash), host, port)
+        for scene_hash in active_scenes:
+            displayed_scene_hash = pretty_print_scene(
+                scene_hash, c_data)
+            if displayed_scene_hash is not None:
+                listed_scenes.append(displayed_scene_hash)
     else:
         # List everything we have
         for scene_hash in just:
-            pretty_print_scene(
-                scene_hash, response.get(scene_hash), host, port)
+            displayed_scene_hash = pretty_print_scene(
+                scene_hash, c_data)
+            if displayed_scene_hash is not None:
+                listed_scenes.append(displayed_scene_hash)
 
-    return None
+    return listed_scenes
 
 
-def scenes_create(c_data, object_id):
+def scenes_create(c_data, dataset_list):
     """
     Create a new scene.
 
-    If object_id is an empty list, an empty scene will be created. After
+    If dataset_hash is an empty list, an empty scene will be created. After
     creation a link to the new scene is printed to the screen.
 
     Args:
      c_data (dict): A dictionary containing host, port and headers.
-     object_id (list): A list of objects to include on creation of a new scene.
+     dataset_hash (list): A list of objects to include on creation of a new scene.
       Valid object names can be found by typing 'objects'.
 
     Returns:
      None: Nothing.
 
     """
+    if not isinstance(c_data, dict):
+        raise TypeError('c_data is {}, expected dict'.format(
+            type(c_data).__name__))
+
+    if not isinstance(dataset_list, list):
+        raise TypeError('dataset_list is {}, expected list'.format(
+            type(dataset_list).__name__))
+
+    if dataset_list == []:
+        print('Can\'t create an empty scene')
+        return None
+
+    datasets = {'datasetsToAdd': dataset_list}
+
+    response = send_http_request(
+        http_method='POST',
+        api_endpoint='scenes',
+        connection_data=c_data,
+        data_to_transmit=datasets
+    )
+
+    if response is None:
+        print('Could not create scene')
+        return None
+
+    scene_hash = response['sceneHash']
+    new_datasets = response['addDatasetsSuccess']
+    try:
+        failed_datasets = response['addDatasetsFail']
+    except KeyError:
+        failed_datasets = None
+
     host = c_data['host']
     port = c_data['port']
     headers = c_data['headers']
 
-    api_call = 'scenes_create'
-    data = {'object_path': object_id}
-    response = post_json_string(
-        api_call=api_call, data=data, connection_data=c_data)
+    print('Created scene {}'.format(scene_hash))
 
-    try:
-        output = ('Created scene {}\n\n'.format(response['created']) +
-                  'It can be found at http://{}:{}/scenes/{}'.format(
-                      host, port, response['created']))
-        print(output)
-    except TypeError:
-        print('Error: wrong id?')
+    pretty_print_scene(scene_hash, c_data)
 
-    return None
+    if failed_datasets is not None:
+        print()
+        failed_string = ''
+        for dataset in failed_datasets:
+            failed_string += dataset + ' '
+        print('Could not add the following datasets: {}'.format(failed_string))
+
+    return new_datasets
 
 
 def scenes_delete(c_data, scene_hash):
