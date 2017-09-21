@@ -3,7 +3,6 @@
 This module contains the class for the API endpoints of the backend.
 
 """
-
 import os
 import re
 import json
@@ -13,7 +12,7 @@ import numpy as np
 # conda install cherrypy
 import cherrypy
 
-from util.version import version
+import util.version
 import backend.data_backend as fem_mesh
 
 # This imports the scene manager and the data_directory
@@ -87,7 +86,7 @@ class ServerAPI:
          :py:meth:`client.util_client.test_host.target_online_and_compatible`
 
         """
-        version_dict = version(detail='long')
+        version_dict = util.version.version(detail='long')
         return json.dumps(version_dict)
 
     @cherrypy.expose
@@ -131,6 +130,9 @@ class ServerAPI:
         # Parse the HTTP method
         http_method = cherrypy.request.method
 
+        # Init the output
+        output = None
+
         ##################################################
 
         if (scene_hash is None and
@@ -151,7 +153,7 @@ class ServerAPI:
                     datasets = json_input['datasetsToAdd']
                     output = self.post_scenes(datasets)
 
-                except ValueError as e:
+                except (KeyError, TypeError) as e:
                     print('{}'.format(e))
                     output = None
 
@@ -173,7 +175,7 @@ class ServerAPI:
                     datasets = json_input['datasetsToAdd']
                     output = self.post_scenes_scenehash(scene_hash, datasets)
 
-                except ValueError as e:
+                except (KeyError, TypeError) as e:
                     print('{}'.format(e))
                     output = None
 
@@ -212,6 +214,7 @@ class ServerAPI:
         ##################################################
 
         # Return valid JSON
+        # json.dumps(None) = null
         return json.dumps(output)
 
     def get_scenes(self):
@@ -254,7 +257,8 @@ class ServerAPI:
          :py:func:`_dos.do_scenes.scenes_create`
 
         """
-        return gloset.scene_manager.new_scene(datasets)
+        new_scene = gloset.scene_manager.new_scene(datasets)
+        return new_scene
 
     def get_scenes_scenehash(self, scene_hash):
         """

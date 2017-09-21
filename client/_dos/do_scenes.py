@@ -343,9 +343,9 @@ def scenes_create(c_data, dataset_list):
     except KeyError:
         failed_datasets = None
 
-    host = c_data['host']
-    port = c_data['port']
-    headers = c_data['headers']
+    # host = c_data['host']
+    # port = c_data['port']
+    # headers = c_data['headers']
 
     print('Created scene {}'.format(scene_hash))
 

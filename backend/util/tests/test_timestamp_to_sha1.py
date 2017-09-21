@@ -19,8 +19,7 @@ class Test_Timestamps(unittest.TestCase):
     """
 
     def test_is_sha1_format(self):
-        """
-        Test if the format is correct, that is 40 hex chars.
+        """SHA1 is actually 40 hex chars
 
         Regex this: '^[0-9a-f]{40}$'
 
@@ -36,9 +35,7 @@ class Test_Timestamps(unittest.TestCase):
         self.assertRegex(sha1_string, '^[0-9a-f]{40}$')
 
     def test_race_condition_not_equal(self):
-        """
-        Test if two sha1 values that were created in quick succession are
-        different.
+        """Two SHA1 sums created in quick succession are unrelated
 
         This test is kind of wonky and I really have no idea of how to test
         this. At some point this function will be executed very successively

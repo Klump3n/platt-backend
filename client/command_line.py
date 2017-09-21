@@ -16,7 +16,7 @@ from util_client.host_test import target_online_and_compatible
 
 # # Get the version from the parent directory
 sys.path.append('..')
-from util.version import version
+import util.version
 
 
 def parse_commandline():
@@ -83,8 +83,9 @@ class Terminal(cmd.Cmd):
          None: Nothing.
 
         """
-        # Version of the package
-        self.version_dict = version(detail='long')
+        # Version of the package. Use the long version since nothing is gained
+        # from dirty here. Later we might even go for short...?
+        self.version_dict = util.version.version(detail='long')
         program_name = self.version_dict['programName']
         version_number = self.version_dict['programVersion']
 
@@ -157,7 +158,7 @@ class Terminal(cmd.Cmd):
 
     def help_datasets(self):
         """
-        Print help string for 'datasetsx'.
+        Print help string for 'datasets'.
 
         """
         datasets_help()
