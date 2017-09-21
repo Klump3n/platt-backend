@@ -17,8 +17,7 @@ from backend.scenes_dataset_prototype import _DatasetPrototype
 class Test_scenes_dataset_prototype(unittest.TestCase):
 
     def setUp(self):
-        """
-        Set up the test case.
+        """Set up the test case.
 
         """
         # Set the path to a mock dataset
@@ -32,32 +31,28 @@ class Test_scenes_dataset_prototype(unittest.TestCase):
         self.test_dataset_object = _DatasetPrototype(self.valid_path)
 
     def test_valid_path_instatiates_dataset(self):
-        """
-        Check if the dataset instantiates.
+        """Check if the dataset instantiates.
 
         """
         valid_path_dataset = self.test_dataset_object
         self.assertIsInstance(valid_path_dataset, _DatasetPrototype)
 
     def test_invalid_path_raises_ValueError(self):
-        """
-        An invalid path raises a ValueError
+        """An invalid path raises a ValueError
 
         """
         with self.assertRaises(ValueError):
             _DatasetPrototype(self.invalid_path)
 
     def test_string_path_returns_TypeError(self):
-        """
-        A string for a path raises a TypeError.
+        """A string for a path raises a TypeError.
 
         """
         with self.assertRaises(TypeError):
             _DatasetPrototype(self.string_path)
 
     def test_returned_meta(self):
-        """
-        Test if the returned metadata dict is correct.
+        """Test if the returned metadata dict is correct.
 
         """
         dataset_meta = self.test_dataset_object.meta()
@@ -68,24 +63,21 @@ class Test_scenes_dataset_prototype(unittest.TestCase):
         self.assertIn('datasetName', dataset_meta)
 
     def test_returned_name_is_correct(self):
-        """
-        Test if the name that we assign is correct.
+        """Test if the name that we assign is correct.
 
         """
         valid_dataset_name = self.test_dataset_object.meta()['datasetName']
         self.assertEqual(valid_dataset_name, self.valid_dir_name)
 
     def test_get_orientation(self):
-        """
-        Test getting the orientation from the dataset.
+        """Test getting the orientation from the dataset.
 
         """
         np.testing.assert_array_equal(
             self.test_dataset_object.orientation(), np.eye(4))
 
     def test_set_orientation(self):
-        """
-        Test setting the orientation for the dataset.
+        """Test setting the orientation for the dataset.
 
         """
         # Create some mock array data
