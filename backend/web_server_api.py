@@ -3,11 +3,7 @@
 This module contains the class for the API endpoints of the backend.
 
 """
-import os
-import re
 import json
-
-import numpy as np
 
 # conda install cherrypy
 import cherrypy
@@ -58,7 +54,6 @@ class ServerAPI:
      request.
 
     """
-
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['GET'])
     @cherrypy.tools.json_out()
@@ -110,7 +105,8 @@ class ServerAPI:
          :py:func:`_dos.do_objects.objects`
 
         """
-        available_datasets_dict = gloset.scene_manager.list_available_datasets()
+        available_datasets_dict = (
+            gloset.scene_manager.list_available_datasets())
         return json.dumps(available_datasets_dict)
 
     @cherrypy.expose
@@ -135,9 +131,10 @@ class ServerAPI:
 
         ##################################################
 
-        if (scene_hash is None and
-            dataset_hash is None and
-            dataset_operation is None
+        if (
+                scene_hash is None and
+                dataset_hash is None and
+                dataset_operation is None
         ):
             # GET
             if http_method == 'GET':
@@ -159,9 +156,10 @@ class ServerAPI:
 
         ##################################################
 
-        if (scene_hash is not None and
-            dataset_hash is None and
-            dataset_operation is None
+        if (
+                scene_hash is not None and
+                dataset_hash is None and
+                dataset_operation is None
         ):
             # GET
             if http_method == 'GET':
@@ -185,23 +183,27 @@ class ServerAPI:
 
         ##################################################
 
-        if (scene_hash is not None and
-            dataset_hash is not None and
-            dataset_operation is None
+        if (
+                scene_hash is not None and
+                dataset_hash is not None and
+                dataset_operation is None
         ):
             # GET
             if http_method == 'GET':
-                pass
+                output = self.get_dataset_scenes_scenehash_datasethash(
+                    scene_hash, dataset_hash)
 
             # DELETE
             if http_method == 'DELETE':
-                pass
+                output = self.delete_dataset_scenes_scenehash_datasethash(
+                    scene_hash, dataset_hash)
 
         ##################################################
 
-        if (scene_hash is not None and
-            dataset_hash is not None and
-            dataset_operation is not None
+        if (
+                scene_hash is not None and
+                dataset_hash is not None and
+                dataset_operation is not None
         ):
             # GET
             if http_method == 'GET':
@@ -273,7 +275,8 @@ class ServerAPI:
         Add datasets to a scene.
 
         """
-        added_datasets = gloset.scene_manager.add_datasets(scene_hash, datasets)
+        added_datasets = gloset.scene_manager.add_datasets(
+            scene_hash, datasets)
         return added_datasets
 
     def delete_scenes_scenehash(self, scene_hash):
@@ -283,7 +286,27 @@ class ServerAPI:
         """
         deleted_scene = gloset.scene_manager.delete_scene(scene_hash)
         return deleted_scene
-    
+
+    def get_dataset_scenes_scenehash_datasethash(
+            self, scene_hash, dataset_hash):
+        """
+        Get information about a dataset.
+
+        """
+        dataset_information = gloset.scene_manager.list_loaded_dataset_info(
+            scene_hash, dataset_hash)
+        return dataset_information
+
+    def delete_dataset_scenes_scenehash_datasethash(
+            self, scene_hash, dataset_hash):
+        """
+        Delete a dataset from a scene.
+
+        """
+        deleted_dataset = gloset.scene_manager.delete_loaded_dataset(
+            scene_hash, dataset_hash)
+        return deleted_dataset
+
     # @cherrypy.expose
     # def scenes_infos(self):
     #     """

@@ -260,6 +260,376 @@ class Test_web_server_api(unittest.TestCase):
             self.assertIsInstance(res, str)
             self.assertEqual(res, 'null')
 
+    def test_get_scenes_scenehash(self):
+        """Get a list of datasets in a scenes
+
+        """
+        scene_hash = '21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a'
+        expected_dict = {
+            "loadedDatasets": [
+                {
+                    "datasetName": "numsim.napf.tiefziehversuch",
+                    "datasetHash": "47e9f7fc6d1522c552fffaf1803a0e1822620024",
+                    "datasetAlias": "alias for numsim.napf.tiefziehversuch",
+                    "datasetHref": "/scenes/21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a/47e9f7fc6d1522c552fffaf1803a0e182262002"
+                }
+            ]
+        }
+
+        with mock.patch(
+                'backend.global_settings.SceneManager.list_loaded_datasets',
+                return_value=expected_dict
+        ) as mock_scenes_scenehash:
+
+            res = self.api.get_scenes_scenehash(scene_hash)
+
+            mock_scenes_scenehash.assert_called_with(scene_hash)
+
+            self.assertIsInstance(res, dict)
+            self.assertEqual(res, expected_dict)
+
+        # Test self.scenes, calling self.get_scenes_scenehash
+        ##################################################
+
+        mock_cp_req = mock.MagicMock(
+            cherrypy.request,
+            method='GET'
+        )
+
+        expected_str = json.dumps(expected_dict)
+
+        with mock.patch(
+                'cherrypy.request',
+                mock_cp_req
+        ):
+            with mock.patch(
+                    'backend.web_server_api.ServerAPI.get_scenes_scenehash',
+                    return_value=expected_dict
+            ) as mock_post_scenes:
+
+                # Call with argument
+                res = self.api.scenes(scene_hash)
+
+                self.assertIsInstance(res, str)
+                self.assertEqual(res, expected_str)
+
+                mock_post_scenes.assert_called_with(scene_hash)
+
+    def test_post_scenes_scenehash(self):
+        """Add a list of objects to a sceneHash
+
+        """
+        request_dict = {
+            "datasetsToAdd": [
+                "numsim.napf.tiefziehversuch"
+            ]
+        }
+        scene_hash = '47e9f7fc6d1522c552fffaf1803a0e1822620024'
+        success_dict = {
+            "sceneHash": "47e9f7fc6d1522c552fffaf1803a0e1822620024",
+            "href": "/scenes/47e9f7fc6d1522c552fffaf1803a0e1822620024",
+            "addDatasetsSuccess": [
+                {
+                    "datasetName": "numsim.napf.tiefziehversuch",
+                    "datasetHash": "47e9f7fc6d1522c552fffaf1803a0e1822620024",
+                    "datasetAlias": "",
+                    "datasetHref": ""
+                }
+            ]
+        }
+
+        # Test self.post_scenes_scenehash
+        ##################################################
+
+        with mock.patch(
+                'backend.global_settings.SceneManager.add_datasets',
+                return_value=success_dict
+        ) as mock_add_datasets:
+
+            res = self.api.post_scenes_scenehash(
+                scene_hash, request_dict['datasetsToAdd'])
+
+            mock_add_datasets.assert_called()
+
+            self.assertIsInstance(res, dict)
+            self.assertEqual(res, success_dict)
+
+        # Test self.scenes, calling self.post_scenes
+        ##################################################
+        ##################################################
+
+        # Expected JSON input
+        ##################################################
+        mock_cp_req = mock.MagicMock(
+            cherrypy.request,
+            method='POST',
+            json=request_dict
+        )
+
+        expected_str = json.dumps(success_dict)
+
+        with mock.patch(
+                'cherrypy.request',
+                mock_cp_req
+        ):
+            with mock.patch(
+                    'backend.web_server_api.ServerAPI.post_scenes_scenehash',
+                    return_value=success_dict
+            ) as mock_post_scenes:
+
+                res = self.api.scenes(scene_hash)
+
+                self.assertIsInstance(res, str)
+                self.assertEqual(res, expected_str)
+
+                mock_post_scenes.assert_called_with(
+                    scene_hash, request_dict['datasetsToAdd'])
+
+        # Wrong request dict
+        ##################################################
+
+        wrong_request_dict = {
+            "wrong_key": [
+                "numsim.napf.tiefziehversuch"
+            ]
+        }
+        mock_cp_req = mock.MagicMock(
+            cherrypy.request,
+            method='POST',
+            json=wrong_request_dict
+        )
+
+        with mock.patch(
+                'cherrypy.request',
+                mock_cp_req
+        ):
+
+            res = self.api.scenes(scene_hash)
+
+            self.assertIsInstance(res, str)
+            self.assertEqual(res, 'null')
+
+
+        # Malformed JSON input
+        ##################################################
+
+        mock_cp_req = mock.MagicMock(
+            cherrypy.request,
+            method='POST',
+            json=json.dumps(request_dict)  # is str
+        )
+
+        with mock.patch(
+                'cherrypy.request',
+                mock_cp_req
+        ):
+            res = self.api.scenes(scene_hash)
+
+            self.assertIsInstance(res, str)
+            self.assertEqual(res, 'null')
+
+    def test_delete_scenes_scenehash(self):
+        """Delete a scene
+
+        """
+        scene_hash = '47e9f7fc6d1522c552fffaf1803a0e1822620024'
+        delete_dict = {
+            'sceneDeleted': scene_hash,
+            'href': '/scenes'
+        }
+
+        # Test self.delete_scenes_scenehash
+        ##################################################
+
+        with mock.patch(
+                'backend.global_settings.SceneManager.delete_scene',
+                return_value=delete_dict
+        ) as mock_delete_scene:
+
+            res = self.api.delete_scenes_scenehash(scene_hash)
+
+            mock_delete_scene.assert_called()
+
+            self.assertIsInstance(res, dict)
+            self.assertEqual(res, delete_dict)
+
+        # Test self.scenes, calling self.delete_scenes_scenehash
+        ##################################################
+
+        mock_cp_req = mock.MagicMock(
+            cherrypy.request,
+            method='DELETE'
+        )
+
+        expected_str = json.dumps(delete_dict)
+
+        with mock.patch(
+                'cherrypy.request',
+                mock_cp_req
+        ):
+            with mock.patch(
+                    'backend.web_server_api.ServerAPI.delete_scenes_scenehash',
+                    return_value=delete_dict
+            ) as mock_post_scenes:
+
+                res = self.api.scenes(scene_hash)
+
+                self.assertIsInstance(res, str)
+                self.assertEqual(res, expected_str)
+
+                mock_post_scenes.assert_called_with(
+                    scene_hash)
+
+            # scene does not exist
+            with mock.patch(
+                    'backend.web_server_api.ServerAPI.delete_scenes_scenehash',
+                    return_value=None
+            ) as mock_post_scenes:
+
+                res = self.api.scenes(scene_hash)
+
+                self.assertIsInstance(res, str)
+                self.assertEqual(res, 'null')
+
+                mock_post_scenes.assert_called_with(
+                    scene_hash)
+
+    def test_get_scenes_scenehash_datasethash(self):
+        """Get information about a dataset that is loaded into a scene
+
+        """
+        scene_hash = '21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a'
+        dataset_hash = '47e9f7fc6d1522c552fffaf1803a0e1822620024'
+        expected_dict = {
+            "datasetName": "numsim.napf.tiefziehversuch",
+            "datasetHash": "47e9f7fc6d1522c552fffaf1803a0e1822620024",
+            "datasetAlias": "alias for numsim.napf.tiefziehversuch",
+            "datasetHref": "/scenes/21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a/47e9f7fc6d1522c552fffaf1803a0e182262002"
+        }
+
+        # Test self.get_dataset_scenes_scenehash_datasethash
+        ##################################################
+
+        with mock.patch(
+                'backend.global_settings.SceneManager.list_loaded_dataset_info',
+                return_value=expected_dict
+        ) as mock_get_dataset_info:
+
+            res = self.api.get_dataset_scenes_scenehash_datasethash(scene_hash, dataset_hash)
+
+            mock_get_dataset_info.assert_called()
+
+            self.assertIsInstance(res, dict)
+            self.assertEqual(res, expected_dict)
+
+        # Test self.scenes, calling self.get_dataset_scenes_scenehash_datasethash
+        ##################################################
+
+        mock_cp_req = mock.MagicMock(
+            cherrypy.request,
+            method='GET'
+        )
+
+        expected_str = json.dumps(expected_dict)
+
+        with mock.patch(
+                'cherrypy.request',
+                mock_cp_req
+        ):
+            with mock.patch(
+                    'backend.web_server_api.ServerAPI.get_dataset_scenes_scenehash_datasethash',
+                    return_value=expected_dict
+            ) as mock_get_dataset_info_one:
+
+                res = self.api.scenes(scene_hash, dataset_hash)
+
+                self.assertIsInstance(res, str)
+                self.assertEqual(res, expected_str)
+
+                mock_get_dataset_info_one.assert_called_with(
+                    scene_hash, dataset_hash)
+
+            # scene or dataset does not exist
+            with mock.patch(
+                    'backend.web_server_api.ServerAPI.get_dataset_scenes_scenehash_datasethash',
+                    return_value=None
+            ) as mock_get_dataset_info_two:
+
+                res = self.api.scenes(scene_hash, dataset_hash)
+
+                self.assertIsInstance(res, str)
+                self.assertEqual(res, 'null')
+
+                mock_get_dataset_info_two.assert_called_with(
+                    scene_hash, dataset_hash)
+
+    def test_delete_scenes_scenehash_datasethash(self):
+        """Delete a dataset from a scene
+
+        """
+        scene_hash = '21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a'
+        dataset_hash = '47e9f7fc6d1522c552fffaf1803a0e1822620024'
+        expected_dict = {
+            "datasetDeleted": "47e9f7fc6d1522c552fffaf1803a0e1822620024",
+            "href": "/scenes/21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a"
+        }
+
+        # Test self.delete_dataset_scenes_scenehash_datasethash
+        ##################################################
+
+        with mock.patch(
+                'backend.global_settings.SceneManager.delete_loaded_dataset',
+                return_value=expected_dict
+        ) as mock_delete_dataset_info:
+
+            res = self.api.delete_dataset_scenes_scenehash_datasethash(scene_hash, dataset_hash)
+
+            mock_delete_dataset_info.assert_called()
+
+            self.assertIsInstance(res, dict)
+            self.assertEqual(res, expected_dict)
+
+        # Test self.scenes, calling self.delete_dataset_scenes_scenehash_datasethash
+        ##################################################
+
+        mock_cp_req = mock.MagicMock(
+            cherrypy.request,
+            method='DELETE'
+        )
+
+        expected_str = json.dumps(expected_dict)
+
+        with mock.patch(
+                'cherrypy.request',
+                mock_cp_req
+        ):
+            with mock.patch(
+                    'backend.web_server_api.ServerAPI.delete_dataset_scenes_scenehash_datasethash',
+                    return_value=expected_dict
+            ) as mock_get_dataset_info_one:
+
+                res = self.api.scenes(scene_hash, dataset_hash)
+
+                self.assertIsInstance(res, str)
+                self.assertEqual(res, expected_str)
+
+                mock_get_dataset_info_one.assert_called_with(
+                    scene_hash, dataset_hash)
+
+            # scene or dataset does not exist
+            with mock.patch(
+                    'backend.web_server_api.ServerAPI.delete_dataset_scenes_scenehash_datasethash',
+                    return_value=None
+            ) as mock_get_dataset_info_two:
+
+                res = self.api.scenes(scene_hash, dataset_hash)
+
+                self.assertIsInstance(res, str)
+                self.assertEqual(res, 'null')
+
+                mock_get_dataset_info_two.assert_called_with(
+                    scene_hash, dataset_hash)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

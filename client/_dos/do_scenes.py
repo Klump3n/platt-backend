@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-A small module containing the function for manipulating (listing, deleting,
+A small module containing the functions for manipulating (listing, deleting,
 creating, selecting) scenes on the backend via the client.
 
 """
@@ -12,6 +12,7 @@ import sys
 sys.path.append('..')
 # from client.util_client.post_json import post_json_string
 from client.util_client.send_http_request import send_http_request
+import client._dos.scene_manipulation.scene_manipulation as scene_manipulation
 
 
 def scenes_help(c_data):
@@ -88,8 +89,8 @@ def scenes(line, c_data):
         'delete',
         help='Delete a scene.'
     )
-    delete_parser.add_argument('scene_hash', type=str, nargs='*',
-                               help='The scene we want to delete. ' +
+    delete_parser.add_argument('scene_list', type=str, nargs='*',
+                               help='A (list of) scene(s) we want to delete. ' +
                                'Requires the full SHA1 hash.')
 
     select_parser = subparsers.add_parser(
@@ -133,13 +134,13 @@ def scenes(line, c_data):
 
     # If we want to delete a scene
     elif scenes_action == 'delete':
-        scene_hash = parsed_args.scene_hash
-        scene_hash = clean_list(scene_hash)
-        scenes_delete(c_data, scene_hash)
+        scene_list = parsed_args.scene_list
+        scene_list = clean_list(scene_list)
+        scenes_delete(c_data, scene_list)
 
     # If we want to select a scene to perform operations on it
     elif scenes_action == 'select':
-        scene_hash = parsed_args.scene_hash
+        scene_hash = parsed_args.scene_hash[0]  # Select the first entry
         scenes_select(c_data, scene_hash)
 
     return None
@@ -160,6 +161,10 @@ def clean_list(dirty_list):
      list: A list containing no empty entries, each entry is a string.
 
     """
+    if not isinstance(dirty_list, list):
+        raise TypeError('dirty_list is {}, expected list'.format(
+            type(dirty_list).__name__))
+
     list_length = len(dirty_list)
 
     for it in range(list_length):
@@ -252,6 +257,10 @@ def scenes_list(c_data, just=None):
      dict: The returned dictionary.
 
     """
+    if not isinstance(c_data, dict):
+        raise TypeError('c_data is {}, expected dict'.format(
+            type(c_data).__name__))
+
     if just is not None:
         if not isinstance(just, list):
             raise TypeError('just is {}, expected None or list'.format(
@@ -311,10 +320,6 @@ def scenes_create(c_data, dataset_list):
      None: Nothing.
 
     """
-    if not isinstance(c_data, dict):
-        raise TypeError('c_data is {}, expected dict'.format(
-            type(c_data).__name__))
-
     if not isinstance(dataset_list, list):
         raise TypeError('dataset_list is {}, expected list'.format(
             type(dataset_list).__name__))
@@ -343,10 +348,6 @@ def scenes_create(c_data, dataset_list):
     except KeyError:
         failed_datasets = None
 
-    # host = c_data['host']
-    # port = c_data['port']
-    # headers = c_data['headers']
-
     print('Created scene {}'.format(scene_hash))
 
     pretty_print_scene(scene_hash, c_data)
@@ -361,29 +362,40 @@ def scenes_create(c_data, dataset_list):
     return new_datasets
 
 
-def scenes_delete(c_data, scene_hash):
+def scenes_delete(c_data, scene_list):
     """
     Delete a scene.
 
     Args:
      c_data (dict): A dictionary containing host, port and headers.
-     scene_hash (list): A list of unique identifier(s) of the scene(s) that
+     scene_list (list): A list of unique identifier(s) of the scene(s) that
       should be deleted.
 
     Returns:
-     None: Nothing.
-
-    Todo:
-     Print feedback?
+     list: A list with the scenes that were deleted.
 
     """
-    api_call = 'scenes_delete'
-    for scene in scene_hash:
-        data = {'scene_hash': scene}
-        post_json_string(
-            api_call=api_call, data=data, connection_data=c_data)
+    if not isinstance(scene_list, list):
+        raise TypeError('scene_list is {}, expected list'.format(
+            type(scene_list).__name__))
 
-    return None
+    return_list = []
+
+    for scene_hash in scene_list:
+        response = send_http_request(
+            http_method='DELETE',
+            api_endpoint='scenes/{}'.format(scene_hash),
+            connection_data=c_data,
+            data_to_transmit=None
+        )
+
+        if response is None:
+            print('Could not delete scene {}'.format(scene_hash))
+            return None
+        else:
+            return_list.append(scene_hash)
+
+    return return_list
 
 
 def scenes_select(c_data, scene_hash):
@@ -403,9 +415,23 @@ def scenes_select(c_data, scene_hash):
      scene.
 
     """
-    api_call = 'scenes_select'
-    data = None
-    answer = post_json_string(
-        api_call=api_call, data=data, connection_data=c_data)
+    # Get a list of active scenes on the server
+    response = send_http_request(
+        http_method='GET',
+        api_endpoint='scenes',
+        connection_data=c_data,
+        data_to_transmit=None
+    )
 
-    return None
+    if response is None:
+        print('Could not get data from the backend.')
+        return None
+
+    # Extract activeScenes
+    active_scenes = response['activeScenes']
+
+    if scene_hash in active_scenes:
+        scene_manipulation.select(c_data, scene_hash)
+    else:
+        print('Invalid scene')
+        return None

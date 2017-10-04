@@ -66,6 +66,4 @@ def datasets(c_data):
         print('Returned data could not be processed')
         return None
 
-    # Return nothing
     return response
-    # return None

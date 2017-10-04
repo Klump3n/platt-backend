@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 This module takes care of storing and manipulating scenes.
 
@@ -66,7 +65,6 @@ class SceneManager:
         return None
 
     def list_available_datasets(self):
-    # def get_femdata_dirs(self):
         """
         Return a list with directories that contain simulation data in
         _data_dir.
@@ -178,7 +176,7 @@ class SceneManager:
          Make it impossible to create an empty scene.
 
         """
-        # Type checking for object path
+        # Type checking for dataset_list
         if not isinstance(dataset_list, list):
             raise TypeError('dataset_list is {}, expected list'.format(
                 type(dataset_list).__name__))
@@ -187,30 +185,28 @@ class SceneManager:
         if len(dataset_list) == 0:
             return None
 
-        # # Get a new instance of a scene
-        # new_scene = _ScenePrototype(data_dir=self._data_dir)
-        # new_scene_hash = new_scene.name()
-        # self._scene_list[new_scene_hash] = new_scene
-        # return_dict = self.add_datasets(new_scene_hash, dataset_list)
-        # return return_dict
+        # See which datasets are valid
+        valid_datasets = []
+        available_datasets = (
+            self.list_available_datasets()['availableDatasets'])
+        for dataset in dataset_list:
+            if dataset in available_datasets:
+                valid_datasets.append(dataset)
+
+        # If there are no valid datasets to be added return None
+        if len(valid_datasets) == 0:
+            return None
 
         try:
             # Get a new instance of a scene
             new_scene = _ScenePrototype(data_dir=self._data_dir)
             new_scene_hash = new_scene.name()
             self._scene_list[new_scene_hash] = new_scene
+            # Here still dataset_list, so we can have a addDatasetFail entry
             return_dict = self.add_datasets(new_scene_hash, dataset_list)
             return return_dict
         except (ValueError, TypeError):
             return None
-
-        # if return_dict is not None:
-        #     # Get the name and append it to the _scene_list
-        #     scene_name = new_scene._name()
-        #     self._scene_list[scene_name] = new_scene
-        #     return return_dict
-        # else:
-        #     return None
 
     def scene(
             self,
@@ -307,8 +303,8 @@ class SceneManager:
          scene_hash (str): The scene_hash of the scene to be deleted.
 
         Returns:
-         str, None: Returns the `scene_hash` that was deleted or None, if no
-         scene could be found to be deleted.
+         dict, None: Returns the `scene_hash` that was deleted in a dict or
+          None, if no scene could be found to be deleted.
 
         Raises:
          TypeError: If `scene_hash` is not of type `str`.
@@ -318,10 +314,16 @@ class SceneManager:
             raise TypeError('scene_hash is {}, expected str'.format(
                 type(scene_hash).__name__))
 
+        return_dict = {
+            'sceneDeleted': '',
+            'href': '/scenes'
+        }
+
         if scene_hash in self._scene_list:
             # Pop the whole _ScenePrototype object and return the deleted hash
             self._scene_list.pop(scene_hash)
-            return scene_hash
+            return_dict['sceneDeleted'] = scene_hash
+            return return_dict
         else:
             return None
 
@@ -436,6 +438,33 @@ class SceneManager:
 
         return return_dict
 
+    def list_loaded_dataset_info(self, scene_hash, dataset_hash):
+        """
+        Return information about a dataset that is loaded into a scene.
+
+        """
+        if not isinstance(scene_hash, str):
+            raise TypeError('scene_hash is {}, expected str'.format(
+                    type(scene_hash).__name__))
+
+        if not isinstance(dataset_hash, str):
+            raise TypeError('dataset_hash is {}, expected str'.format(
+                    type(dataset_hash).__name__))
+
+        # If the scene does not exist
+        if scene_hash not in self._scene_list:
+            return None
+
+        target_scene = self.scene(scene_hash)
+        target_scene_datasets = target_scene.list_datasets()
+
+        if dataset_hash not in target_scene_datasets:
+            return None
+
+        dataset_meta = target_scene.dataset(dataset_hash).meta()
+
+        return dataset_meta
+
     def delete_loaded_dataset(self, scene_hash, dataset_hash):
         """
         Remove a dataset from a scene.
@@ -472,4 +501,13 @@ class SceneManager:
         if remaining_datasets == []:
             self.delete_scene(scene_hash)
 
-        return remaining_datasets
+            # We should probably return something else so we can distinguish
+            # between errors and deleted scenes.
+            return None
+
+        return_dict = {
+            'datasetDeleted': dataset_hash,
+            'href': '/scenes/{}'.format(scene_hash)
+        }
+
+        return return_dict

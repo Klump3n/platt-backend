@@ -79,7 +79,7 @@ def send_http_request(
 
     # Send the requests to the server
     try:
-        response = http_methods[http_method](
+        response = http_methods[http_method](  # requests.get, etc
             url=target_path,
             json=data_to_transmit,
             timeout=timeout,

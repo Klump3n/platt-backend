@@ -89,6 +89,20 @@ class Test_SceneManager(unittest.TestCase):
 
         self.assertIsNone(new_scene)
 
+        # Creating a scene with an invalid dataset should not create an empty
+        # scene
+        dataset_list = ['just_fo__']
+        scene_manager = SceneManager(self.data_dir_path)
+
+        listing = scene_manager.list_scenes()
+        self.assertEqual(len(listing['activeScenes']), 0)
+
+        new_scene = scene_manager.new_scene(dataset_list)
+        listing = scene_manager.list_scenes()
+
+        self.assertEqual(len(listing['activeScenes']), 0)
+
+
     def test_list_scenes(self):
         """List the active scenes on the server
 
@@ -133,10 +147,15 @@ class Test_SceneManager(unittest.TestCase):
         self.assertEqual(len(listing['activeScenes']), 1)
 
         scene_hash = listing['activeScenes'][0]
-        deleted_hash = scene_manager.delete_scene(scene_hash)
+        expected_dict = {
+            'sceneDeleted': scene_hash,
+            'href': '/scenes'
+        }
 
-        self.assertIsInstance(deleted_hash, str)
-        self.assertEqual(scene_hash, deleted_hash)
+        deleted_dict = scene_manager.delete_scene(scene_hash)
+
+        self.assertIsInstance(deleted_dict, dict)
+        self.assertEqual(expected_dict, deleted_dict)
 
         listing = scene_manager.list_scenes()
 
@@ -145,10 +164,12 @@ class Test_SceneManager(unittest.TestCase):
         scene_manager.new_scene(dataset_list)
         listing = scene_manager.list_scenes()
 
+        # wrong data type
         self.assertEqual(len(listing['activeScenes']), 1)
         with self.assertRaises(TypeError):
             scene_manager.delete_scene(1)
 
+        # scene does not exist
         deleted_hash = scene_manager.delete_scene('some_string')
         self.assertIsInstance(deleted_hash, type(None))
 
@@ -360,7 +381,10 @@ class Test_SceneManager(unittest.TestCase):
         self.assertEqual(len(loaded_dataset_list), 2)
 
         dataset_to_delete = loaded_dataset_list[0]['datasetHash']
-        scene_manager.delete_loaded_dataset(new_scene_hash, dataset_to_delete)
+        res = scene_manager.delete_loaded_dataset(new_scene_hash, dataset_to_delete)
+
+        self.assertIsInstance(res, dict)
+        self.assertIn('datasetDeleted', res)
 
         loaded_dataset_dict = scene_manager.list_loaded_datasets(new_scene_hash)
         loaded_dataset_list = loaded_dataset_dict['loadedDatasets']
@@ -369,7 +393,9 @@ class Test_SceneManager(unittest.TestCase):
 
         # Delete the last dataset means deleting the scene
         dataset_to_delete = loaded_dataset_list[0]['datasetHash']
-        scene_manager.delete_loaded_dataset(new_scene_hash, dataset_to_delete)
+        res = scene_manager.delete_loaded_dataset(new_scene_hash, dataset_to_delete)
+
+        self.assertIsNone(res)
 
         active_scenes = scene_manager.list_scenes()['activeScenes']
         self.assertEqual(len(active_scenes), 0)
@@ -396,6 +422,45 @@ class Test_SceneManager(unittest.TestCase):
         # Delete non existing dataset
         non_ex_dataset = scene_manager.delete_loaded_dataset(new_scene_hash, 'non_ex')
         self.assertIsNone(non_ex_dataset)
+
+    def test_list_loaded_dataset_information(self):
+        """Get information about one dataset that is loaded into a scenes
+
+        """
+        # This data exists
+        dataset_list = ['just_fo', 'another_just_fo']
+
+        scene_manager = SceneManager(self.data_dir_path)
+        new_scene = scene_manager.new_scene(dataset_list)
+        scene_hash = new_scene['sceneHash']
+        dataset_hash = new_scene['addDatasetsSuccess'][0]['datasetHash']
+
+        dataset_info = scene_manager.list_loaded_dataset_info(
+            scene_hash, dataset_hash)
+
+        self.assertIsInstance(dataset_info, dict)
+        self.assertIn('datasetName', dataset_info)
+        self.assertIn('datasetHash', dataset_info)
+        self.assertIn('datasetAlias', dataset_info)
+        self.assertIn('datasetHref', dataset_info)
+
+        # scene does not exist
+        dataset_info = scene_manager.list_loaded_dataset_info(
+            'scene_does_not_exist', dataset_hash)
+
+        self.assertIsNone(dataset_info)
+
+        # dataset does not exist
+        dataset_info = scene_manager.list_loaded_dataset_info(
+            scene_hash, 'dataset_does_not_exist')
+
+        self.assertIsNone(dataset_info)
+
+        # wrong argument types
+        with self.assertRaises(TypeError):
+            scene_manager.list_loaded_dataset_info(1, dataset_hash)
+        with self.assertRaises(TypeError):
+            scene_manager.list_loaded_dataset_info(scene_hash, 1)
 
 if __name__ == '__main__':
     """

@@ -6,6 +6,7 @@ Terminal-like interface for interacting with the backend.
 import cmd
 import sys
 import argparse
+import textwrap
 
 # Command line interface functionality
 from _dos.do_scenes import scenes, scenes_help
@@ -93,6 +94,10 @@ class Terminal(cmd.Cmd):
         cmd.Cmd.__init__(self)
 
         # Set the program details
+        # prompt = """>>
+        # """
+        # self.prompt = textwrap.dedent(prompt)
+
         self.prompt = '>> '
         self.intro = (
             'Welcome to {} command line interface version {}.\n'
