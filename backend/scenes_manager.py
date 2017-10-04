@@ -102,58 +102,6 @@ class SceneManager:
 
         return availableDatasets
 
-    # def scene_create(
-    #         self,
-    #         datasets
-    # ):
-    #     """
-    #     Create a new scene with at least one object.
-
-    #     This adds a ScenePrototype to `self._scene_list`.
-
-    #     Args:
-    #      object_path (list (of str)): A list of datasets we want to append to
-    #       the scene.
-
-    #     Returns:
-    #      dict: A dict containing a link to the scene, a list of loaded datasets
-    #      and potentially a list of datasets that for some reason could not be
-    #      added.
-
-    #     Raises:
-    #      TypeError: If ``type(datasets)`` is not `list` and of it are not
-    #       ``str``.
-
-    #     Todo:
-    #      Make it impossible to create an empty scene.
-
-    #     """
-    #     if not isinstance(datasets, list):
-    #         raise TypeError('datasets is {}, expected list'.format(
-    #             type(datasets).__name__))
-
-
-    #     # Get a new instance of a scene
-    #     new_scene = _ScenePrototype(data_dir=self._data_dir)
-    #     scene_name = new_scene.name()
-
-    #     # Cast each path to a os.Pathlike object and add the object to the scene
-    #     for entry in datasets:
-
-    #         if not isinstance(entry, str):
-    #             raise TypeError('datasets entry is {}, expected str'.format(
-    #                 type(entry).__name__))
-
-    #         # Cast to pathlike object
-    #         add_entry = pathlib.Path(entry)
-    #         new_scene.add_object(object_path=add_entry)
-
-    #     # # Append to scene with object to the list
-    #     # self._scene_list[scene_name] = new_scene
-
-    #     # # Return the name of the new scene so we keep our sanity.
-    #     # return scene_name
-
     def new_scene(self, dataset_list):
         """
         Create a new scene with an object.
@@ -258,42 +206,6 @@ class SceneManager:
             return_dict['activeScenes'].append(active_scene)
 
         return return_dict
-
-    # def get_scene_infos(self):
-    #     """
-    #     Return a dict with all the scenes and information for every scene.
-
-    #     Go through every key (= scene_hash) in self._scene_list and get the
-    #     object information from the corresponding value (= _ScenePrototype
-    #     object) by calling the internal method for retrieving the list of
-    #     objects.
-
-    #     The returned dict looks as follows:
-
-    #     .. code-block:: python
-
-    #      info_dict = {
-    #          'scene_hash_1': {'object_list': 'obj_1', 'obj_3'},
-    #          'scene_hash_2': {'object_list': 'obj_1', 'obj_2'},
-    #          ...
-    #      }
-
-    #     Returns:
-    #      dict: A dictionary containing all the scenes and all the objects in
-    #      every scene.
-
-    #     Todo:
-    #      Rename to ``get_scenes_info``.
-
-    #     """
-    #     info_dict = {}
-
-    #     for scene in self._scene_list:
-    #         # Do this for every scene
-    #         scene_info = {'object_list': self._scene_list[scene].object_list()}
-    #         info_dict[scene] = scene_info
-
-    #     return info_dict
 
     def delete_scene(self, scene_hash):
         """
@@ -510,4 +422,58 @@ class SceneManager:
             'href': '/scenes/{}'.format(scene_hash)
         }
 
+        return return_dict
+
+    def dataset_orientation(self, scene_hash, dataset_hash, data=None):
+        """
+        Get or patch (set) the orientation of a dataset.
+
+        If data is None we assume we just want to GET some data, otherwise we
+        want to update (PATCH) it.
+
+        Args:
+         scene_hash (str): The hash of the scene from which we want to delete
+          a dataset.
+         dataset_hash (str): The hash of the dataset we want to delete.
+         data (None or list): None or some orientation data (16 element
+          list).
+
+        Returns:
+         dict: The dataset orientation.
+
+        """
+        if not isinstance(scene_hash, str):
+            raise TypeError('scene_hash is {}, expected str'.format(
+                    type(scene_hash).__name__))
+
+        if not isinstance(dataset_hash, str):
+            raise TypeError('dataset_hash is {}, expected str'.format(
+                    type(dataset_hash).__name__))
+
+        if not isinstance(data, list) and data is not None:
+            raise TypeError('data is {}, expected None or list'.format(
+                    type(data).__name__))
+
+        # If the scene does not exist
+        if scene_hash not in self._scene_list:
+            return None
+
+        target_scene = self.scene(scene_hash)
+
+        target_scene_datasets = target_scene.list_datasets()
+
+        if dataset_hash not in target_scene_datasets:
+            return None
+
+        dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
+        dataset_orientation = target_scene.dataset(dataset_hash).orientation(data)
+
+        return_dict = {
+            'datasetMeta': dataset_meta,
+            'datasetOrientation': {
+                'orientation': dataset_orientation
+            }
+        }
+
+        print(return_dict)
         return return_dict

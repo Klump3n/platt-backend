@@ -462,6 +462,20 @@ class Test_SceneManager(unittest.TestCase):
         with self.assertRaises(TypeError):
             scene_manager.list_loaded_dataset_info(scene_hash, 1)
 
+    def test_dataset_orientation(self):
+        """GET or PATCH dataset orientation
+
+        """
+        # This data exists
+        dataset_list = ['just_fo']
+
+        scene_manager = SceneManager(self.data_dir_path)
+        new_scene = scene_manager.new_scene(dataset_list)  # dict
+        scene_hash = new_scene['sceneHash']
+        dataset_hash = scene_manager.list_loaded_datasets(scene_hash)['loadedDatasets'][0]['datasetHash']
+
+        res = scene_manager.dataset_orientation(scene_hash, dataset_hash)
+
 if __name__ == '__main__':
     """
     Testing as standalone program.

@@ -60,7 +60,13 @@ class _DatasetPrototype:
             'datasetHref': ''
         }
 
-        self._view_matrix = np.eye(4)  # 4D identity matrix
+        self._view_matrix = [
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        ]
+        # self._view_matrix = np.eye(4)  # 4D identity matrix
         self._index_data_list = []
         self._tetraeder_data_list = []
         self._wireframe_data_list = []
@@ -80,34 +86,70 @@ class _DatasetPrototype:
         Get (if view_matrix is None) or set (if view_matrix is not None)
         the orientation of a dataset in the scene.
 
+        The index mapping is as follows:
+        [
+        0, 4, 8,  12,
+        1, 5, 9,  13,
+        2, 6, 10, 14,
+        3, 7, 11, 15
+        ]
+
         Args:
-         view_matrix (np.ndarray or None, optional, defaults to None): A 4x4
-          numpy matrix for setting the orientation of the dataset. The top-left
-          3x3 matrix should be unitary, so rotation is represented. The rest
-          can contain scaling values.
+         view_matrix (list or None, optional, defaults to None): A 16-tuple
+          for setting the orientation of the dataset. The top-left 3x3 matrix
+          should be unitary, so rotation is represented. The rest can contain
+          scaling values.
 
         Raises:
-         TypeError: If ``type(view_matrix)`` is not None or np.ndarray.
-         ValueError: If the shape of ``view_matrix`` is not 4x4.
+         TypeError: If ``type(view_matrix)`` is not None or list.
+         ValueError: If the lenght of ``view_matrix`` is not 16.
 
         """
         if view_matrix is not None:
-            # Check for numpy array and 4x4 shape for the view_matrix.
-            is_np_array = (isinstance(view_matrix, np.ndarray))
-            if not is_np_array:
-                raise TypeError('view_matrix is wrong type')
+            if not isinstance(view_matrix, list):
+                raise TypeError('view_matrix is {}, expected list'.format(
+                        type(view_matrix).__name__))
 
-            is_4x4 = (view_matrix.shape == self._view_matrix.shape)
-            if not is_4x4:
-                raise ValueError('view_matrix is not 4x4')
+            if not len(view_matrix) == 16:
+                raise ValueError('len(view_matrix) must be 16')
 
-            try:
-                self._view_matrix = view_matrix
-            except:
-                raise BaseException('something happened while trying to set ' +
-                                'the view_matrix')
+            self._view_matrix = view_matrix
 
         return self._view_matrix
+
+    # def orientation(self, view_matrix=None):
+    #     """
+    #     Get (if view_matrix is None) or set (if view_matrix is not None)
+    #     the orientation of a dataset in the scene.
+
+    #     Args:
+    #      view_matrix (np.ndarray or None, optional, defaults to None): A 4x4
+    #       numpy matrix for setting the orientation of the dataset. The top-left
+    #       3x3 matrix should be unitary, so rotation is represented. The rest
+    #       can contain scaling values.
+
+    #     Raises:
+    #      TypeError: If ``type(view_matrix)`` is not None or np.ndarray.
+    #      ValueError: If the shape of ``view_matrix`` is not 4x4.
+
+    #     """
+    #     if view_matrix is not None:
+    #         # Check for numpy array and 4x4 shape for the view_matrix.
+    #         is_np_array = (isinstance(view_matrix, np.ndarray))
+    #         if not is_np_array:
+    #             raise TypeError('view_matrix is wrong type')
+
+    #         is_4x4 = (view_matrix.shape == self._view_matrix.shape)
+    #         if not is_4x4:
+    #             raise ValueError('view_matrix is not 4x4')
+
+    #         try:
+    #             self._view_matrix = view_matrix
+    #         except:
+    #             raise BaseException('something happened while trying to set ' +
+    #                             'the view_matrix')
+
+    #     return self._view_matrix
 
     def index_data(self, data=None):
         """
