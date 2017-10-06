@@ -22,7 +22,7 @@ class Test_scenes_dataset_prototype(unittest.TestCase):
         """
         # Set the path to a mock dataset
         file_path = os.path.dirname(__file__)
-        self.valid_dir_name = 'just_fo'
+        self.valid_dir_name = 'just_fo'  # this contains data too
         self.string_path = '{}/mock_data/{}'.format(
             file_path, self.valid_dir_name)
 
@@ -69,36 +69,181 @@ class Test_scenes_dataset_prototype(unittest.TestCase):
         valid_dataset_name = self.test_dataset_object.meta()['datasetName']
         self.assertEqual(valid_dataset_name, self.valid_dir_name)
 
-    def test_get_orientation(self):
-        """Test getting the orientation from the dataset.
+    def test_orientation(self):
+        """GET and PATCH the orientation of a datasetName
 
         """
-        np.testing.assert_array_equal(
-            self.test_dataset_object.orientation(), np.eye(4))
-
-    def test_set_orientation(self):
-        """Test setting the orientation for the dataset.
-
-        """
-        # Create some mock array data
-        array_data = [
-            [1.,  2.,  3.,  4.],
-            [0.,  1.1,  0.2,  0.1],
-            [-0.,  -1.,  -2.,  -3.],
-            [-1.1,  -.1,  0.,  1.]
+        unit_orient = [
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
         ]
-        np_array_data_three_by_three = np.eye(3)
-        np_array_data = np.asarray(array_data)
 
+        # At first it's a 'unitary' list
+        unitary = self.test_dataset_object.orientation()
+        self.assertEqual(unitary, unit_orient)
+
+        # Set it to something else
+        new_orient = [
+            1, 0, 0, 1,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            1, 0, 0, 5
+        ]
+
+        self.assertNotEqual(unit_orient, new_orient)
+        new_return = self.test_dataset_object.orientation(new_orient)
+        self.assertNotEqual(new_return, unit_orient)
+        self.assertEqual(new_return, new_orient)
+
+        # Type mismatch
+        some_dict = {'well': 1}
         with self.assertRaises(TypeError):
-            self.test_dataset_object.orientation(array_data)
+            self.test_dataset_object.orientation(some_dict)
+
+        # Length mismatch
+        too_long = [
+            1, 0, 0, 1,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            1, 0, 0, 1,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            1, 0, 0, 5
+        ]
 
         with self.assertRaises(ValueError):
-            self.test_dataset_object.orientation(np_array_data_three_by_three)
+            self.test_dataset_object.orientation(too_long)
 
-        self.test_dataset_object.orientation(np_array_data)
-        np.testing.assert_array_equal(
-            self.test_dataset_object.orientation(), np_array_data)
+    def test_timestep_list(self):
+        """Get a list of timesteps for the datasetName
+
+        """
+        expected_list = ['00.1', '00.2', '00.3', '00.4', '10.0', '10.4', '100.0', '100.4']
+        res = self.test_dataset_object.timestep_list()
+
+        self.assertEqual(expected_list, res)
+
+    def test_timestep(self):
+        """GET or PATCH the current timestep
+
+        """
+        # on init there is no timestep set
+        expected_init_t = ''
+        res = self.test_dataset_object.timestep()
+        self.assertEqual(expected_init_t, res)
+
+        # set to some timestep in the list
+        set_to = '00.4'
+        res = self.test_dataset_object.timestep(set_to)
+        self.assertEqual(res, set_to)
+
+        # set to impossible timestep, should not change the timestep
+        res = self.test_dataset_object.timestep('0')
+        self.assertEqual(res, set_to)
+
+        # type mismatch raises TypeError
+        set_to = 1
+        with self.assertRaises(TypeError):
+            self.test_dataset_object.timestep(set_to)
+
+    def test_field_dict(self):
+        """Get a dcit of fields (elemental and nodal) for a given timestep
+
+        """
+        dataset = _DatasetPrototype(self.valid_path)
+
+        # set the timestep
+        timestep = '00.1'
+        dataset.timestep(timestep)
+
+        res = dataset.field_dict()
+
+        self.assertIsInstance(res, dict)
+        self.assertIn('elemental', res)
+        self.assertIsInstance(res['elemental'], list)
+        self.assertIn('nodal', res)
+        self.assertIsInstance(res['nodal'], list)
+
+        # 00.1 contains eo/an_element_field.bin and no/nt11.bin and no/some_mock_field.bin
+        # .bin gets stripped
+        self.assertEqual(sorted(res['elemental']), sorted(['an_element_field']))
+        self.assertEqual(sorted(res['nodal']), sorted(['nt11', 'some_mock_field']))
+
+    def test_field(self):
+        """GET or PATCH (set) a field for a given dataset and timestep
+
+        """
+        dataset = _DatasetPrototype(self.valid_path)
+
+        # set the timestep
+        timestep = '00.1'
+        dataset.timestep(timestep)
+
+        # as no field is set it returns 'no_field'
+        res = dataset.field()
+
+        self.assertEqual(res, 'no_field')
+
+        # this field exists
+        new_field = 'nt11'
+        res = dataset.field(set_field=new_field)
+
+        self.assertEqual(res, new_field)
+
+        # this field does not exist
+        new_field = 'nt'
+        res = dataset.field(set_field=new_field)
+
+        self.assertEqual(res, 'no_field')
+
+        # type mismatch
+        with self.assertRaises(TypeError):
+            dataset.field(set_field=1)
+
+        # changing to another timestep that also has that field available preserves the selection
+        timestep = '00.1'
+        new_field = 'nt11'
+        dataset.timestep(timestep)
+        res = dataset.field(set_field=new_field)
+
+        self.assertEqual(res, new_field)
+
+        timestep = '00.2'
+        dataset.timestep(timestep)
+        res = dataset.field()
+
+        self.assertEqual(res, new_field)
+
+        timestep = '00.3'
+        dataset.timestep(timestep)
+        res = dataset.field()
+
+        self.assertEqual(res, new_field)
+
+        # changing to a timestep where a field does not exist does not reset the selection of a field
+        # 00.1 has some_mock_field, 00.2 does not, 00.3 does again have that field
+        timestep = '00.1'
+        new_field = 'some_mock_field'
+        dataset.timestep(timestep)
+        res = dataset.field(set_field=new_field)
+
+        self.assertEqual(res, new_field)
+
+        timestep = '00.2'
+        expected_res = 'no_field'
+        dataset.timestep(timestep)
+        res = dataset.field()
+
+        self.assertEqual(res, expected_res)
+
+        # the selected field is still stored in the dataset
+        timestep = '00.3'
+        dataset.timestep(timestep)
+        res = dataset.field()
+
+        self.assertEqual(res, new_field)
 
 
 if __name__ == '__main__':

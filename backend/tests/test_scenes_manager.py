@@ -12,7 +12,7 @@ import pathlib
 sys.path.append(os.path.join('..', '..'))  # Append the program root dir
 from backend.scenes_manager import SceneManager
 from backend.scenes_scene_prototype import _ScenePrototype
-# from backend.scenes_dataset_prototype import _DatasetPrototype
+from backend.scenes_dataset_prototype import _DatasetPrototype
 
 
 class Test_SceneManager(unittest.TestCase):
@@ -462,6 +462,39 @@ class Test_SceneManager(unittest.TestCase):
         with self.assertRaises(TypeError):
             scene_manager.list_loaded_dataset_info(scene_hash, 1)
 
+    def test__target_dataset(self):
+        """Return a handle for a dataset we want to manipulate
+
+        """
+        # This data exists
+        dataset_list = ['just_fo']
+
+        scene_manager = SceneManager(self.data_dir_path)
+        new_scene = scene_manager.new_scene(dataset_list)  # dict
+        scene_hash = new_scene['sceneHash']
+        dataset_hash = scene_manager.list_loaded_datasets(scene_hash)['loadedDatasets'][0]['datasetHash']
+
+        # valid inputs
+        res = scene_manager._target_dataset(scene_hash, dataset_hash)
+        self.assertIsInstance(res, _DatasetPrototype)
+
+        loaded_dataset_hash = res.meta()['datasetHash']
+        self.assertEqual(dataset_hash, loaded_dataset_hash)
+
+        # invalid strings
+        res = scene_manager._target_dataset(scene_hash, 'something')
+        self.assertIsNone(res)
+
+        res = scene_manager._target_dataset('something', dataset_hash)
+        self.assertIsNone(res)
+
+        # type mismatch
+        with self.assertRaises(TypeError):
+            scene_manager._target_dataset(scene_hash, 1)
+
+        with self.assertRaises(TypeError):
+            scene_manager._target_dataset(1, dataset_hash)
+
     def test_dataset_orientation(self):
         """GET or PATCH dataset orientation
 
@@ -475,6 +508,126 @@ class Test_SceneManager(unittest.TestCase):
         dataset_hash = scene_manager.list_loaded_datasets(scene_hash)['loadedDatasets'][0]['datasetHash']
 
         res = scene_manager.dataset_orientation(scene_hash, dataset_hash)
+
+        self.assertIsInstance(res, dict)
+        self.assertIn('datasetMeta', res)
+        self.assertIsInstance(res['datasetMeta'], dict)
+        self.assertIn('datasetOrientation', res)
+        self.assertIsInstance(res['datasetOrientation'], list)
+
+        # set orientation to smth
+        new_or = [1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1]
+        res = scene_manager.dataset_orientation(scene_hash, dataset_hash, set_orientation=new_or)
+        orientation = res['datasetOrientation']
+
+        self.assertEqual(orientation, new_or)
+
+        # type mismatch
+        with self.assertRaises(TypeError):
+            scene_manager.dataset_orientation(scene_hash, 1)
+        with self.assertRaises(TypeError):
+            scene_manager.dataset_orientation(1, dataset_hash)
+        with self.assertRaises(TypeError):
+            scene_manager.dataset_orientation(1, dataset_hash, set_orientation=1)
+
+    def test_dataset_timesteps(self):
+        """GET or PATCH dataset timesteps
+
+        """
+        # This data exists
+        dataset_list = ['just_fo']
+
+        scene_manager = SceneManager(self.data_dir_path)
+        new_scene = scene_manager.new_scene(dataset_list)  # dict
+        scene_hash = new_scene['sceneHash']
+        dataset_hash = scene_manager.list_loaded_datasets(scene_hash)['loadedDatasets'][0]['datasetHash']
+
+        res = scene_manager.dataset_timesteps(scene_hash, dataset_hash)
+
+        self.assertIsInstance(res, dict)
+        self.assertIn('datasetMeta', res)
+        self.assertIn('datasetTimestepList', res)
+        self.assertIsInstance(res['datasetTimestepList'], list)
+        self.assertIn('datasetTimestepSelected', res)
+        self.assertIsInstance(res['datasetTimestepSelected'], str)
+
+        timestep_list = res['datasetTimestepList']
+
+        # set a timestep
+        res = scene_manager.dataset_timesteps(scene_hash, dataset_hash, set_timestep=timestep_list[1])
+
+        self.assertIsInstance(res, dict)
+        self.assertIn('datasetMeta', res)
+        self.assertIn('datasetTimestepList', res)
+        self.assertIn('datasetTimestepSelected', res)
+        self.assertEqual(res['datasetTimestepSelected'], timestep_list[1])
+
+        valid_timestep  = res
+
+        # set an invalid timestep, should not change the timestep
+        res = scene_manager.dataset_timesteps(scene_hash, dataset_hash, set_timestep='0')
+
+        self.assertEqual(res, valid_timestep)
+
+        # type mismatch
+        with self.assertRaises(TypeError):
+            scene_manager.dataset_timesteps(scene_hash, 1)
+        with self.assertRaises(TypeError):
+            scene_manager.dataset_timesteps(1, dataset_hash)
+        with self.assertRaises(TypeError):
+            scene_manager.dataset_timesteps(1, dataset_hash, set_timestep=1)
+
+    def test_dataset_fields(self):
+        """GET or PATCH dataset fields
+
+        """
+        # This data exists
+        dataset_list = ['just_fo']
+
+        scene_manager = SceneManager(self.data_dir_path)
+        new_scene = scene_manager.new_scene(dataset_list)  # dict
+        scene_hash = new_scene['sceneHash']
+        dataset_hash = scene_manager.list_loaded_datasets(scene_hash)['loadedDatasets'][0]['datasetHash']
+
+        res = scene_manager.dataset_fields(scene_hash, dataset_hash)
+
+        self.assertIsInstance(res, dict)
+        self.assertIn('datasetMeta', res)
+        self.assertIn('datasetFieldList', res)
+        self.assertIn('datasetFieldSelected', res)
+        self.assertIsInstance(res['datasetFieldSelected'], str)
+
+        field_dict = res['datasetFieldList']
+        self.assertIsInstance(field_dict, dict)
+        self.assertIn('elemental', field_dict)
+        self.assertIn('nodal', field_dict)
+
+        # select a timestep
+        res = scene_manager.dataset_timesteps(scene_hash, dataset_hash, set_timestep='00.1')
+        self.assertEqual(res['datasetTimestepSelected'], '00.1')
+
+        res = scene_manager.dataset_fields(scene_hash, dataset_hash)
+
+        self.assertIsInstance(res, dict)
+        self.assertIn('datasetMeta', res)
+        self.assertIn('datasetFieldList', res)
+        self.assertIn('datasetFieldSelected', res)
+
+        field_dict = res['datasetFieldList']
+        self.assertIsInstance(field_dict, dict)
+
+        # select a field
+        res = scene_manager.dataset_fields(scene_hash, dataset_hash, set_field='nt11')
+        self.assertEqual(res['datasetFieldSelected'], 'nt11')
+
+        # type mismatch
+        with self.assertRaises(TypeError):
+            scene_manager.dataset_fields(scene_hash, 1)
+        with self.assertRaises(TypeError):
+            scene_manager.dataset_fields(1, dataset_hash)
+        with self.assertRaises(TypeError):
+            scene_manager.dataset_fields(1, dataset_hash, set_field=1)
+
 
 if __name__ == '__main__':
     """

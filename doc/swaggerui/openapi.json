@@ -407,7 +407,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/orientation"
+                                "$ref": "#/components/schemas/setOrientation"
                             }
                         }
                     },
@@ -472,18 +472,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "datasetTimestepCurrent": {
-                                        "type": "object",
-                                        "properties": {
-                                            "index": {
-                                                "type": integer,
-                                                "example": 2
-                                            }
-                                        }
-                                    }
-                                }
+                                "$ref": "#/components/schemas/setTimestep"
                             }
                         }
                     },
@@ -550,7 +539,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/datasetFieldSelected"
+                                "$ref": "#/components/schemas/setField"
                             }
                         }
                     },
@@ -726,13 +715,13 @@
                 }
             },
 
-            "orientation": {
+            "setOrientation": {
                 "description": "The orientation of a dataset",
                 "required": [
-                    "orientation"
+                    "datasetOrientation"
                 ],
                 "properties": {
-                    "orientation": {
+                    "datasetOrientation": {
                         "type": "array",
                         "items": {
                             "type": "number",
@@ -745,7 +734,7 @@
                 }
             },
 
-            "datasetOrientation": {
+            "orientationResponse": {
                 "description": "The metadata and orientation of an dataset",
                 "required": [
                     "datasetMeta",
@@ -757,36 +746,38 @@
                         "$ref": "#/components/schemas/loadedDataset"
                     },
                     "datasetOrientation": {
-                        "type": "object",
-                        "$ref": "#/components/schemas/orientation"
+                        "type": "array",
+                        "items": {
+                            "type": "number",
+                            "format": "double"
+                        },
+                        "example": [0.618801857889, 0.0962469609039, 0.282335580515, 0.480548538153, 0.516858801051, 0.912111011462, 0.865715417578, 0.243929876095, 0.425314633968, 0.567040145201, 0.482427207043, 0.850746627011, 0.952173194961, 0.418593580312, 0.491999373066, 0.794117627953],
+                        "minItems": 16,
+                        "maxItems": 16
                     }
                 }
             },
 
-            "datasetTimestepCurrent": {
+            "setTimestep": {
                 "description": "A single timestep in a dataset",
                 "required": [
-                    "index"
+                    "datasetTimestepSelected"
                 ],
                 "properties": {
-                    "index": {
-                        "description": "The index that refers to the datasetTimesteps list.",
-                        "type": integer,
-                        "example": 2
-                    },
-                    "string": {
+                    "datasetTimestepSelected": {
+                        "description": "The selected timestep",
                         "type": "string",
                         "example": "000.02"
                     }
                 }
             },
 
-            "datasetTimesteps": {
+            "timestepResponse": {
                 "description": "The metadata and timestep information of an dataset",
                 "required": [
                     "datasetMeta",
                     "datasetTimestepList",
-                    "datasetTimestepCurrent"
+                    "datasetTimestepSelected"
                 ],
                 "properties": {
                     "datasetMeta": {
@@ -801,14 +792,15 @@
                         },
                         "example": ["000.00", "000.01", "000.02"]
                     },
-                    "datasetTimestepCurrent": {
-                        "type": "object",
-                        "$ref": "#/components/schemas/datasetTimestepCurrent"
+                    "datasetTimestepSelected": {
+                        "description": "The selected timestep",
+                        "type": "string",
+                        "example": "000.02"
                     }
                 }
             },
 
-            "datasetFieldSelected": {
+            "setField": {
                 "description": "A single field in a dataset.",
                 "required": [
                     "datasetFieldSelected"
@@ -816,12 +808,12 @@
                 "properties": {
                     "datasetFieldSelected": {
                         "type": "string",
-                        "example": "temp"
+                        "example": "nodal_field_2"
                     }
                 }
             },
 
-            "datasetFields": {
+            "fieldResponse": {
                 "description": "The metadata and field information of an dataset",
                 "required": [
                     "datasetMeta",
@@ -835,14 +827,32 @@
                     },
                     "datasetFieldList": {
                         "description": "A list of available fields for an dataset.",
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "example": ["temp", "t1", "t2", "e1"]
+                        "type": "object",
+                        "required": [
+                            "elemental",
+                            "nodal"
+                        ],
+                        "properties": {
+                            "elemental": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "example": ["elemental_field_1", "elemental_field_2"]
+                            },
+                            "nodal": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "example": ["nodal_field_1", "nodal_field_2"]
+                            }
+                        }
+
                     },
                     "datasetFieldSelected": {
-                        "$ref": "#/components/schemas/datasetFieldSelected"
+                        "type": "string",
+                        "example": "nodal_field_2"
                     }
                 }
             },
@@ -967,7 +977,7 @@
                     "application/json": {
                         "schema": {
                             "type": "object",
-                            "$ref": "#/components/schemas/datasetOrientation"
+                            "$ref": "#/components/schemas/orientationResponse"
                         }
                     }
                 }
@@ -979,7 +989,7 @@
                     "application/json": {
                         "schema": {
                             "type": "object",
-                            "$ref": "#/components/schemas/datasetTimesteps"
+                            "$ref": "#/components/schemas/timestepResponse"
                         }
                     }
                 }
@@ -991,7 +1001,7 @@
                     "application/json": {
                         "schema": {
                             "type": "object",
-                            "$ref": "#/components/schemas/datasetFields"
+                            "$ref": "#/components/schemas/fieldResponse"
                         }
                     }
                 }

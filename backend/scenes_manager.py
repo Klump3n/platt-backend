@@ -424,22 +424,21 @@ class SceneManager:
 
         return return_dict
 
-    def dataset_orientation(self, scene_hash, dataset_hash, data=None):
+    def _target_dataset(self, scene_hash, dataset_hash):
         """
-        Get or patch (set) the orientation of a dataset.
-
-        If data is None we assume we just want to GET some data, otherwise we
-        want to update (PATCH) it.
+        Return a handle for a dataset in a scene.
 
         Args:
-         scene_hash (str): The hash of the scene from which we want to delete
-          a dataset.
-         dataset_hash (str): The hash of the dataset we want to delete.
-         data (None or list): None or some orientation data (16 element
-          list).
+         scene_hash (str): The hash of the scene.
+         dataset_hash (str): The hash of the dataset.
 
         Returns:
-         dict: The dataset orientation.
+         _DatasetPrototype or None: The dataset or None if we could not find
+         it.
+
+        Raises:
+         TypeError: If ``type(scene_hash)`` is not `str`.
+         TypeError: If ``type(dataset_hash)`` is not `str`.
 
         """
         if not isinstance(scene_hash, str):
@@ -449,10 +448,6 @@ class SceneManager:
         if not isinstance(dataset_hash, str):
             raise TypeError('dataset_hash is {}, expected str'.format(
                     type(dataset_hash).__name__))
-
-        if not isinstance(data, list) and data is not None:
-            raise TypeError('data is {}, expected None or list'.format(
-                    type(data).__name__))
 
         # If the scene does not exist
         if scene_hash not in self._scene_list:
@@ -465,15 +460,153 @@ class SceneManager:
         if dataset_hash not in target_scene_datasets:
             return None
 
+        dataset_handle = target_scene.dataset(dataset_hash)
+
+        return dataset_handle
+
+    def dataset_orientation(
+            self, scene_hash, dataset_hash, set_orientation=None):
+        """
+        Get or patch (set) the orientation of a dataset.
+
+        If data is None we assume we just want to GET some data, otherwise we
+        want to update (PATCH) it.
+
+        Args:
+         scene_hash (str): The hash of the scene.
+         dataset_hash (str): The hash of the dataset.
+         set_orientation (None or list): None or some orientation data (16
+          element list).
+
+        Returns:
+         dict or None: The dataset orientation or None if no orientation could
+         be set.
+
+        Raises:
+         TypeError: If ``type(scene_hash)`` is not `str`.
+         TypeError: If ``type(dataset_hash)`` is not `str`.
+
+        Todos:
+         Change the datasetOrientation dict to something less redundant.
+
+        """
+        if not isinstance(scene_hash, str):
+            raise TypeError('scene_hash is {}, expected str'.format(
+                    type(scene_hash).__name__))
+
+        if not isinstance(dataset_hash, str):
+            raise TypeError('dataset_hash is {}, expected str'.format(
+                    type(dataset_hash).__name__))
+
+        target_dataset = self._target_dataset(scene_hash, dataset_hash)
+
         dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
-        dataset_orientation = target_scene.dataset(dataset_hash).orientation(data)
+        dataset_orientation = target_dataset.orientation(set_orientation)
 
         return_dict = {
             'datasetMeta': dataset_meta,
-            'datasetOrientation': {
-                'orientation': dataset_orientation
-            }
+            'datasetOrientation': dataset_orientation
         }
 
-        print(return_dict)
+        return return_dict
+
+    def dataset_timesteps(self, scene_hash, dataset_hash, set_timestep=None):
+        """
+        GET or PATCH (set) the timestep(s) of a dataset.
+
+        If data is None we assume we just want to GET some data, otherwise we
+        want to update (PATCH) it.
+
+        Args:
+         scene_hash (str): The hash of the scene.
+         dataset_hash (str): The hash of the dataset.
+         set_timestep (None or str): None or a timestep (that refers to
+          the list we can GET).
+
+        Returns:
+         dict: The dataset timestep(s).
+
+        Raises:
+         TypeError: If ``type(scene_hash)`` is not `str`.
+         TypeError: If ``type(dataset_hash)`` is not `str`.
+         TypeError: If ``type(set_timestep)`` is not `NoneType` or `str`.
+
+        """
+        if not isinstance(scene_hash, str):
+            raise TypeError('scene_hash is {}, expected str'.format(
+                    type(scene_hash).__name__))
+
+        if not isinstance(dataset_hash, str):
+            raise TypeError('dataset_hash is {}, expected str'.format(
+                    type(dataset_hash).__name__))
+
+        if set_timestep is not None:
+            if not isinstance(set_timestep, str):
+                raise TypeError('set_timestep is {}, expected None or str'.
+                                format(type(set_timestep).__name__))
+
+        target_dataset = self._target_dataset(scene_hash, dataset_hash)
+
+        dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
+
+        timestep_list = target_dataset.timestep_list()
+        selected_timestep = target_dataset.timestep(
+            set_timestep)
+
+        return_dict = {
+            'datasetMeta': dataset_meta,
+            'datasetTimestepList': timestep_list,
+            'datasetTimestepSelected': selected_timestep,
+        }
+
+        return return_dict
+
+    def dataset_fields(self, scene_hash, dataset_hash, set_field=None):
+        """
+        GET or PATCH (set) the field(s) of a dataset.
+
+        If data is None we assume we just want to GET some data, otherwise we
+        want to update (PATCH) it.
+
+        Args:
+         scene_hash (str): The hash of the scene.
+         dataset_hash (str): The hash of the dataset.
+         set_field (None or str): None or a field (that refers to
+          the list we can GET).
+
+        Returns:
+         dict: The dataset field(s).
+
+        Raises:
+         TypeError: If ``type(scene_hash)`` is not `str`.
+         TypeError: If ``type(dataset_hash)`` is not `str`.
+         TypeError: If ``type(set_field)`` is not `NoneType` or `str`.
+
+        """
+        if not isinstance(scene_hash, str):
+            raise TypeError('scene_hash is {}, expected str'.format(
+                    type(scene_hash).__name__))
+
+        if not isinstance(dataset_hash, str):
+            raise TypeError('dataset_hash is {}, expected str'.format(
+                    type(dataset_hash).__name__))
+
+        if set_field is not None:
+            if not isinstance(set_field, str):
+                raise TypeError('set_field is {}, expected None or str'.
+                                format(type(set_field).__name__))
+
+        target_dataset = self._target_dataset(scene_hash, dataset_hash)
+
+        dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
+
+        field_dict = target_dataset.field_dict()
+        selected_field = target_dataset.field(set_field)
+
+        return_dict = {
+            'datasetMeta': dataset_meta,
+            'datasetFieldList': field_dict,
+            'datasetFieldSelected': selected_field
+        }
+
         return return_dict

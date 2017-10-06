@@ -7,7 +7,6 @@ all the data points, its orientation in R3 and so on.
 
 """
 import os
-import numpy as np
 
 from backend.util.timestamp_to_sha1 import timestamp_to_sha1
 
@@ -47,26 +46,32 @@ class _DatasetPrototype:
             raise ValueError(
                 '{} does not exist'.format(dataset_path.absolute()))
 
+        # Save the dataset path
+        self.dataset_path = dataset_path.absolute()
+
         # Grab the last entry from the path
-        dataset_name = dataset_path.absolute().name
+        self.dataset_name = self.dataset_path.absolute().name
 
         # Generate the SHA1 on dataset object creation
-        dataset_sha1 = timestamp_to_sha1()
+        self.dataset_sha1 = timestamp_to_sha1()
 
         self.dataset_meta_dict = {
-            'datasetName': dataset_name,
-            'datasetHash': dataset_sha1,
+            'datasetName': self.dataset_name,
+            'datasetHash': self.dataset_sha1,
             'datasetAlias': '',
             'datasetHref': ''
         }
 
-        self._view_matrix = [
+        # Init
+        self._selected_orientation = [
             1, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, 1, 0,
             0, 0, 0, 1
-        ]
-        # self._view_matrix = np.eye(4)  # 4D identity matrix
+        ]                           # List
+        self._selected_timestep = ''  # String
+        self._selected_field = ''
+
         self._index_data_list = []
         self._tetraeder_data_list = []
         self._wireframe_data_list = []
@@ -113,9 +118,138 @@ class _DatasetPrototype:
             if not len(view_matrix) == 16:
                 raise ValueError('len(view_matrix) must be 16')
 
-            self._view_matrix = view_matrix
+            self._selected_orientation = view_matrix
 
-        return self._view_matrix
+        return self._selected_orientation
+
+    def timestep_list(self):
+        """
+        Get a sorted list of all the timesteps for a dataset.
+
+        Args:
+         None: No args.
+
+        Returns:
+         list: A sorted list with all timesteps in the dataset.
+
+        Todo:
+         Make this more resilient against non exising directories via try
+         except.
+
+        """
+        dataset_dir = self.dataset_path / 'fo'
+        dirs = sorted(dataset_dir.glob('*/'))  # Glob all directories
+
+        timestep_list = []
+        for path in dirs:
+            timestep_list.append(path.name)
+
+        return timestep_list
+
+    def timestep(self, set_timestep=None):
+        """
+        GET or PATCH the currently set timestep for this dataset.
+
+        Args:
+         set_timestep (str or None): None if we want to get the current timestep,
+          otherwise the timestep we want to set.
+
+        Returns:
+         str or None: The currently set timestep or None if the timestep could
+         not be set.
+
+        """
+        if set_timestep is not None:
+            if not isinstance(set_timestep, str):
+                raise TypeError('set_timestep is {}, expected str'.format(
+                    type(set_timestep).__name__))
+
+            if set_timestep not in self.timestep_list():
+                return self._selected_timestep
+
+            self._selected_timestep = set_timestep
+
+        return self._selected_timestep
+
+    def field_dict(self):
+        """
+        Get a list of fields for the selected timestep.
+
+        Args:
+         None: No args.
+
+        Returns:
+         dict: A dict with two lists of fields, one for elemental and one for
+         nodal fields.
+
+        Todo:
+         Make this more resilient against non exising directories via try
+         except.
+
+        """
+        timestep_dir = self.dataset_path / 'fo' / self._selected_timestep
+
+        elemental_fields = []
+        elemental_field_dir = timestep_dir / 'eo'
+        elemental_field_paths = sorted(elemental_field_dir.glob('*.bin'))
+        for field in elemental_field_paths:
+            elemental_fields.append(field.stem)
+
+        nodal_fields = []
+        nodal_field_dir = timestep_dir / 'no'
+        nodal_field_paths = sorted(nodal_field_dir.glob('*.bin'))
+        for field in nodal_field_paths:
+            nodal_fields.append(field.stem)
+
+        return_dict = {
+            'elemental': elemental_fields,
+            'nodal': nodal_fields
+        }
+
+        return return_dict
+
+    def field(self, set_field=None):
+        """
+        GET or PATCH (set) the available fields for the selected timestep in
+        the dataset.
+
+        Args:
+         set_field (str or None): None if we want to get the current field,
+          otherwise the field we want to set.
+
+        """
+        if set_field is not None:
+            if not isinstance(set_field, str):
+                raise TypeError('set_field is {}, expected None or str'.format(
+                    type(set_field).__name__))
+
+        # get a list of fields we can display for this timestep
+        fields = self.field_dict()
+        elemental_fields = fields['elemental']
+        nodal_fields = fields['nodal']
+
+        if set_field is not None:
+            # see if the field we want to set is available...
+            if (
+                    set_field not in elemental_fields and
+                    set_field not in nodal_fields
+            ):
+                # ..., if not return 'no_field'
+                return 'no_field'
+
+            # if it is we can set it
+            self._selected_field = set_field
+
+        else:
+            # see if the field we want to get is available...
+            if (
+                    self._selected_field not in elemental_fields and
+                    self._selected_field not in nodal_fields
+            ):
+                # ..., if not return 'no_field'
+                return 'no_field'
+
+        return self._selected_field
 
     # def orientation(self, view_matrix=None):
     #     """
@@ -139,17 +273,17 @@ class _DatasetPrototype:
     #         if not is_np_array:
     #             raise TypeError('view_matrix is wrong type')
 
-    #         is_4x4 = (view_matrix.shape == self._view_matrix.shape)
+    #         is_4x4 = (view_matrix.shape == self._selected_orientation.shape)
     #         if not is_4x4:
     #             raise ValueError('view_matrix is not 4x4')
 
     #         try:
-    #             self._view_matrix = view_matrix
+    #             self._selected_orientation = view_matrix
     #         except:
     #             raise BaseException('something happened while trying to set ' +
     #                             'the view_matrix')
 
-    #     return self._view_matrix
+    #     return self._selected_orientation
 
     def index_data(self, data=None):
         """

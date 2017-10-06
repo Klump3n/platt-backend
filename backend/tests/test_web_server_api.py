@@ -630,6 +630,681 @@ class Test_web_server_api(unittest.TestCase):
                 mock_get_dataset_info_two.assert_called_with(
                     scene_hash, dataset_hash)
 
+    def test_get_scenes_scenehash_datasethash_orientation(self):
+        """Get the orientation of a dataset
+
+        """
+        scene_hash = '21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a'
+        dataset_hash = '47e9f7fc6d1522c552fffaf1803a0e1822620024'
+        expected_dict = {
+            "datasetMeta": {
+                "datasetName": "numsim.napf.tiefziehversuch",
+                "datasetHash": "47e9f7fc6d1522c552fffaf1803a0e1822620024",
+                "datasetAlias": "alias for numsim.napf.tiefziehversuch",
+                "datasetHref": "/scenes/21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a/47e9f7fc6d1522c552fffaf1803a0e182262002"
+            },
+            "datasetOrientation": [
+                0.618801857889,
+                0.0962469609039,
+                0.282335580515,
+                0.480548538153,
+                0.516858801051,
+                0.912111011462,
+                0.865715417578,
+                0.243929876095,
+                0.425314633968,
+                0.567040145201,
+                0.482427207043,
+                0.850746627011,
+                0.952173194961,
+                0.418593580312,
+                0.491999373066,
+                0.794117627953
+            ]
+        }
+        # Test self.get_scenes_scenehash_datasethash_orientation
+        ##################################################
+
+        with mock.patch(
+                'backend.global_settings.SceneManager.dataset_orientation',
+                return_value=expected_dict
+        ) as mock_get_orientation:
+
+            res = self.api.get_scenes_scenehash_datasethash_orientation(scene_hash, dataset_hash)
+
+            mock_get_orientation.assert_called()
+
+            self.assertIsInstance(res, dict)
+            self.assertEqual(res, expected_dict)
+
+        # Test self.scenes, calling self.get_scenes_scenehash_datasethash_orientation
+        ##################################################
+
+        mock_cp_req = mock.MagicMock(
+            cherrypy.request,
+            method='GET'
+        )
+
+        expected_str = json.dumps(expected_dict)
+
+        with mock.patch(
+                'cherrypy.request',
+                mock_cp_req
+        ):
+            with mock.patch(
+                    'backend.web_server_api.ServerAPI.get_scenes_scenehash_datasethash_orientation',
+                    return_value=expected_dict
+            ) as mock_get_orientation_one:
+
+                res = self.api.scenes(scene_hash, dataset_hash, 'orientation')
+
+                self.assertIsInstance(res, str)
+                self.assertEqual(res, expected_str)
+
+                mock_get_orientation_one.assert_called_with(
+                    scene_hash, dataset_hash)
+
+            # scene or dataset does not exist
+            with mock.patch(
+                    'backend.web_server_api.ServerAPI.get_scenes_scenehash_datasethash_orientation',
+                    return_value=None
+            ) as mock_get_orientation_two:
+
+                res = self.api.scenes(scene_hash, dataset_hash, 'orientation')
+
+                self.assertIsInstance(res, str)
+                self.assertEqual(res, 'null')
+
+                mock_get_orientation_two.assert_called_with(
+                    scene_hash, dataset_hash)
+
+    def test_patch_scenes_scenehash_datasethash_orientation(self):
+        """Patch the orientation of a dataset
+
+        """
+        scene_hash = '21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a'
+        dataset_hash = '47e9f7fc6d1522c552fffaf1803a0e1822620024'
+        request_dict = {
+            "datasetOrientation": [
+                0.618801857889,
+                0.0962469609039,
+                0.282335580515,
+                0.480548538153,
+                0.516858801051,
+                0.912111011462,
+                0.865715417578,
+                0.243929876095,
+                0.425314633968,
+                0.567040145201,
+                0.482427207043,
+                0.850746627011,
+                0.952173194961,
+                0.418593580312,
+                0.491999373066,
+                0.794117627953
+            ]
+        }
+        expected_dict = {
+            "datasetMeta": {
+                "datasetName": "numsim.napf.tiefziehversuch",
+                "datasetHash": "47e9f7fc6d1522c552fffaf1803a0e1822620024",
+                "datasetAlias": "alias for numsim.napf.tiefziehversuch",
+                "datasetHref": "/scenes/21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a/47e9f7fc6d1522c552fffaf1803a0e182262002"
+            },
+            "datasetOrientation": [
+                0.618801857889,
+                0.0962469609039,
+                0.282335580515,
+                0.480548538153,
+                0.516858801051,
+                0.912111011462,
+                0.865715417578,
+                0.243929876095,
+                0.425314633968,
+                0.567040145201,
+                0.482427207043,
+                0.850746627011,
+                0.952173194961,
+                0.418593580312,
+                0.491999373066,
+                0.794117627953
+            ]
+        }
+
+        # Test self.patch_scenes_scenehash_datasethash_orientation
+        ##################################################
+
+        with mock.patch(
+                'backend.global_settings.SceneManager.dataset_orientation',
+                return_value=expected_dict
+        ) as mock_patch_orientation:
+
+            new_or = request_dict['datasetOrientation']
+            res = self.api.patch_scenes_scenehash_datasethash_orientation(scene_hash, dataset_hash, new_orientation=new_or)
+
+            mock_patch_orientation.assert_called()
+
+            self.assertIsInstance(res, dict)
+            self.assertEqual(res, expected_dict)
+
+        # Test self.scenes, calling self.patch_scenes_scenehash_datasethash_orientation
+        ##################################################
+
+        # Expected JSON input
+        ##################################################
+        mock_cp_req = mock.MagicMock(
+            cherrypy.request,
+            method='PATCH',
+            json=request_dict
+        )
+
+        expected_str = json.dumps(expected_dict)
+
+        with mock.patch(
+                'cherrypy.request',
+                mock_cp_req
+        ):
+            with mock.patch(
+                    'backend.web_server_api.ServerAPI.patch_scenes_scenehash_datasethash_orientation',
+                    return_value=expected_dict
+            ) as mock_patch_orientation_one:
+
+                res = self.api.scenes(scene_hash, dataset_hash, 'orientation')
+
+                self.assertIsInstance(res, str)
+                self.assertEqual(res, expected_str)
+
+                new_or = request_dict['datasetOrientation']
+                mock_patch_orientation_one.assert_called_with(
+                    scene_hash, dataset_hash, new_orientation=new_or)
+
+            # scene or dataset does not exist
+            with mock.patch(
+                    'backend.web_server_api.ServerAPI.patch_scenes_scenehash_datasethash_orientation',
+                    return_value=None
+            ) as mock_patch_orientation_two:
+
+                res = self.api.scenes(scene_hash, dataset_hash, 'orientation')
+
+                self.assertIsInstance(res, str)
+                self.assertEqual(res, 'null')
+
+                new_or = request_dict['datasetOrientation']
+                mock_patch_orientation_two.assert_called_with(
+                    scene_hash, dataset_hash, new_orientation=new_or)
+
+        # Wrong request dict
+        ##################################################
+
+        wrong_request_dict = {
+            "wrong_key": [
+                "numsim.napf.tiefziehversuch"
+            ]
+        }
+        mock_cp_req = mock.MagicMock(
+            cherrypy.request,
+            method='PATCH',
+            json=wrong_request_dict
+        )
+
+        with mock.patch(
+                'cherrypy.request',
+                mock_cp_req
+        ):
+
+            res = self.api.scenes(scene_hash, dataset_hash, 'orientation')
+
+            self.assertIsInstance(res, str)
+            self.assertEqual(res, 'null')
+
+
+        # Malformed JSON input
+        ##################################################
+
+        mock_cp_req = mock.MagicMock(
+            cherrypy.request,
+            method='PATCH',
+            json=json.dumps(request_dict)  # is str
+        )
+
+        expected_str = json.dumps(request_dict)
+
+        with mock.patch(
+                'cherrypy.request',
+                mock_cp_req
+        ):
+            res = self.api.scenes(scene_hash, dataset_hash, 'orientation')
+
+            self.assertIsInstance(res, str)
+            self.assertEqual(res, 'null')
+
+
+    def test_get_scenes_scenehash_datasethash_timesteps(self):
+        """Get the timestep of a dataset
+
+        """
+        scene_hash = '21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a'
+        dataset_hash = '47e9f7fc6d1522c552fffaf1803a0e1822620024'
+        expected_dict = {
+            "datasetMeta": {
+                "datasetName": "numsim.napf.tiefziehversuch",
+                "datasetHash": "47e9f7fc6d1522c552fffaf1803a0e1822620024",
+                "datasetAlias": "alias for numsim.napf.tiefziehversuch",
+                "datasetHref": "/scenes/21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a/47e9f7fc6d1522c552fffaf1803a0e182262002"
+            },
+            "datasetTimestepList": [
+                "000.00",
+                "000.01",
+                "000.02"
+            ],
+            "datasetTimestepSelected": "000.02"
+        }
+
+        # Test self.get_scenes_scenehash_datasethash_timesteps
+        ##################################################
+
+        with mock.patch(
+                'backend.global_settings.SceneManager.dataset_timesteps',
+                return_value=expected_dict
+        ) as mock_get_timestep:
+
+            res = self.api.get_scenes_scenehash_datasethash_timesteps(scene_hash, dataset_hash)
+
+            mock_get_timestep.assert_called()
+
+            self.assertIsInstance(res, dict)
+            self.assertEqual(res, expected_dict)
+
+        # Test self.scenes, calling self.get_scenes_scenehash_datasethash_timesteps
+        ##################################################
+
+        mock_cp_req = mock.MagicMock(
+            cherrypy.request,
+            method='GET'
+        )
+
+        expected_str = json.dumps(expected_dict)
+
+        with mock.patch(
+                'cherrypy.request',
+                mock_cp_req
+        ):
+            with mock.patch(
+                    'backend.web_server_api.ServerAPI.get_scenes_scenehash_datasethash_timesteps',
+                    return_value=expected_dict
+            ) as mock_get_timestep_one:
+
+                res = self.api.scenes(scene_hash, dataset_hash, 'timesteps')
+
+                self.assertIsInstance(res, str)
+                self.assertEqual(res, expected_str)
+
+                mock_get_timestep_one.assert_called_with(
+                    scene_hash, dataset_hash)
+
+            # scene or dataset does not exist
+            with mock.patch(
+                    'backend.web_server_api.ServerAPI.get_scenes_scenehash_datasethash_timesteps',
+                    return_value=None
+            ) as mock_get_timestep_two:
+
+                res = self.api.scenes(scene_hash, dataset_hash, 'timesteps')
+
+                self.assertIsInstance(res, str)
+                self.assertEqual(res, 'null')
+
+                mock_get_timestep_two.assert_called_with(
+                    scene_hash, dataset_hash)
+
+    def test_patch_scenes_scenehash_datasethash_timesteps(self):
+        """Patch the timestep of a dataset
+
+        """
+        scene_hash = '21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a'
+        dataset_hash = '47e9f7fc6d1522c552fffaf1803a0e1822620024'
+        request_dict = {
+            "datasetTimestepSelected": "000.02"
+        }
+        expected_dict = {
+            "datasetMeta": {
+                "datasetName": "numsim.napf.tiefziehversuch",
+                "datasetHash": "47e9f7fc6d1522c552fffaf1803a0e1822620024",
+                "datasetAlias": "alias for numsim.napf.tiefziehversuch",
+                "datasetHref": "/scenes/21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a/47e9f7fc6d1522c552fffaf1803a0e182262002"
+            },
+            "datasetTimestepList": [
+                "000.00",
+                "000.01",
+                "000.02"
+            ],
+            "datasetTimestepSelected": "000.02"
+        }
+
+        # Test self.patch_scenes_scenehash_datasethash_timesteps
+        ##################################################
+
+        with mock.patch(
+                'backend.global_settings.SceneManager.dataset_timesteps',
+                return_value=expected_dict
+        ) as mock_patch_timestep:
+
+            new_or = request_dict['datasetTimestepSelected']
+            res = self.api.patch_scenes_scenehash_datasethash_timesteps(scene_hash, dataset_hash, new_timestep=new_or)
+
+            mock_patch_timestep.assert_called()
+
+            self.assertIsInstance(res, dict)
+            self.assertEqual(res, expected_dict)
+
+        # Test self.scenes, calling self.patch_scenes_scenehash_datasethash_timesteps
+        ##################################################
+
+        # Expected JSON input
+        ##################################################
+        mock_cp_req = mock.MagicMock(
+            cherrypy.request,
+            method='PATCH',
+            json=request_dict
+        )
+
+        expected_str = json.dumps(expected_dict)
+
+        with mock.patch(
+                'cherrypy.request',
+                mock_cp_req
+        ):
+            with mock.patch(
+                    'backend.web_server_api.ServerAPI.patch_scenes_scenehash_datasethash_timesteps',
+                    return_value=expected_dict
+            ) as mock_patch_timestep_one:
+
+                res = self.api.scenes(scene_hash, dataset_hash, 'timesteps')
+
+                self.assertIsInstance(res, str)
+                self.assertEqual(res, expected_str)
+
+                new_or = request_dict['datasetTimestepSelected']
+                mock_patch_timestep_one.assert_called_with(
+                    scene_hash, dataset_hash, new_timestep=new_or)
+
+            # scene or dataset does not exist
+            with mock.patch(
+                    'backend.web_server_api.ServerAPI.patch_scenes_scenehash_datasethash_timesteps',
+                    return_value=None
+            ) as mock_patch_timestep_two:
+
+                res = self.api.scenes(scene_hash, dataset_hash, 'timesteps')
+
+                self.assertIsInstance(res, str)
+                self.assertEqual(res, 'null')
+
+                new_or = request_dict['datasetTimestepSelected']
+                mock_patch_timestep_two.assert_called_with(
+                    scene_hash, dataset_hash, new_timestep=new_or)
+
+        # Wrong request dict
+        ##################################################
+
+        wrong_request_dict = {
+            "wrong_key": [
+                "numsim.napf.tiefziehversuch"
+            ]
+        }
+        mock_cp_req = mock.MagicMock(
+            cherrypy.request,
+            method='PATCH',
+            json=wrong_request_dict
+        )
+
+        with mock.patch(
+                'cherrypy.request',
+                mock_cp_req
+        ):
+
+            res = self.api.scenes(scene_hash, dataset_hash, 'timesteps')
+
+            self.assertIsInstance(res, str)
+            self.assertEqual(res, 'null')
+
+
+        # Malformed JSON input
+        ##################################################
+
+        mock_cp_req = mock.MagicMock(
+            cherrypy.request,
+            method='PATCH',
+            json=json.dumps(request_dict)  # is str
+        )
+
+        expected_str = json.dumps(request_dict)
+
+        with mock.patch(
+                'cherrypy.request',
+                mock_cp_req
+        ):
+            res = self.api.scenes(scene_hash, dataset_hash, 'timesteps')
+
+            self.assertIsInstance(res, str)
+            self.assertEqual(res, 'null')
+
+
+    def test_get_scenes_scenehash_datasethash_fields(self):
+        """Get the field of a dataset
+
+        """
+        scene_hash = '21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a'
+        dataset_hash = '47e9f7fc6d1522c552fffaf1803a0e1822620024'
+        expected_dict = {
+            "datasetMeta": {
+                "datasetName": "numsim.napf.tiefziehversuch",
+                "datasetHash": "47e9f7fc6d1522c552fffaf1803a0e1822620024",
+                "datasetAlias": "alias for numsim.napf.tiefziehversuch",
+                "datasetHref": "/scenes/21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a/47e9f7fc6d1522c552fffaf1803a0e182262002"
+            },
+            "datasetFieldList": {
+                "elemental": [
+                    "elemental_field_1",
+                    "elemental_field_2"
+                ],
+                "nodal": [
+                    "nodal_field_1",
+                    "nodal_field_2"
+                ]
+            },
+            "datasetFieldSelected": "nodal_field_2"
+        }
+        # Test self.get_scenes_scenehash_datasethash_fields
+        ##################################################
+
+        with mock.patch(
+                'backend.global_settings.SceneManager.dataset_fields',
+                return_value=expected_dict
+        ) as mock_get_field:
+
+            res = self.api.get_scenes_scenehash_datasethash_fields(scene_hash, dataset_hash)
+
+            mock_get_field.assert_called()
+
+            self.assertIsInstance(res, dict)
+            self.assertEqual(res, expected_dict)
+
+        # Test self.scenes, calling self.get_scenes_scenehash_datasethash_fields
+        ##################################################
+
+        mock_cp_req = mock.MagicMock(
+            cherrypy.request,
+            method='GET'
+        )
+
+        expected_str = json.dumps(expected_dict)
+
+        with mock.patch(
+                'cherrypy.request',
+                mock_cp_req
+        ):
+            with mock.patch(
+                    'backend.web_server_api.ServerAPI.get_scenes_scenehash_datasethash_fields',
+                    return_value=expected_dict
+            ) as mock_get_field_one:
+
+                res = self.api.scenes(scene_hash, dataset_hash, 'fields')
+
+                self.assertIsInstance(res, str)
+                self.assertEqual(res, expected_str)
+
+                mock_get_field_one.assert_called_with(
+                    scene_hash, dataset_hash)
+
+            # scene or dataset does not exist
+            with mock.patch(
+                    'backend.web_server_api.ServerAPI.get_scenes_scenehash_datasethash_fields',
+                    return_value=None
+            ) as mock_get_field_two:
+
+                res = self.api.scenes(scene_hash, dataset_hash, 'fields')
+
+                self.assertIsInstance(res, str)
+                self.assertEqual(res, 'null')
+
+                mock_get_field_two.assert_called_with(
+                    scene_hash, dataset_hash)
+
+    def test_patch_scenes_scenehash_datasethash_fields(self):
+        """Patch the field of a dataset
+
+        """
+        scene_hash = '21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a'
+        dataset_hash = '47e9f7fc6d1522c552fffaf1803a0e1822620024'
+        request_dict = {
+            "datasetFieldSelected": "nodal_field_2"
+        }
+        expected_dict = {
+            "datasetMeta": {
+                "datasetName": "numsim.napf.tiefziehversuch",
+                "datasetHash": "47e9f7fc6d1522c552fffaf1803a0e1822620024",
+                "datasetAlias": "alias for numsim.napf.tiefziehversuch",
+                "datasetHref": "/scenes/21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a/47e9f7fc6d1522c552fffaf1803a0e182262002"
+            },
+            "datasetFieldList": {
+                "elemental": [
+                    "elemental_field_1",
+                    "elemental_field_2"
+                ],
+                "nodal": [
+                    "nodal_field_1",
+                    "nodal_field_2"
+                ]
+            },
+            "datasetFieldSelected": "nodal_field_2"
+        }
+        # Test self.patch_scenes_scenehash_datasethash_fields
+        ##################################################
+
+        with mock.patch(
+                'backend.global_settings.SceneManager.dataset_fields',
+                return_value=expected_dict
+        ) as mock_patch_field:
+
+            new_or = request_dict['datasetFieldSelected']
+            res = self.api.patch_scenes_scenehash_datasethash_fields(scene_hash, dataset_hash, new_field=new_or)
+
+            mock_patch_field.assert_called()
+
+            self.assertIsInstance(res, dict)
+            self.assertEqual(res, expected_dict)
+
+        # Test self.scenes, calling self.patch_scenes_scenehash_datasethash_fields
+        ##################################################
+
+        # Expected JSON input
+        ##################################################
+        mock_cp_req = mock.MagicMock(
+            cherrypy.request,
+            method='PATCH',
+            json=request_dict
+        )
+
+        expected_str = json.dumps(expected_dict)
+
+        with mock.patch(
+                'cherrypy.request',
+                mock_cp_req
+        ):
+            with mock.patch(
+                    'backend.web_server_api.ServerAPI.patch_scenes_scenehash_datasethash_fields',
+                    return_value=expected_dict
+            ) as mock_patch_field_one:
+
+                res = self.api.scenes(scene_hash, dataset_hash, 'fields')
+
+                self.assertIsInstance(res, str)
+                self.assertEqual(res, expected_str)
+
+                new_or = request_dict['datasetFieldSelected']
+                mock_patch_field_one.assert_called_with(
+                    scene_hash, dataset_hash, new_field=new_or)
+
+            # scene or dataset does not exist
+            with mock.patch(
+                    'backend.web_server_api.ServerAPI.patch_scenes_scenehash_datasethash_fields',
+                    return_value=None
+            ) as mock_patch_field_two:
+
+                res = self.api.scenes(scene_hash, dataset_hash, 'fields')
+
+                self.assertIsInstance(res, str)
+                self.assertEqual(res, 'null')
+
+                new_or = request_dict['datasetFieldSelected']
+                mock_patch_field_two.assert_called_with(
+                    scene_hash, dataset_hash, new_field=new_or)
+
+        # Wrong request dict
+        ##################################################
+
+        wrong_request_dict = {
+            "wrong_key": [
+                "numsim.napf.tiefziehversuch"
+            ]
+        }
+        mock_cp_req = mock.MagicMock(
+            cherrypy.request,
+            method='PATCH',
+            json=wrong_request_dict
+        )
+
+        with mock.patch(
+                'cherrypy.request',
+                mock_cp_req
+        ):
+
+            res = self.api.scenes(scene_hash, dataset_hash, 'fields')
+
+            self.assertIsInstance(res, str)
+            self.assertEqual(res, 'null')
+
+
+        # Malformed JSON input
+        ##################################################
+
+        mock_cp_req = mock.MagicMock(
+            cherrypy.request,
+            method='PATCH',
+            json=json.dumps(request_dict)  # is str
+        )
+
+        expected_str = json.dumps(request_dict)
+
+        with mock.patch(
+                'cherrypy.request',
+                mock_cp_req
+        ):
+            res = self.api.scenes(scene_hash, dataset_hash, 'fields')
+
+            self.assertIsInstance(res, str)
+            self.assertEqual(res, 'null')
+
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

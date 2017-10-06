@@ -205,13 +205,81 @@ class ServerAPI:
                 dataset_hash is not None and
                 dataset_operation is not None
         ):
+
             # GET
             if http_method == 'GET':
-                pass
+
+                if dataset_operation == 'orientation':
+                    output = self.get_scenes_scenehash_datasethash_orientation(
+                        scene_hash, dataset_hash)
+
+                ##################################################
+
+                if dataset_operation == 'timesteps':
+                    output = self.get_scenes_scenehash_datasethash_timesteps(
+                        scene_hash, dataset_hash)
+
+                ##################################################
+
+                if dataset_operation == 'fields':
+                    output = self.get_scenes_scenehash_datasethash_fields(
+                        scene_hash, dataset_hash)
 
             # PATCH
             if http_method == 'PATCH':
-                pass
+
+                if dataset_operation == 'orientation':
+
+                    # Parse datasetsToAdd from JSON
+                    try:
+                        json_input = cherrypy.request.json
+                        orientation = json_input['datasetOrientation']
+                        output = (
+                            self.
+                            patch_scenes_scenehash_datasethash_orientation(
+                                scene_hash, dataset_hash,
+                                new_orientation=orientation)
+                        )
+
+                    except (KeyError, TypeError) as e:
+                        print('{}'.format(e))
+                        output = None
+
+                ##################################################
+
+                if dataset_operation == 'timesteps':
+
+                    # Parse datasetsToAdd from JSON
+                    try:
+                        json_input = cherrypy.request.json
+                        timestep = json_input['datasetTimestepSelected']
+                        output = (
+                            self.patch_scenes_scenehash_datasethash_timesteps(
+                                scene_hash, dataset_hash,
+                                new_timestep=timestep)
+                        )
+
+                    except (KeyError, TypeError) as e:
+                        print('{}'.format(e))
+                        output = None
+
+                ##################################################
+
+                if dataset_operation == 'fields':
+
+                                        # Parse datasetsToAdd from JSON
+                    try:
+                        json_input = cherrypy.request.json
+                        field = json_input['datasetFieldSelected']
+                        output = (
+                            self.patch_scenes_scenehash_datasethash_fields(
+                                scene_hash, dataset_hash,
+                                new_field=field)
+                        )
+
+                    except (KeyError, TypeError) as e:
+                        print('{}'.format(e))
+                        output = None
 
         ##################################################
 
@@ -306,6 +374,66 @@ class ServerAPI:
         deleted_dataset = gloset.scene_manager.delete_loaded_dataset(
             scene_hash, dataset_hash)
         return deleted_dataset
+
+    def get_scenes_scenehash_datasethash_orientation(
+            self, scene_hash, dataset_hash):
+        """
+        Get the orientation of a dataset.
+
+        """
+        dataset_orientation = gloset.scene_manager.dataset_orientation(
+            scene_hash, dataset_hash)
+        return dataset_orientation
+
+    def patch_scenes_scenehash_datasethash_orientation(
+            self, scene_hash, dataset_hash, new_orientation):
+        """
+        Set the orientation of a dataset.
+
+        """
+        dataset_orientation = gloset.scene_manager.dataset_orientation(
+            scene_hash, dataset_hash, set_orientation=new_orientation)
+        return dataset_orientation
+
+    def get_scenes_scenehash_datasethash_timesteps(
+            self, scene_hash, dataset_hash):
+        """
+        Get the timesteps of a dataset.
+
+        """
+        dataset_timesteps = gloset.scene_manager.dataset_timesteps(
+            scene_hash, dataset_hash)
+        return dataset_timesteps
+
+    def patch_scenes_scenehash_datasethash_timesteps(
+            self, scene_hash, dataset_hash, new_timestep):
+        """
+        Set the timestep of a dataset.
+
+        """
+        dataset_timesteps = gloset.scene_manager.dataset_timesteps(
+            scene_hash, dataset_hash, set_timestep=new_timestep)
+        return dataset_timesteps
+
+    def get_scenes_scenehash_datasethash_fields(
+            self, scene_hash, dataset_hash):
+        """
+        Get the fields of a dataset.
+
+        """
+        dataset_fields = gloset.scene_manager.dataset_fields(
+            scene_hash, dataset_hash)
+        return dataset_fields
+
+    def patch_scenes_scenehash_datasethash_fields(
+            self, scene_hash, dataset_hash, new_field):
+        """
+        Set the field of a dataset.
+
+        """
+        dataset_fields = gloset.scene_manager.dataset_fields(
+            scene_hash, dataset_hash, set_field=new_field)
+        return dataset_fields
 
     # @cherrypy.expose
     # def scenes_infos(self):
@@ -487,13 +615,13 @@ class ServerAPI:
 
     #     json_input = cherrypy.request.json
     #     object_name = json_input['object_name']
-    #     current_timestep = json_input['current_timestep']
+    #     selected_timestep = json_input['selected_timestep']
 
     #     object_timesteps = self.get_sorted_timesteps(object_name)
     #     sorted_timesteps = []
     #     for it in object_timesteps:
     #         sorted_timesteps.append(it[1])
-    #     object_index = sorted_timesteps.index(current_timestep)
+    #     object_index = sorted_timesteps.index(selected_timestep)
     #     if object_index == 0:
     #         return json.dumps({'previous_timestep': sorted_timesteps[0]})
     #     else:
@@ -510,7 +638,7 @@ class ServerAPI:
 
     #     json_input = cherrypy.request.json
     #     object_name = json_input['object_name']
-    #     current_timestep = json_input['current_timestep']
+    #     selected_timestep = json_input['selected_timestep']
 
     #     object_timesteps = self.get_sorted_timesteps(object_name)
     #     sorted_timesteps = []
@@ -518,7 +646,7 @@ class ServerAPI:
     #         sorted_timesteps.append(it[1])
 
     #     number_of_timesteps = len(sorted_timesteps)
-    #     object_index = sorted_timesteps.index(current_timestep)
+    #     object_index = sorted_timesteps.index(selected_timestep)
     #     if object_index == number_of_timesteps - 1:
     #         return json.dumps({'next_timestep': sorted_timesteps[number_of_timesteps - 1]})
     #     else:
