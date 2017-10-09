@@ -9,6 +9,7 @@ all the data points, its orientation in R3 and so on.
 import os
 
 from backend.util.timestamp_to_sha1 import timestamp_to_sha1
+import backend.data_backend as data_backend
 
 
 class _DatasetPrototype:
@@ -79,6 +80,18 @@ class _DatasetPrototype:
         # Find the lowest timestep and set it
         lowest_timestep = self.timestep_list()[0]
         self.timestep(set_timestep=lowest_timestep)
+
+        # demo for andreas
+        # tests dont cover this, this breaks a lot of stuff
+        #
+        # convert to string paths
+        nodes = str(self.dataset_path / 'fo' / lowest_timestep / 'nodes.bin')
+        elements = str(self.dataset_path / 'fo' / lowest_timestep / 'elements.dc3d8.bin')
+        print(nodes, elements)
+        # init mesher
+        mesher = data_backend.UnpackMesh(node_path=nodes, element_path=elements)
+        self._tetraeder_data_list = mesher.return_unique_surface_nodes()
+        self._index_data_list = mesher.return_surface_indices()
 
     def meta(self):
         """
