@@ -76,6 +76,10 @@ class _DatasetPrototype:
         self._tetraeder_data_list = []
         self._wireframe_data_list = []
 
+        # Find the lowest timestep and set it
+        lowest_timestep = self.timestep_list()[0]
+        self.timestep(set_timestep=lowest_timestep)
+
     def meta(self):
         """
         Returns the meta information dictionary.

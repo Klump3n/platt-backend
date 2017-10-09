@@ -129,8 +129,8 @@ class Test_scenes_dataset_prototype(unittest.TestCase):
         """GET or PATCH the current timestep
 
         """
-        # on init there is no timestep set
-        expected_init_t = ''
+        # on init it is set to the lowest timestep
+        expected_init_t = self.test_dataset_object.timestep_list()[0]
         res = self.test_dataset_object.timestep()
         self.assertEqual(expected_init_t, res)
 

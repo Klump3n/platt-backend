@@ -272,56 +272,6 @@ class UnpackMesh:
 
         self.unique_surface_triangles = np.unique(self.surface_triangles)
 
-    # def generate_triangle_files(self):
-    #     """Generates a list of unique nodes and a index list to generate
-    #     triangles from the node list.
-    #     """
-
-    #     if (self.surface_triangles is None):
-    #         self.generate_triangles_from_quads()
-
-    #     unique_nodes = np.unique(self.elements).shape[0]
-    #     self.node_map = [None]*unique_nodes
-    #     for index, value in enumerate(np.unique(self.surface_triangles)):
-    #         self.node_map[value] = index
-
-    #     unique_triangles = np.unique(self.surface_triangles)
-
-    #     print('Writing triangles and indices.')
-
-    #     triangle_file = open('welding_sim.triangles', 'w')
-    #     indexlist_file = open('welding_sim.indices', 'w')
-
-    #     # Split up because the last one can not have a newline or comma.
-    #     for triangle in unique_triangles[:-1]:
-    #         triangle_file.write('{x},{y},{z},'.format(
-    #             x=str(self.nodes[triangle][0]),
-    #             y=str(self.nodes[triangle][1]),
-    #             z=str(self.nodes[triangle][2])
-    #         ))
-    #     for triangle in unique_triangles[-1:]:
-    #         triangle_file.write('{x},{y},{z}'.format(
-    #             x=str(self.nodes[triangle][0]),
-    #             y=str(self.nodes[triangle][1]),
-    #             z=str(self.nodes[triangle][2])
-    #         ))
-
-    #     # Generate an index list for OpenGL
-    #     for triangle in self.surface_triangles[:-1]:
-    #         for corner in triangle:
-    #             indexlist_file.write('{corner_t},'.format(
-    #                 corner_t=self.node_map[corner]))
-    #     for triangle in self.surface_triangles[-1:]:
-    #         for corner in triangle[:-1]:
-    #             indexlist_file.write('{corner_t},'.format(
-    #                 corner_t=self.node_map[corner]))
-    #         for corner in triangle[-1:]:
-    #             indexlist_file.write('{corner_t}'.format(
-    #                 corner_t=self.node_map[corner]))
-
-    #     triangle_file.close()
-    #     indexlist_file.close()
-
     def generate_temperature_file(self, timestep):
 
         def get_rgb(temp):
@@ -390,8 +340,8 @@ if __name__ == '__main__':
 
     # Some test case
     testdata = UnpackMesh(
-        node_path='example_data/case.nodes.bin',
-        element_path='example_data/case.dc3d8.bin'
+        node_path='../example_data/object_a/fo/00.1/nodes.bin',
+        element_path='../example_data/object_a/fo/00.1/elements.dc3d8.bin'
     )
 
     # Add a timestep
@@ -399,5 +349,7 @@ if __name__ == '__main__':
     # testdata.generate_triangle_files()
     # testdata.generate_temperature_file(timestep=0)
     # testdata.return_metadata()
-    testdata.return_surface()
+    # testdata.return_surface()
+    testdata.return_unique_surface_nodes()
     testdata.return_surface_indices()
+    testdata.add_timestep('../example_data/object_a/fo/00.1/no/nt11.bin')
