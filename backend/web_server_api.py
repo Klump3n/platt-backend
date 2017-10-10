@@ -82,7 +82,8 @@ class ServerAPI:
 
         """
         version_dict = util.version.version(detail='long')
-        return json.dumps(version_dict)
+        # return json.dumps(version_dict)
+        return version_dict
 
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['GET'])
@@ -107,7 +108,8 @@ class ServerAPI:
         """
         available_datasets_dict = (
             gloset.scene_manager.list_available_datasets())
-        return json.dumps(available_datasets_dict)
+        # return json.dumps(available_datasets_dict)
+        return available_datasets_dict
 
     @cherrypy.expose
     @cherrypy.tools.allow(methods=['GET', 'POST', 'DELETE', 'PATCH'])
@@ -225,6 +227,12 @@ class ServerAPI:
                     output = self.get_scenes_scenehash_datasethash_fields(
                         scene_hash, dataset_hash)
 
+                ##################################################
+
+                if dataset_operation == 'mesh':
+                    output = self.get_scenes_scenehash_datasethash_mesh(
+                        scene_hash, dataset_hash)
+
             # PATCH
             if http_method == 'PATCH':
 
@@ -285,7 +293,8 @@ class ServerAPI:
 
         # Return valid JSON
         # json.dumps(None) = null
-        return json.dumps(output)
+        # return json.dumps(output)
+        return output
 
     def get_scenes(self):
         """
@@ -434,6 +443,16 @@ class ServerAPI:
         dataset_fields = gloset.scene_manager.dataset_fields(
             scene_hash, dataset_hash, set_field=new_field)
         return dataset_fields
+
+    def get_scenes_scenehash_datasethash_mesh(
+            self, scene_hash, dataset_hash):
+        """
+        Get the mesh data of a dataset.
+
+        """
+        dataset_mesh = gloset.scene_manager.dataset_mesh(
+            scene_hash, dataset_hash)
+        return dataset_mesh
 
     # @cherrypy.expose
     # def scenes_infos(self):

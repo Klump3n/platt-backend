@@ -25,8 +25,8 @@ var fragmentDataHasChanged = false;
 var bufferDataArray;
 var model_metadata;
 
-var fragmentShaderTMin = 100.0;
-var fragmentShaderTMax = 1000.0;
+var fragmentShaderTMin = 0.0;
+var fragmentShaderTMax = 800.0;
 
 var bufferIndexArray;
 
@@ -138,6 +138,44 @@ function glRoutine(gl, vs, fs) {
 
     }
     drawScene();
+}
+
+function HACKupdateFragmentShaderData(dataset_hash) {
+    var current_scene = document.getElementById("webGlCanvas").getAttribute("data-scene-hash");
+    var scene_hash = current_scene;
+    var protocol = document.location.protocol;
+    var host = document.location.host;
+    var path = protocol + "//" + host + "/api/scenes/" + current_scene + "/" + dataset_hash + "/mesh";
+
+    var mesh_data = getDataSourcePromise(path);
+
+    mesh_data.then(function(value) {
+        var parsed_json = JSON.parse(value);
+
+        var node_file = parsed_json['datasetSurfaceNodes'];
+        var index_file = parsed_json['datasetSurfaceNodesIndices'];
+        var timestep_data = parsed_json['datasetSurfaceColours'];
+        var meta_file = parsed_json['datasetCenterCoord'];
+
+        var rescaledTimestepData = rescaleFieldValues(
+            timestep_data,
+            fragmentShaderTMin,
+            fragmentShaderTMax
+        );
+
+        timestep_data = expandDataWithIndices(
+            index_file,
+            rescaledTimestepData,
+            chunksize=1
+        );
+
+        // averageFieldValsOverElement(timestep_data);
+
+        bufferDataArray['a_temp']['data'] = new Float32Array(timestep_data);
+
+        fragmentDataHasChanged = true;
+
+    });
 }
 
 /**
@@ -345,17 +383,47 @@ function main() {
 
     var timestep_data;
 
-    // Load the dummy data.
-    var dodec_promise = getDataSourcePromise("data/dodecahedron.json");
-    dodec_promise.then(function(value) {
-        var parsed_json = JSON.parse(value);
-        node_file = parsed_json['vertices'];
-        index_file = parsed_json['indices'];
-        timestep_data = parsed_json['colours'];
-        meta_file = [0.0, 0.0, 0.0];
 
-        loadShaders();
+    // testing js json parse...
+	  var current_scene = document.getElementById("webGlCanvas").getAttribute("data-scene-hash");
+    var protocol = document.location.protocol;
+    var host = document.location.host;
+    var path = protocol + "//" + host + "/api/scenes/" + current_scene;
+    var active_scenes = getDataSourcePromise(path);
+    active_scenes.then(function(value) {
+        var parsed_json = JSON.parse(value);
+        var datasets = parsed_json["loadedDatasets"];
+        var dataset_hash = datasets[0]["datasetHash"];
+        var dataset_mesh_path = path + "/" + dataset_hash + "/mesh";
+
+        var mesh_data = getDataSourcePromise(dataset_mesh_path);
+        mesh_data.then(function(value) {
+            var parsed_json = JSON.parse(value);
+
+            node_file = parsed_json['datasetSurfaceNodes'];
+            index_file = parsed_json['datasetSurfaceNodesIndices'];
+            timestep_data = parsed_json['datasetSurfaceColours'];
+            meta_file = parsed_json['datasetCenterCoord'];
+            // meta_file = [0.0, 0.0, 0.0];
+
+            loadShaders();
+        });
     });
+
+    // // Load the dummy data.
+    // var dodec_promise = getDataSourcePromise("data/dodecahedron.json");
+    // dodec_promise.then(function(value) {
+    //     var parsed_json = JSON.parse(value);
+    //     node_file = parsed_json['vertices'];
+    //     index_file = parsed_json['indices'];
+    //     timestep_data = parsed_json['colours'];
+    //     console.log(node_file);
+    //     console.log(index_file);
+    //     console.log(timestep_data);
+    //     meta_file = [0.0, 0.0, 0.0];
+
+    //     loadShaders();
+    // });
 
     // Declare this outside of the loadShaders() function so we can use it
     // later.

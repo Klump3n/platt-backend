@@ -249,6 +249,25 @@ class UnpackMesh:
 
         return index_list
 
+    def HACK_return_data_for_unique_nodes(self, path):
+        """
+        Hacked this thing real quick.
+
+        """
+        if (self.unique_surface_triangles is None):
+            self.generate_unique_surface_triangles()
+
+        timestep_data = self.add_timestep(path)
+
+        timestep_data = timestep_data.flatten().tolist()
+
+        unique_surface_data = []
+        for triangle in self.unique_surface_triangles:
+            unique_surface_data.append(timestep_data[triangle])
+
+        print(min(unique_surface_data), max(unique_surface_data))
+        return unique_surface_data
+
     def return_data_for_unique_nodes(self, object_name, field, timestep):
         """Returns the (i.e.) temperature data for unique nodes.
         """
@@ -350,6 +369,11 @@ if __name__ == '__main__':
     # testdata.generate_temperature_file(timestep=0)
     # testdata.return_metadata()
     # testdata.return_surface()
-    testdata.return_unique_surface_nodes()
-    testdata.return_surface_indices()
-    testdata.add_timestep('../example_data/object_a/fo/00.1/no/nt11.bin')
+    a = testdata.return_unique_surface_nodes()
+    b = testdata.return_surface_indices()
+    c = testdata.add_timestep('../example_data/object_a/fo/00.1/no/nt11.bin')
+    d = testdata.HACK_return_data_for_unique_nodes('../example_data/object_a/fo/00.1/no/nt11.bin')
+    print(len(a))
+    print(len(b))
+    print(len(c))
+    print(len(d))

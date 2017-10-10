@@ -91,7 +91,7 @@ BODY_COLORBAR = """
 
 # Scripts to load for menu and colorbar
 SCRIPT_MENU = """
-  <script src="menu.js" onload="main()"></script>
+  <script src="menu_2.js" onload="main()"></script>
 """
 SCRIPT_COLORBAR = """
   <script src="colorbar.js"></script>

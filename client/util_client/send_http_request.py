@@ -94,7 +94,8 @@ def send_http_request(
 
     # Try to parse the response, assuming it is JSON
     try:
-        parsed_response = json.loads(response.json())
+        # parsed_response = json.loads(response.json())
+        parsed_response = response.json()
         return parsed_response
     except TypeError as e:
         print('{}'.format(e))

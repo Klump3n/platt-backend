@@ -548,8 +548,30 @@ class SceneManager:
         target_dataset = self._target_dataset(scene_hash, dataset_hash)
 
         dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
-
         timestep_list = target_dataset.timestep_list()
+
+        # Look if we want to select the previous or the next timestep
+        if (
+                set_timestep == '_prev_timestep' or
+                set_timestep == '_next_timestep'
+        ):
+            current_timestep = target_dataset.timestep()
+            current_timestep_index = timestep_list.index(current_timestep)
+
+            if set_timestep == '_prev_timestep':
+                new_timestep_index = current_timestep_index - 1
+                if new_timestep_index < 0:
+                    set_timestep = None
+                else:
+                    set_timestep = timestep_list[new_timestep_index]
+
+            if set_timestep == '_next_timestep':
+                new_timestep_index = current_timestep_index + 1
+                if new_timestep_index > len(timestep_list):
+                    set_timestep = None
+                else:
+                    set_timestep = timestep_list[new_timestep_index]
+
         selected_timestep = target_dataset.timestep(
             set_timestep)
 
@@ -607,6 +629,50 @@ class SceneManager:
             'datasetMeta': dataset_meta,
             'datasetFieldList': field_dict,
             'datasetFieldSelected': selected_field
+        }
+
+        return return_dict
+
+    def dataset_mesh(self, scene_hash, dataset_hash):
+        """
+        GET the currently displayable mesh of a dataset.
+
+        Args:
+         scene_hash (str): The hash of the scene.
+         dataset_hash (str): The hash of the dataset.
+
+        Returns:
+         dict: The dataset mesh with surface_nodes, wireframe_indices,
+         surface_indices and orientation.
+
+        Raises:
+         TypeError: If ``type(scene_hash)`` is not `str`.
+         TypeError: If ``type(dataset_hash)`` is not `str`.
+
+        """
+        if not isinstance(scene_hash, str):
+            raise TypeError('scene_hash is {}, expected str'.format(
+                    type(scene_hash).__name__))
+
+        if not isinstance(dataset_hash, str):
+            raise TypeError('dataset_hash is {}, expected str'.format(
+                    type(dataset_hash).__name__))
+
+        target_dataset = self._target_dataset(scene_hash, dataset_hash)
+
+        dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
+
+        surface_nodes = target_dataset.surface_nodes()
+        surface_nodes_indices = target_dataset.surface_nodes_indices()
+        surface_colours = target_dataset.surface_colours()
+        dataset_center = target_dataset.dataset_center().tolist()
+
+        return_dict = {
+            'datasetMeta': dataset_meta,
+            'datasetSurfaceNodes': surface_nodes,
+            'datasetSurfaceNodesIndices': surface_nodes_indices,
+            'datasetSurfaceColours': surface_colours,
+            'datasetCenterCoord': dataset_center
         }
 
         return return_dict

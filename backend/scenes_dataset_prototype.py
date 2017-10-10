@@ -76,22 +76,28 @@ class _DatasetPrototype:
         self._index_data_list = []
         self._tetraeder_data_list = []
         self._wireframe_data_list = []
+        self._timestep_data_list = []
 
         # Find the lowest timestep and set it
         lowest_timestep = self.timestep_list()[0]
+        print(lowest_timestep)
         self.timestep(set_timestep=lowest_timestep)
 
         # demo for andreas
-        # tests dont cover this, this breaks a lot of stuff
+        # tests don't cover this, this breaks a lot of stuff
         #
         # convert to string paths
         nodes = str(self.dataset_path / 'fo' / lowest_timestep / 'nodes.bin')
         elements = str(self.dataset_path / 'fo' / lowest_timestep / 'elements.dc3d8.bin')
-        print(nodes, elements)
-        # init mesher
-        mesher = data_backend.UnpackMesh(node_path=nodes, element_path=elements)
-        self._tetraeder_data_list = mesher.return_unique_surface_nodes()
-        self._index_data_list = mesher.return_surface_indices()
+        lowest_timestep_data = str(self.dataset_path / 'fo' / lowest_timestep / 'no' / 'nt11.bin')
+        #
+        # init mesher and load data
+        self.mesher = data_backend.UnpackMesh(node_path=nodes, element_path=elements)
+        self._tetraeder_data_list = self.mesher.return_unique_surface_nodes()
+        self._index_data_list = self.mesher.return_surface_indices()
+        # self._timestep_data_list = mesher.add_timestep(lowest_timestep_data).flatten().tolist()
+        self._timestep_data_list = self.mesher.HACK_return_data_for_unique_nodes(lowest_timestep_data)
+        self._dataset_center = self.mesher.return_metadata()
 
     def meta(self):
         """
@@ -268,41 +274,37 @@ class _DatasetPrototype:
 
         return self._selected_field
 
-    # def orientation(self, view_matrix=None):
-    #     """
-    #     Get (if view_matrix is None) or set (if view_matrix is not None)
-    #     the orientation of a dataset in the scene.
+    def surface_nodes(self):
+        """
+        Get a list of the unique nodes at the surface of the dataset.
 
-    #     Args:
-    #      view_matrix (np.ndarray or None, optional, defaults to None): A 4x4
-    #       numpy matrix for setting the orientation of the dataset. The top-left
-    #       3x3 matrix should be unitary, so rotation is represented. The rest
-    #       can contain scaling values.
+        """
+        return self._tetraeder_data_list
 
-    #     Raises:
-    #      TypeError: If ``type(view_matrix)`` is not None or np.ndarray.
-    #      ValueError: If the shape of ``view_matrix`` is not 4x4.
+    def surface_nodes_indices(self):
+        """
+        Get a list of indices for the unique surface nodes so we can construct
+        triangles.
 
-    #     """
-    #     if view_matrix is not None:
-    #         # Check for numpy array and 4x4 shape for the view_matrix.
-    #         is_np_array = (isinstance(view_matrix, np.ndarray))
-    #         if not is_np_array:
-    #             raise TypeError('view_matrix is wrong type')
+        """
+        return self._index_data_list
 
-    #         is_4x4 = (view_matrix.shape == self._selected_orientation.shape)
-    #         if not is_4x4:
-    #             raise ValueError('view_matrix is not 4x4')
+    def surface_colours(self):
+        """
+        Get the colours for the surface nodes..
 
-    #         try:
-    #             self._selected_orientation = view_matrix
-    #         except:
-    #             raise BaseException('something happened while trying to set ' +
-    #                             'the view_matrix')
+        """
+        timestep_string = str(self.dataset_path / 'fo' / self._selected_timestep / 'no' / 'nt11.bin')
+        return self.mesher.HACK_return_data_for_unique_nodes(timestep_string)
 
-    #     return self._selected_orientation
+    def dataset_center(self):
+        """
+        Return the center coordinates for the dataset.
 
-    def index_data(self, data=None):
+        """
+        return self._dataset_center
+
+    def index_data(self):
         """
         Get or set the index data.
 
@@ -312,12 +314,12 @@ class _DatasetPrototype:
          method for extracting index data.
 
         """
-        if data is not None:
-            self._index_data_list = data
+        # if data is not None:
+        #     self._index_data_list = data
 
         return self._index_data_list
 
-    def tetraeder_data(self, data=None):
+    def tetraeder_data(self):
         """
         Get or set the tetraeder data.
 
@@ -327,12 +329,12 @@ class _DatasetPrototype:
          method for extracting tetraeder data.
 
         """
-        if data is not None:
-            self._tetraeder_data_list = data
+        # if data is not None:
+        #     self._tetraeder_data_list = data
 
         return self._tetraeder_data_list
 
-    def wireframe_data(self, data=None):
+    def wireframe_data(self):
         """
         Get or set the wireframe data.
 
@@ -342,8 +344,7 @@ class _DatasetPrototype:
          method for extracting wireframe data.
 
         """
-
-        if data is None:
-            self._wireframe_data_list = data
+        # if data is None:
+        #     self._wireframe_data_list = data
 
         return self._wireframe_data_list
