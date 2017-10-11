@@ -22,7 +22,12 @@ var gl;
 // Make the array for holding web gl data global.
 var vertexDataHasChanged = false;
 var fragmentDataHasChanged = false;
+
 var bufferDataArray;
+var edgeDataArray;
+
+var shaders;
+
 var model_metadata;
 
 var fragmentShaderTMin = 0.0;
@@ -70,7 +75,7 @@ function grabCanvas(canvasElementName) {
  * @param {string} fs The fragment shader.
  * @returns {undefined} Nothing
  */
-function glRoutine(gl, vs, fs) {
+function glRoutine(gl) {
 
     // Prepare the viewport.
     var modelMatrix = new ModelMatrix(gl);
@@ -94,10 +99,20 @@ function glRoutine(gl, vs, fs) {
     twgl.resizeCanvasToDisplaySize(gl.canvas);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-    // Create opengl programs.
-    var programInfo = twgl.createProgramInfo(gl, [vs, fs]);
+    // Unpack shaders
+    // var vertex_color_shader = shaders['vert_ColorShaderSource'];
+    var vs_color = shaders['vert_colors'];
+    var fs_color = shaders['frag_colors'];
 
-    var bufferInfo = twgl.createBufferInfoFromArrays(gl, bufferDataArray);
+    var vs_edge = shaders['vert_edges'];
+    var fs_edge = shaders['frag_edges'];
+
+    // Create opengl programs.
+    var programInfoColor = twgl.createProgramInfo(gl, [vs_color, fs_color]);
+    var programInfoEdge = twgl.createProgramInfo(gl, [vs_edge, fs_edge]);
+
+    var bufferInfoColor = twgl.createBufferInfoFromArrays(gl, bufferDataArray);
+    var bufferInfoEdge = twgl.createBufferInfoFromArrays(gl, edgeDataArray);
 
     var uniforms = {
         u_transform: twgl.m4.identity() // mat4
@@ -114,26 +129,41 @@ function glRoutine(gl, vs, fs) {
         // Check if our data has been updated at some point.
         if (vertexDataHasChanged) {
             // Update the buffer.
-            bufferInfo = twgl.createBufferInfoFromArrays(gl, bufferDataArray);
+            bufferInfoColor = twgl.createBufferInfoFromArrays(gl, bufferDataArray);
 
             // Center the new object.
             centerModel = model_metadata;
             modelMatrix.translateWorld(twgl.v3.negate(centerModel));
 
             vertexDataHasChanged = false;
-        } else if (fragmentDataHasChanged){
-            bufferInfo = twgl.createBufferInfoFromArrays(gl, bufferDataArray);
+        };
+
+        if (fragmentDataHasChanged){
+            bufferInfoColor = twgl.createBufferInfoFromArrays(gl, bufferDataArray);
             fragmentDataHasChanged = false;
         };
 
         // Update the model view
         uniforms.u_transform = modelMatrix.updateView();
 
-        gl.useProgram(programInfo.program);
-        twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
-        twgl.setUniforms(programInfo, uniforms);
-        twgl.drawBufferInfo(gl, bufferInfo);
+        // colors
 
+        gl.useProgram(programInfoColor.program);
+        twgl.setBuffersAndAttributes(gl, programInfoColor, bufferInfoColor);
+        twgl.setUniforms(programInfoColor, uniforms);
+
+        twgl.drawBufferInfo(gl, bufferInfoColor);
+
+        // edges
+
+        gl.useProgram(programInfoEdge.program);
+        twgl.setBuffersAndAttributes(gl, programInfoEdge, bufferInfoEdge);
+        twgl.setUniforms(programInfoEdge, uniforms);
+
+        twgl.drawBufferInfo(gl, bufferInfoEdge, type=gl.LINES);
+
+        // draw scene
+        
         window.requestAnimationFrame(drawScene);
 
     }
@@ -382,7 +412,7 @@ function main() {
     var meta_file;
 
     var timestep_data;
-
+    var edges_data;
 
     // testing js json parse...
 	  var current_scene = document.getElementById("webGlCanvas").getAttribute("data-scene-hash");
@@ -404,6 +434,7 @@ function main() {
             index_file = parsed_json['datasetSurfaceNodesIndices'];
             timestep_data = parsed_json['datasetSurfaceColours'];
             meta_file = parsed_json['datasetCenterCoord'];
+            edges_data = parsed_json['datasetEdges'];
             // meta_file = [0.0, 0.0, 0.0];
 
             loadShaders();
@@ -425,24 +456,37 @@ function main() {
     //     loadShaders();
     // });
 
-    // Declare this outside of the loadShaders() function so we can use it
-    // later.
-    var vertexShaderSource;
-    var fragmentShaderSource;
-
     /**
      * Load vertexshader and fragmentshader.
      */
     function loadShaders() {
-        var vertexShaderPromise = getDataSourcePromise(
-            "shaders/vertexShader.glsl.c");
-        var fragmentShaderPromise = getDataSourcePromise(
-            "shaders/fragmentShader.glsl.c");
+        var vert_ColorShaderPromise = getDataSourcePromise(
+            "shaders/vert_color_shader.glsl.c");
+        var frag_ColorShaderPromise = getDataSourcePromise(
+            "shaders/frag_color_shader.glsl.c");
+        var vert_EdgeShaderPromise = getDataSourcePromise(
+            "shaders/vertex_dataset_edge.glsl.c");
+        var frag_EdgeShaderPromise = getDataSourcePromise(
+            "shaders/fragment_dataset_edge.glsl.c");
 
-        Promise.all([vertexShaderPromise, fragmentShaderPromise]).then(
+        Promise.all([
+            vert_ColorShaderPromise,
+            frag_ColorShaderPromise,
+            vert_EdgeShaderPromise,
+            frag_EdgeShaderPromise
+        ]).then(
             function(value) {
-                vertexShaderSource = value[0];
-                fragmentShaderSource = value[1];
+                var vert_ColorShaderSource = value[0];
+                var frag_ColorShaderSource = value[1];
+                var vert_EdgeShaderSource = value[2];
+                var frag_EdgeShaderSource = value[3];
+
+                shaders = {
+                    vert_colors: vert_ColorShaderSource,
+                    frag_colors: frag_ColorShaderSource,
+                    vert_edges: vert_EdgeShaderSource,
+                    frag_edges: frag_EdgeShaderSource
+                };
 
                 beginRendering();
             });
@@ -461,15 +505,24 @@ function main() {
 
         var triangleSource = expandDataWithIndices(
             indexSource, node_file, chunksize=3);
+
         var rescaledTimestepData = rescaleFieldValues(
             timestep_data,
             fragmentShaderTMin,
             fragmentShaderTMax
         );
+
         var temperatureSource = expandDataWithIndices(
             indexSource, rescaledTimestepData, chunksize=1);
+
         // temperatureSource = averageFieldValsOverElement(temperatureSource);
+
         var metaSource = meta_file;
+
+        // var edgeSource = expandDataWithIndices(
+        //     edges_data, node_file, chunksize=3);
+
+        gl.lineWidth(2);
 
         bufferDataArray = {
             // NOTE: This must be named indices or it will not work.
@@ -478,6 +531,7 @@ function main() {
             //     numComponents: 1,
             //     data: indexSource
             // },
+
             a_position: {
                 numComponents: 3,
                 data: triangleSource
@@ -496,12 +550,20 @@ function main() {
             }
         };
 
+        edgeDataArray = {
+            a_model_edges : {
+                numComponents: 3,
+                // type: gl.FLOAT,
+                // normalized: false,
+                data: edges_data
+            }
+        };
+
         // Set model metadata.
         model_metadata = meta_file;
 
         // ... call the GL routine (i.e. do the graphics stuff)
         glRoutine(gl,
-                  vertexShaderSource, fragmentShaderSource,
                   metaSource
                  );
     }

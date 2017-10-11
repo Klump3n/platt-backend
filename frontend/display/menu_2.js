@@ -5,7 +5,7 @@ function main() {
     var protocol = document.location.protocol;
     var host = document.location.host;
     var path = protocol + "//" + host + "/api/scenes/" + current_scene;
-    
+
     // This should not have to be executed again...
     var xhr = new XMLHttpRequest();
     xhr.open('GET', path, true);

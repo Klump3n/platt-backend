@@ -175,6 +175,86 @@ class UnpackMesh:
             surface_quads_t=self.surface_quads.shape[0]))
         return self.surface_quads
 
+    def model_edge(self):
+        """
+        Return the edge of the model.
+
+        """
+        # self.elements is a map that points from each element to the nodes
+        # that constitute an element. In that sense two neighbouring elements
+        # will share at least 1 (corner) node. So that node will then appear
+        # at least twice in self.elements
+        _, node_counts = np.unique(self.elements,
+                                   return_counts=True)
+
+        # The ordering of the element indices that generate six outward
+        # pointing faces. Each element has 8 entries, counting from 0.
+        element_edges = [
+            [0, 1],
+            [1, 2],
+            [2, 3],
+            [3, 0],
+            [4, 5],
+            [5, 6],
+            [6, 7],
+            [7, 4],
+            [0, 4],
+            [1, 5],
+            [2, 6],
+            [3, 7]
+        ]
+
+        edges = []
+
+        for element in self.elements:
+            for element_edge in element_edges:
+                node_weight = (
+                    node_counts[element[element_edge[0]]] +
+                    node_counts[element[element_edge[1]]]
+                )
+
+                if node_weight > 4:
+                    continue
+
+                # if (
+                #         (node_weight == 2) or
+                #         (node_weight == 3) or
+                #         (node_weight == 4)
+                # ):
+                else:
+                    line = [
+                        int(element[element_edge[0]]),
+                        int(element[element_edge[1]])
+                    ]
+                    # print(element)
+                    # print(element_edge)
+                    # print(node_weight)
+                    # print(line)
+                    # for node in line:
+                    #     print(node, self.nodes[node])
+                    # import sys
+                    # sys.exit()
+
+                    edges.append(sorted(line))
+
+        new_edges = []
+        for edge in edges:
+            if edge not in new_edges:
+                new_edges.append(edge)
+            else:
+                new_edges.pop(edge)
+
+        flat_list = [item for sublist in new_edges for item in sublist]
+
+        actual_coords = []
+
+        for node in flat_list:
+            for coord in self.nodes[node]:
+                actual_coords.append(coord)
+
+        # THIS RETURNS THE ACTUAL COORDINATES
+        return actual_coords
+
     def generate_triangles_from_quads(self):
         """From our list of quads generate outward pointing triangles.
         """
@@ -265,7 +345,6 @@ class UnpackMesh:
         for triangle in self.unique_surface_triangles:
             unique_surface_data.append(timestep_data[triangle])
 
-        print(min(unique_surface_data), max(unique_surface_data))
         return unique_surface_data
 
     def return_data_for_unique_nodes(self, object_name, field, timestep):
@@ -363,17 +442,8 @@ if __name__ == '__main__':
         element_path='../example_data/object_a/fo/00.1/elements.dc3d8.bin'
     )
 
-    # Add a timestep
-    # testdata.add_timestep('testdata/nt11@16.7.bin')
-    # testdata.generate_triangle_files()
-    # testdata.generate_temperature_file(timestep=0)
-    # testdata.return_metadata()
-    # testdata.return_surface()
-    a = testdata.return_unique_surface_nodes()
-    b = testdata.return_surface_indices()
-    c = testdata.add_timestep('../example_data/object_a/fo/00.1/no/nt11.bin')
-    d = testdata.HACK_return_data_for_unique_nodes('../example_data/object_a/fo/00.1/no/nt11.bin')
-    print(len(a))
-    print(len(b))
-    print(len(c))
-    print(len(d))
+    testdata.model_edge()
+    testdata.return_unique_surface_nodes()
+    testdata.return_surface_indices()
+    testdata.add_timestep('../example_data/object_a/fo/00.1/no/nt11.bin')
+    testdata.HACK_return_data_for_unique_nodes('../example_data/object_a/fo/00.1/no/nt11.bin')

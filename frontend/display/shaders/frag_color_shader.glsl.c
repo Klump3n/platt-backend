@@ -5,7 +5,7 @@
 // to pick one. mediump is a good default. It means "medium precision"
 precision mediump float;
 
-/* in vec4 v_color; */
+in vec4 v_color;
 in float v_temp;
 in vec3 v_bc;
 in vec4 v_gl_Position;
@@ -112,6 +112,12 @@ vec3 fragmentColour(in float temp) {
 void main() {
   vec3 nodeColour = fragmentColour(v_temp);
   outColor = vec4(nodeColour, 1.0);
+
+  /* outColor = vec4(0.0, 0.0, 0.0, 1.0); */
+
+
+
+
   /* vec3 dbc = fwidth(v_bc); */
   /* if (any(greaterThan(dbc, vec3(0.5)))) { */
   /*   outColor = vec4(vec3(red(v_temp), green(v_temp), blue(v_temp)), 1.0); */

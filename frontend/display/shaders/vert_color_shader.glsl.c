@@ -22,6 +22,8 @@ void main() {
   // is responsible for setting
 
   /* gl_Position = a_position; */
+
+  /* gl_Position = u_transform * vec4(a_model_edges, 1); */
   gl_Position = u_transform * vec4(a_position, 1);
 
   v_gl_Position = gl_Position;

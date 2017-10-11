@@ -297,6 +297,14 @@ class _DatasetPrototype:
         timestep_string = str(self.dataset_path / 'fo' / self._selected_timestep / 'no' / 'nt11.bin')
         return self.mesher.HACK_return_data_for_unique_nodes(timestep_string)
 
+    def dataset_edges(self):
+        """
+        Get the edges of the dataset.
+
+        """
+        edges = self.mesher.model_edge()
+        return edges
+
     def dataset_center(self):
         """
         Return the center coordinates for the dataset.

@@ -666,13 +666,15 @@ class SceneManager:
         surface_nodes_indices = target_dataset.surface_nodes_indices()
         surface_colours = target_dataset.surface_colours()
         dataset_center = target_dataset.dataset_center().tolist()
+        dataset_edges = target_dataset.dataset_edges()
 
         return_dict = {
             'datasetMeta': dataset_meta,
             'datasetSurfaceNodes': surface_nodes,
             'datasetSurfaceNodesIndices': surface_nodes_indices,
             'datasetSurfaceColours': surface_colours,
-            'datasetCenterCoord': dataset_center
+            'datasetCenterCoord': dataset_center,
+            'datasetEdges': dataset_edges
         }
 
         return return_dict
