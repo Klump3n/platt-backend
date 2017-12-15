@@ -24,11 +24,14 @@ var vertexDataHasChanged = false;
 var fragmentDataHasChanged = false;
 
 var bufferDataArray;
-var edgeDataArray;
+// var edgeDataArray;
+var bufferFreeEdgesArray;
+var bufferWireframeArray;
 
 var shaders;
 
 var model_metadata;
+var surfaceNodesCenter;
 
 var fragmentShaderTMin = 0.0;
 var fragmentShaderTMax = 800.0;
@@ -81,17 +84,17 @@ function glRoutine(gl) {
     var modelMatrix = new ModelMatrix(gl);
 
     // var centerModel = new Float32Array(model_metadata.split(','));
-    var centerModel = model_metadata;
+    // var centerModel = model_metadata;
 
     var scaleTheWorldBy = 150;
-    var tarPos = twgl.v3.mulScalar(centerModel, scaleTheWorldBy);
+    var tarPos = twgl.v3.mulScalar(surfaceNodesCenter, scaleTheWorldBy);
     var camPos = twgl.v3.create(tarPos[0], tarPos[1], 550); // Center the z-axis over the model
     var up = [0, -1, 0];
 
     modelMatrix.placeCamera(camPos, tarPos, up);
 
     // Place the center of rotation into the center of the model
-    modelMatrix.translateWorld(twgl.v3.negate(centerModel));
+    modelMatrix.translateWorld(twgl.v3.negate(surfaceNodesCenter));
 
     // Automate this...
     modelMatrix.scaleWorld(scaleTheWorldBy);
@@ -100,19 +103,24 @@ function glRoutine(gl) {
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
     // Unpack shaders
-    // var vertex_color_shader = shaders['vert_ColorShaderSource'];
     var vs_color = shaders['vert_colors'];
     var fs_color = shaders['frag_colors'];
 
     var vs_edge = shaders['vert_edges'];
     var fs_edge = shaders['frag_edges'];
 
+    var vs_wireframe = shaders['vert_wireframe'];
+    var fs_wireframe = shaders['frag_wireframe'];
+
     // Create opengl programs.
     var programInfoColor = twgl.createProgramInfo(gl, [vs_color, fs_color]);
     var programInfoEdge = twgl.createProgramInfo(gl, [vs_edge, fs_edge]);
+    console.log('done');
+    var programInfoWireframe = twgl.createProgramInfo(gl, [vs_wireframe, fs_wireframe]);
 
     var bufferInfoColor = twgl.createBufferInfoFromArrays(gl, bufferDataArray);
-    var bufferInfoEdge = twgl.createBufferInfoFromArrays(gl, edgeDataArray);
+    var bufferInfoEdge = twgl.createBufferInfoFromArrays(gl, bufferFreeEdgesArray);
+    var bufferInfoWireframe = twgl.createBufferInfoFromArrays(gl, bufferWireframeArray);
 
     var uniforms = {
         u_transform: twgl.m4.identity() // mat4
@@ -162,8 +170,16 @@ function glRoutine(gl) {
 
         twgl.drawBufferInfo(gl, bufferInfoEdge, type=gl.LINES);
 
-        // draw scene
-        
+        // wireframe
+
+        gl.useProgram(programInfoWireframe.program);
+        twgl.setBuffersAndAttributes(gl, programInfoWireframe, bufferInfoWireframe);
+        twgl.setUniforms(programInfoWireframe, uniforms);
+
+        twgl.drawBufferInfo(gl, bufferInfoWireframe, type=gl.LINES);
+
+        // // draw scene
+
         window.requestAnimationFrame(drawScene);
 
     }
@@ -407,12 +423,18 @@ function main() {
     // Init WebGL.
     gl = grabCanvas("webGlCanvas");
 
-    var node_file;
-    var index_file;
-    var meta_file;
+    var surfaceNodes;
+    var surfaceTets;
+    var surfaceWireframe;
+    var surfaceFreeEdges;
+    var surfaceField;
 
-    var timestep_data;
-    var edges_data;
+    // var node_file;
+    // var index_file;
+    // var meta_file;
+
+    // var timestep_data;
+    // var edges_data;
 
     // testing js json parse...
 	  var current_scene = document.getElementById("webGlCanvas").getAttribute("data-scene-hash");
@@ -422,6 +444,7 @@ function main() {
     var active_scenes = getDataSourcePromise(path);
     active_scenes.then(function(value) {
         var parsed_json = JSON.parse(value);
+
         var datasets = parsed_json["loadedDatasets"];
         var dataset_hash = datasets[0]["datasetHash"];
         var dataset_mesh_path = path + "/" + dataset_hash + "/mesh";
@@ -430,12 +453,12 @@ function main() {
         mesh_data.then(function(value) {
             var parsed_json = JSON.parse(value);
 
-            node_file = parsed_json['datasetSurfaceNodes'];
-            index_file = parsed_json['datasetSurfaceNodesIndices'];
-            timestep_data = parsed_json['datasetSurfaceColours'];
-            meta_file = parsed_json['datasetCenterCoord'];
-            edges_data = parsed_json['datasetEdges'];
-            // meta_file = [0.0, 0.0, 0.0];
+            surfaceNodes = parsed_json['datasetSurfaceNodes'];
+            surfaceTets = parsed_json['datasetSurfaceTets'];
+            surfaceNodesCenter = parsed_json['datasetSurfaceNodesCenter'];
+            surfaceWireframe = parsed_json['datasetSurfaceWireframe'];
+            surfaceFreeEdges = parsed_json['datasetSurfaceFreeEdges'];
+            surfaceField = parsed_json['datasetSurfaceField'];
 
             loadShaders();
         });
@@ -468,24 +491,34 @@ function main() {
             "shaders/vertex_dataset_edge.glsl.c");
         var frag_EdgeShaderPromise = getDataSourcePromise(
             "shaders/fragment_dataset_edge.glsl.c");
+        var vert_WireframeShaderPromise = getDataSourcePromise(
+            "shaders/vertex_dataset_wireframe.glsl.c");
+        var frag_WireframeShaderPromise = getDataSourcePromise(
+            "shaders/fragment_dataset_wireframe.glsl.c");
 
         Promise.all([
             vert_ColorShaderPromise,
             frag_ColorShaderPromise,
             vert_EdgeShaderPromise,
-            frag_EdgeShaderPromise
+            frag_EdgeShaderPromise,
+            vert_WireframeShaderPromise,
+            frag_WireframeShaderPromise
         ]).then(
             function(value) {
                 var vert_ColorShaderSource = value[0];
                 var frag_ColorShaderSource = value[1];
                 var vert_EdgeShaderSource = value[2];
                 var frag_EdgeShaderSource = value[3];
+                var vert_WireframeShaderSource = value[4];
+                var frag_WireframeShaderSource = value[5];
 
                 shaders = {
                     vert_colors: vert_ColorShaderSource,
                     frag_colors: frag_ColorShaderSource,
                     vert_edges: vert_EdgeShaderSource,
-                    frag_edges: frag_EdgeShaderSource
+                    frag_edges: frag_EdgeShaderSource,
+                    vert_wireframe: vert_WireframeShaderSource,
+                    frag_wireframe: frag_WireframeShaderSource
                 };
 
                 beginRendering();
@@ -498,73 +531,111 @@ function main() {
      */
     function beginRendering() {
 
-        var indexSource = index_file;
+        // var indexSource = index_file;
 
-        var bary_coords = generateBarycentricCoordinatesFromIndices(
-            indexSource);
+        // var bary_coords = generateBarycentricCoordinatesFromIndices(
+        //     indexSource);
 
-        var triangleSource = expandDataWithIndices(
-            indexSource, node_file, chunksize=3);
+        // var triangleSource = expandDataWithIndices(
+        //     indexSource, node_file, chunksize=3);
 
-        var rescaledTimestepData = rescaleFieldValues(
-            timestep_data,
-            fragmentShaderTMin,
-            fragmentShaderTMax
-        );
+        // var rescaledTimestepData = rescaleFieldValues(
+        //     timestep_data,
+        //     fragmentShaderTMin,
+        //     fragmentShaderTMax
+        // );
 
-        var temperatureSource = expandDataWithIndices(
-            indexSource, rescaledTimestepData, chunksize=1);
+        // var temperatureSource = expandDataWithIndices(
+        //     indexSource, rescaledTimestepData, chunksize=1);
 
         // temperatureSource = averageFieldValsOverElement(temperatureSource);
 
-        var metaSource = meta_file;
+        // var metaSource = meta_file;
 
         // var edgeSource = expandDataWithIndices(
         //     edges_data, node_file, chunksize=3);
+        var expandedSurfaceNodes = expandDataWithIndices(
+            surfaceTets, surfaceNodes, chunksize=3);
 
-        gl.lineWidth(2);
+        var expandedSurfaceWireframe = expandDataWithIndices(
+            surfaceWireframe, surfaceNodes, chunksize=3);
+
+        var expandedSurfaceFreeEdges = expandDataWithIndices(
+            surfaceFreeEdges, surfaceNodes, chunksize=3);
+        // console.log(expandedSurfaceFreeEdges);
+        // gl.lineWidth(2);
 
         bufferDataArray = {
-            // NOTE: This must be named indices or it will not work.
-            // indices: {
-            //     drawType: gl.DYNAMIC_DRAW,
-            //     numComponents: 1,
-            //     data: indexSource
-            // },
-
             a_position: {
                 numComponents: 3,
-                data: triangleSource
+                data: expandedSurfaceNodes
             },
-            a_bc: {
-                numComponents: 3,
-                data: bary_coords
-            },
-            a_temp: {
+
+            a_field: {
                 numComponents: 1,
                 type: gl.FLOAT,
                 normalized: false,
                 data: new Float32Array(
-                    temperatureSource
+                    surfaceField
                 )
             }
         };
 
-        edgeDataArray = {
-            a_model_edges : {
+        bufferWireframeArray = {
+            a_line_data: {
                 numComponents: 3,
-                // type: gl.FLOAT,
-                // normalized: false,
-                data: edges_data
+                data: expandedSurfaceWireframe
             }
         };
 
+        bufferFreeEdgesArray = {
+            a_line_data: {
+                numComponents: 3,
+                data: expandedSurfaceFreeEdges
+            }
+        };
+
+        // bufferDataArray = {
+        //     // NOTE: This must be named indices or it will not work.
+        //     // indices: {
+        //     //     drawType: gl.DYNAMIC_DRAW,
+        //     //     numComponents: 1,
+        //     //     data: indexSource
+        //     // },
+
+        //     a_position: {
+        //         numComponents: 3,
+        //         data: triangleSource
+        //     },
+
+
+        //     a_bc: {
+        //         numComponents: 3,
+        //         data: bary_coords
+        //     },
+        //     a_temp: {
+        //         numComponents: 1,
+        //         type: gl.FLOAT,
+        //         normalized: false,
+        //         data: new Float32Array(
+        //             temperatureSource
+        //         )
+        //     }
+        // };
+
+        // edgeDataArray = {
+        //     a_model_edges : {
+        //         numComponents: 3,
+        //         // type: gl.FLOAT,
+        //         // normalized: false,
+        //         data: edges_data
+        //     }
+        // };
+
         // Set model metadata.
-        model_metadata = meta_file;
+        // model_metadata = meta_file;
 
         // ... call the GL routine (i.e. do the graphics stuff)
-        glRoutine(gl,
-                  metaSource
-                 );
+        glRoutine(gl);
     }
 };

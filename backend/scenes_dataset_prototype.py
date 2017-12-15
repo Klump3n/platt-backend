@@ -9,7 +9,8 @@ all the data points, its orientation in R3 and so on.
 import os
 
 from backend.util.timestamp_to_sha1 import timestamp_to_sha1
-import backend.data_backend as data_backend
+# import backend.data_backend as data_backend
+import backend.dataset_parser as dp
 
 
 class _DatasetPrototype:
@@ -78,26 +79,23 @@ class _DatasetPrototype:
         self._wireframe_data_list = []
         self._timestep_data_list = []
 
-        # Find the lowest timestep and set it
+        # for init: find the lowest timestep and set it
         lowest_timestep = self.timestep_list()[0]
-        print(lowest_timestep)
         self.timestep(set_timestep=lowest_timestep)
 
-        # demo for andreas
-        # tests don't cover this, this breaks a lot of stuff
-        #
-        # convert to string paths
-        nodes = str(self.dataset_path / 'fo' / lowest_timestep / 'nodes.bin')
-        elements = str(self.dataset_path / 'fo' / lowest_timestep / 'elements.dc3d8.bin')
-        lowest_timestep_data = str(self.dataset_path / 'fo' / lowest_timestep / 'no' / 'nt11.bin')
-        #
-        # init mesher and load data
-        self.mesher = data_backend.UnpackMesh(node_path=nodes, element_path=elements)
-        self._tetraeder_data_list = self.mesher.return_unique_surface_nodes()
-        self._index_data_list = self.mesher.return_surface_indices()
-        # self._timestep_data_list = mesher.add_timestep(lowest_timestep_data).flatten().tolist()
-        self._timestep_data_list = self.mesher.HACK_return_data_for_unique_nodes(lowest_timestep_data)
-        self._dataset_center = self.mesher.return_metadata()
+        # initialize the mesh parser
+        mp = dp.ParseDataset(self.dataset_path)
+
+        # parse data for the lowest timestep
+        # mp_data = mp.timestep_data(lowest_timestep, 'nt11', hash_dict=None)
+        mp_data = mp.timestep_data(lowest_timestep, '__no_field__', hash_dict=None)
+
+        self._nodes = mp_data['nodes']
+        self._tets = mp_data['tets']
+        self._nodes_center = mp_data['nodes_center']
+        self._wireframe = mp_data['wireframe']
+        self._free_edges = mp_data['free_edges']
+        self._field = mp_data['field']
 
     def meta(self):
         """
@@ -274,85 +272,133 @@ class _DatasetPrototype:
 
         return self._selected_field
 
-    def surface_nodes(self):
+    def surface_mesh(self):
         """
-        Get a list of the unique nodes at the surface of the dataset.
-
-        """
-        return self._tetraeder_data_list
-
-    def surface_nodes_indices(self):
-        """
-        Get a list of indices for the unique surface nodes so we can construct
-        triangles.
+        Get surface mesh data.
 
         """
-        return self._index_data_list
+        return {
+            'nodes': self._nodes['data'],
+            'nodes_center': self._nodes_center,
+            'tets': self._tets['data'],
+            'wireframe': self._wireframe['data'],
+            'free_edges': self._free_edges['data']
+        }
 
-    def surface_colours(self):
+    def surface_field(self):
         """
-        Get the colours for the surface nodes..
-
-        """
-        timestep_string = str(self.dataset_path / 'fo' / self._selected_timestep / 'no' / 'nt11.bin')
-        return self.mesher.HACK_return_data_for_unique_nodes(timestep_string)
-
-    def dataset_edges(self):
-        """
-        Get the edges of the dataset.
+        Returns the field values for the surface mesh.
 
         """
-        edges = self.mesher.model_edge()
-        return edges
+        return self._field['data']
 
-    def dataset_center(self):
-        """
-        Return the center coordinates for the dataset.
+    # def surface_nodes(self):
+    #     """
+    #     Get a list of the unique nodes at the surface of the dataset.
 
-        """
-        return self._dataset_center
+    #     """
+    #     return self._nodes['data']
 
-    def index_data(self):
-        """
-        Get or set the index data.
+    # def surface_tets(self):
+    #     """
+    #     Get a list of the unique nodes at the surface of the dataset.
 
-        Todo:
-         Everything about this. This is just a placeholder for now. We need to
-         implement methods for doing this automatically. This should call a
-         method for extracting index data.
+    #     """
+    #     return self._tets['data']
 
-        """
-        # if data is not None:
-        #     self._index_data_list = data
+    # def surface_nodes_center(self):
+    #     """
+    #     Returns the center of the mesh.
 
-        return self._index_data_list
+    #     """
+    #     return self._nodes_center
 
-    def tetraeder_data(self):
-        """
-        Get or set the tetraeder data.
+    # def surface_wireframe(self):
+    #     """
+    #     Returns the wireframe of the surface mesh.
 
-        Todo:
-         Everything about this. This is just a placeholder for now. We need to
-         implement methods for doing this automatically. This should call a
-         method for extracting tetraeder data.
+    #     """
+    #     return self._wireframe['data']
 
-        """
-        # if data is not None:
-        #     self._tetraeder_data_list = data
+    # def surface_free_edges(self):
+    #     """
+    #     Returns the free edges of the surface mesh.
 
-        return self._tetraeder_data_list
+    #     """
+    #     return self._free_edges['data']
 
-    def wireframe_data(self):
-        """
-        Get or set the wireframe data.
+    # def surface_nodes_indices(self):
+    #     """
+    #     Get a list of indices for the unique surface nodes so we can construct
+    #     triangles.
 
-        Todo:
-         Everything about this. This is just a placeholder for now. We need to
-         implement methods for doing this automatically. This should call a
-         method for extracting wireframe data.
+    #     """
+    #     return self._index_data_list
 
-        """
-        # if data is None:
-        #     self._wireframe_data_list = data
+    # def surface_colours(self):
+    #     """
+    #     Get the colours for the surface nodes..
 
-        return self._wireframe_data_list
+    #     """
+    #     timestep_string = str(self.dataset_path / 'fo' / self._selected_timestep / 'no' / 'nt11.bin')
+    #     return self.mesher.HACK_return_data_for_unique_nodes(timestep_string)
+
+    # def dataset_edges(self):
+    #     """
+    #     Get the edges of the dataset.
+
+    #     """
+    #     edges = self.mesher.model_edge()
+    #     return edges
+
+    # def dataset_center(self):
+    #     """
+    #     Return the center coordinates for the dataset.
+
+    #     """
+    #     return self._dataset_center
+
+    # def index_data(self):
+    #     """
+    #     Get or set the index data.
+
+    #     Todo:
+    #      Everything about this. This is just a placeholder for now. We need to
+    #      implement methods for doing this automatically. This should call a
+    #      method for extracting index data.
+
+    #     """
+    #     # if data is not None:
+    #     #     self._index_data_list = data
+
+    #     return self._index_data_list
+
+    # def tetraeder_data(self):
+    #     """
+    #     Get or set the tetraeder data.
+
+    #     Todo:
+    #      Everything about this. This is just a placeholder for now. We need to
+    #      implement methods for doing this automatically. This should call a
+    #      method for extracting tetraeder data.
+
+    #     """
+    #     # if data is not None:
+    #     #     self._tetraeder_data_list = data
+
+    #     return self._tetraeder_data_list
+
+    # def wireframe_data(self):
+    #     """
+    #     Get or set the wireframe data.
+
+    #     Todo:
+    #      Everything about this. This is just a placeholder for now. We need to
+    #      implement methods for doing this automatically. This should call a
+    #      method for extracting wireframe data.
+
+    #     """
+    #     # if data is None:
+    #     #     self._wireframe_data_list = data
+
+    #     return self._wireframe_data_list

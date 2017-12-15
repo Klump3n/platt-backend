@@ -287,6 +287,7 @@ class SceneManager:
 
         # Add each object
         for one_dataset in dataset_list:
+            print(one_dataset)
             try:
                 if not isinstance(one_dataset, str):
                     raise TypeError(
@@ -662,19 +663,30 @@ class SceneManager:
 
         dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
 
-        surface_nodes = target_dataset.surface_nodes()
-        surface_nodes_indices = target_dataset.surface_nodes_indices()
-        surface_colours = target_dataset.surface_colours()
-        dataset_center = target_dataset.dataset_center().tolist()
-        dataset_edges = target_dataset.dataset_edges()
+        surface_mesh = target_dataset.surface_mesh()
+
+        surface_nodes = surface_mesh['nodes']
+        surface_tets = surface_mesh['tets']
+        surface_nodes_center = surface_mesh['nodes_center']
+        surface_wireframe = surface_mesh['wireframe']
+        surface_free_edges = surface_mesh['free_edges']
+
+        # surface_nodes = target_dataset.surface_nodes()
+        # surface_tets = target_dataset.surface_tets()
+        # surface_nodes_center = target_dataset.surface_nodes_center()
+        # surface_wireframe = target_dataset.surface_wireframe()
+        # surface_free_edges = target_dataset.surface_free_edges()
+
+        surface_field = target_dataset.surface_field()
 
         return_dict = {
             'datasetMeta': dataset_meta,
             'datasetSurfaceNodes': surface_nodes,
-            'datasetSurfaceNodesIndices': surface_nodes_indices,
-            'datasetSurfaceColours': surface_colours,
-            'datasetCenterCoord': dataset_center,
-            'datasetEdges': dataset_edges
+            'datasetSurfaceTets': surface_tets,
+            'datasetSurfaceNodesCenter': surface_nodes_center,
+            'datasetSurfaceWireframe': surface_wireframe,
+            'datasetSurfaceFreeEdges': surface_free_edges,
+            'datasetSurfaceField': surface_field
         }
 
         return return_dict
