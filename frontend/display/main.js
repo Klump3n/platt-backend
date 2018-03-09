@@ -41,8 +41,8 @@ var surfaceData = {
 var model_metadata;
 var surfaceNodesCenter;
 
-var fragmentShaderTMin = 0.0;
-var fragmentShaderTMax = 800.0;
+var fragmentShaderTMin = -1.0;
+var fragmentShaderTMax = 1.0;
 
 var bufferIndexArray;
 

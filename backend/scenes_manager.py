@@ -695,3 +695,25 @@ class SceneManager:
         }
 
         return return_dict
+
+    def dataset_mesh_hash(self, scene_hash, dataset_hash):
+
+        target_dataset = self._target_dataset(scene_hash, dataset_hash)
+
+        dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
+
+        surface_mesh = target_dataset.surface_mesh()  # here with argument?
+
+        surface_mesh_hash = surface_mesh['mesh_hash']
+
+        surface_field = target_dataset.surface_field()  # here with argument?
+
+        surface_field_hash = surface_field['field_hash']
+
+        return_dict = {
+            'datasetMeta': dataset_meta,
+            'datasetMeshHash': surface_mesh_hash,
+            'datasetFieldHash': surface_field_hash
+        }
+
+        return return_dict

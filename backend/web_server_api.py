@@ -116,7 +116,8 @@ class ServerAPI:
     @cherrypy.tools.json_out()
     def scenes(
             self,
-            scene_hash=None, dataset_hash=None, dataset_operation=None
+            scene_hash=None, dataset_hash=None,
+            dataset_operation=None, mesh_operation=None
     ):
         """
         Contains the logic for manipulating scenes over the API.
@@ -135,7 +136,8 @@ class ServerAPI:
         if (
                 scene_hash is None and
                 dataset_hash is None and
-                dataset_operation is None
+                dataset_operation is None and
+                mesh_operation is None
         ):
             # GET
             if http_method == 'GET':
@@ -160,7 +162,8 @@ class ServerAPI:
         if (
                 scene_hash is not None and
                 dataset_hash is None and
-                dataset_operation is None
+                dataset_operation is None and
+                mesh_operation is None
         ):
             # GET
             if http_method == 'GET':
@@ -187,7 +190,8 @@ class ServerAPI:
         if (
                 scene_hash is not None and
                 dataset_hash is not None and
-                dataset_operation is None
+                dataset_operation is None and
+                mesh_operation is None
         ):
             # GET
             if http_method == 'GET':
@@ -204,7 +208,8 @@ class ServerAPI:
         if (
                 scene_hash is not None and
                 dataset_hash is not None and
-                dataset_operation is not None
+                dataset_operation is not None and
+                mesh_operation is None
         ):
 
             # GET
@@ -287,6 +292,32 @@ class ServerAPI:
                     except (KeyError, TypeError) as e:
                         print('{}'.format(e))
                         output = None
+
+        ##################################################
+
+        if (
+                scene_hash is not None and
+                dataset_hash is not None and
+                dataset_operation is not None and
+                mesh_operation is not None
+        ):
+            # GET
+            if http_method == 'GET':
+
+                if dataset_operation == 'mesh':
+
+                    if mesh_operation == 'hash':
+                        output = self.get_scenes_scenehash_datasethash_mesh_hash(
+                            scene_hash, dataset_hash)
+
+                    if mesh_operation == 'geometry':
+                        output = self.get_scenes_scenehash_datasethash_mesh_geometry(
+                            scene_hash, dataset_hash)
+
+                    if mesh_operation == 'field':
+                        output = self.get_scenes_scenehash_datasethash_mesh_field(
+                            scene_hash, dataset_hash)
+
 
         ##################################################
 
@@ -446,10 +477,43 @@ class ServerAPI:
     def get_scenes_scenehash_datasethash_mesh(
             self, scene_hash, dataset_hash):
         """
-        Get the mesh data of a dataset.
+        Get the mesh (hash, geometry and field) data of a dataset.
 
         """
         dataset_mesh = gloset.scene_manager.dataset_mesh(
             scene_hash, dataset_hash)
 
         return dataset_mesh
+
+    def get_scenes_scenehash_datasethash_mesh_hashes(
+            self, scene_hash, dataset_hash):
+        """
+        Get the hashes of the mesh data of a dataset.
+
+        """
+        dataset_mesh_hash = gloset.scene_manager.dataset_mesh_hash(
+            scene_hash, dataset_hash)
+
+        return dataset_mesh_hash
+
+    def get_scenes_scenehash_datasethash_mesh_geometry(
+            self, scene_hash, dataset_hash):
+        """
+        Get the geometry data of a dataset.
+
+        """
+        dataset_mesh_geometry = gloset.scene_manager.dataset_mesh_geometry(
+            scene_hash, dataset_hash)
+
+        return dataset_mesh_geometry
+
+    def get_scenes_scenehash_datasethash_mesh_field(
+            self, scene_hash, dataset_hash):
+        """
+        Get the field data of a dataset.
+
+        """
+        dataset_mesh_field = gloset.scene_manager.dataset_mesh_field(
+            scene_hash, dataset_hash)
+
+        return dataset_mesh_field
