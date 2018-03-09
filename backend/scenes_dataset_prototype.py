@@ -349,7 +349,7 @@ class _DatasetPrototype:
                     hash_dict=hash_dict
                 )
 
-            # Update the buffers
+            # update the current data
             if mp_data is not None:
                 mp_data_mesh_hash = mp_data['hash_dict']['mesh']
                 mp_data_field_hash = mp_data['hash_dict']['field']
