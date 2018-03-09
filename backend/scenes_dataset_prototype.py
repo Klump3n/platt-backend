@@ -72,30 +72,44 @@ class _DatasetPrototype:
             0, 0, 0, 1
         ]                           # List
         self._selected_timestep = ''  # String
-        self._selected_field = ''
+        # self._selected_field = '__no_field__'
+        # self._selected_field = 'nt11'
+        self._selected_field = {
+            'type': '__no_type__',
+            'name': '__no_field__'
+        }
+
+        self._hash_dict = {
+            'mesh': None,
+            'field': None
+        }
 
         self._index_data_list = []
         self._tetraeder_data_list = []
         self._wireframe_data_list = []
         self._timestep_data_list = []
 
+        self._fields = {}
+        self._meshes = {}
+
+        # initialize the mesh parser
+        self._mp = dp.ParseDataset(self.dataset_path)
+
         # for init: find the lowest timestep and set it
         lowest_timestep = self.timestep_list()[0]
         self.timestep(set_timestep=lowest_timestep)
 
-        # initialize the mesh parser
-        mp = dp.ParseDataset(self.dataset_path)
+        # # parse data for the lowest timestep
+        # # mp_data = mp.timestep_data(lowest_timestep, 'nt11', hash_dict=None)
+        # mp_data = self._mp.timestep_data(lowest_timestep, self._selected_field,
+        #                                  hash_dict=None)
 
-        # parse data for the lowest timestep
-        # mp_data = mp.timestep_data(lowest_timestep, 'nt11', hash_dict=None)
-        mp_data = mp.timestep_data(lowest_timestep, '__no_field__', hash_dict=None)
-
-        self._nodes = mp_data['nodes']
-        self._tets = mp_data['tets']
-        self._nodes_center = mp_data['nodes_center']
-        self._wireframe = mp_data['wireframe']
-        self._free_edges = mp_data['free_edges']
-        self._field = mp_data['field']
+        # self._nodes = mp_data['nodes']
+        # self._tets = mp_data['tets']
+        # self._nodes_center = mp_data['nodes_center']
+        # self._wireframe = mp_data['wireframe']
+        # self._free_edges = mp_data['free_edges']
+        # self._field = mp_data['field']
 
     def meta(self):
         """
@@ -190,6 +204,52 @@ class _DatasetPrototype:
 
             self._selected_timestep = set_timestep
 
+            hash_dict = {
+                'mesh': list(self._meshes.keys()),
+                'field': list(self._fields.keys())
+            }
+
+            # mp_data = self._mp.timestep_data(
+            #     self._selected_timestep, self._selected_field, hash_dict=None)
+            mp_data = self._mp.timestep_data(
+                self._selected_timestep, self._selected_field, hash_dict=hash_dict)
+
+            mp_data_mesh_hash = mp_data['hash_dict']['mesh']
+            mp_data_field_hash = mp_data['hash_dict']['field']
+
+            if mp_data_mesh_hash not in hash_dict['mesh']:
+                self._meshes['current'] = {
+                    'mesh_hash': mp_data['hash_dict']['mesh'],
+                    'nodes': mp_data['nodes']['data'],
+                    'nodes_center': mp_data['nodes_center'],
+                    'tets': mp_data['tets']['data'],
+                    'wireframe': mp_data['wireframe']['data'],
+                    'free_edges': mp_data['free_edges']['data']
+                }
+
+                self._meshes[mp_data['hash_dict']['mesh']] = self._meshes['current']
+
+            else:
+                self._meshes['current'] = self._meshes[mp_data_mesh_hash]
+
+            if mp_data_field_hash not in hash_dict['field']:
+                self._fields['current'] = {
+                    'field_hash': mp_data['hash_dict']['field'],
+                    'field': mp_data['field']['data']
+                }
+
+                self._fields[mp_data['hash_dict']['field']] = self._fields['current']
+
+            else:
+                self._fields['current'] = self._fields[mp_data_field_hash]
+
+            # self._hash_dict = mp_data['hash_dict']
+            # self._nodes = mp_data['nodes']
+            # self._tets = mp_data['tets']
+            # self._nodes_center = mp_data['nodes_center']
+            # self._wireframe = mp_data['wireframe']
+            # self._free_edges = mp_data['free_edges']
+            # self._field = mp_data['field']
         return self._selected_timestep
 
     def field_dict(self):
@@ -201,7 +261,7 @@ class _DatasetPrototype:
 
         Returns:
          dict: A dict with two lists of fields, one for elemental and one for
-         nodal fields.
+          nodal fields.
 
         Todo:
          Make this more resilient against non exising directories via try
@@ -239,10 +299,10 @@ class _DatasetPrototype:
           otherwise the field we want to set.
 
         """
-        if set_field is not None:
-            if not isinstance(set_field, str):
-                raise TypeError('set_field is {}, expected None or str'.format(
-                    type(set_field).__name__))
+        # if set_field is not None:
+        #     if not isinstance(set_field, dict):
+        #         raise TypeError('set_field is {}, expected None or dict'.format(
+        #             type(set_field).__name__))
 
         # get a list of fields we can display for this timestep
         fields = self.field_dict()
@@ -250,47 +310,127 @@ class _DatasetPrototype:
         nodal_fields = fields['nodal']
 
         if set_field is not None:
+            set_field_type = set_field['type']
+            set_field_name = set_field['name']
+
+            # Initialise
+            mp_data = None
+
+            hash_dict = {
+                'mesh': list(self._meshes.keys()),
+                'field': list(self._fields.keys())
+            }
+
             # see if the field we want to set is available...
             if (
-                    set_field not in elemental_fields and
-                    set_field not in nodal_fields
+                    (set_field_type == 'nodal' and
+                     set_field_name in nodal_fields)
+                    or
+                    (set_field_type == 'elemental' and
+                     set_field_name in elemental_fields)
             ):
-                # ..., if not return 'no_field'
-                return 'no_field'
+                self._selected_field = set_field
 
-            # if it is we can set it
-            self._selected_field = set_field
+                mp_data = self._mp.timestep_data(
+                    self._selected_timestep,
+                    self._selected_field,
+                    hash_dict=hash_dict
+                )
 
-        else:
-            # see if the field we want to get is available...
             if (
-                    self._selected_field not in elemental_fields and
-                    self._selected_field not in nodal_fields
+                    set_field_type == '__no_type__' or
+                    set_field_name == '__no_field__'
             ):
-                # ..., if not return 'no_field'
-                return 'no_field'
+                self._selected_field = set_field
+
+                mp_data = self._mp.timestep_data(
+                    self._selected_timestep,
+                    field=None,
+                    hash_dict=hash_dict
+                )
+
+            # Update the buffers
+            if mp_data is not None:
+                mp_data_mesh_hash = mp_data['hash_dict']['mesh']
+                mp_data_field_hash = mp_data['hash_dict']['field']
+
+                if mp_data_mesh_hash not in hash_dict['mesh']:
+                    self._meshes['current'] = {
+                        'mesh_hash': mp_data['hash_dict']['mesh'],
+                        'nodes': mp_data['nodes']['data'],
+                        'nodes_center': mp_data['nodes_center'],
+                        'tets': mp_data['tets']['data'],
+                        'wireframe': mp_data['wireframe']['data'],
+                        'free_edges': mp_data['free_edges']['data']
+                    }
+
+                    self._meshes[mp_data['hash_dict']['mesh']] = self._meshes['current']
+
+                else:
+                    self._meshes['current'] = self._meshes[mp_data_mesh_hash]
+
+                if mp_data_field_hash not in hash_dict['field']:
+                    self._fields['current'] = {
+                        'field_hash': mp_data['hash_dict']['field'],
+                        'field': mp_data['field']['data']
+                    }
+
+                    self._fields[mp_data['hash_dict']['field']] = self._fields['current']
+
+                else:
+                    self._fields['current'] = self._fields[mp_data_field_hash]
 
         return self._selected_field
 
-    def surface_mesh(self):
+    def surface_mesh(self, current_mesh_hash=None):
         """
         Get surface mesh data.
 
         """
-        return {
-            'nodes': self._nodes['data'],
-            'nodes_center': self._nodes_center,
-            'tets': self._tets['data'],
-            'wireframe': self._wireframe['data'],
-            'free_edges': self._free_edges['data']
-        }
+        if (
+                (current_mesh_hash is None) or
+                (current_mesh_hash != self._meshes['mesh_hash'])
+        ):
+            return self._meshes['current']
+        else:
+            return {
+                'mesh_hash': None,
+                'nodes': [],
+                'nodes_center': [],
+                'tets': [],
+                'wireframe': [],
+                'free_edges': []
+            }
 
-    def surface_field(self):
+        # return {
+        #     'mesh_hash': self._hash_dict['mesh'],
+        #     'nodes': self._nodes['data'],
+        #     'nodes_center': self._nodes_center,
+        #     'tets': self._tets['data'],
+        #     'wireframe': self._wireframe['data'],
+        #     'free_edges': self._free_edges['data']
+        # }
+
+    def surface_field(self, current_field_hash=None):
         """
         Returns the field values for the surface mesh.
 
         """
-        return self._field['data']
+        if (
+                (current_field_hash is None) or
+                (current_field_hash != self._fields['field_hash'])
+        ):
+            return self._fields['current']
+        else:
+            return {
+                'field_hash': None,
+                'field': []
+            }
+
+        # return {
+        #     'field_hash': self._hash_dict['field'],
+        #     'field': self._field['data']
+        # }
 
     # def surface_nodes(self):
     #     """

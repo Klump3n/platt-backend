@@ -287,7 +287,6 @@ class SceneManager:
 
         # Add each object
         for one_dataset in dataset_list:
-            print(one_dataset)
             try:
                 if not isinstance(one_dataset, str):
                     raise TypeError(
@@ -606,18 +605,18 @@ class SceneManager:
          TypeError: If ``type(set_field)`` is not `NoneType` or `str`.
 
         """
-        if not isinstance(scene_hash, str):
-            raise TypeError('scene_hash is {}, expected str'.format(
-                    type(scene_hash).__name__))
+        # if not isinstance(scene_hash, str):
+        #     raise TypeError('scene_hash is {}, expected str'.format(
+        #             type(scene_hash).__name__))
 
-        if not isinstance(dataset_hash, str):
-            raise TypeError('dataset_hash is {}, expected str'.format(
-                    type(dataset_hash).__name__))
+        # if not isinstance(dataset_hash, str):
+        #     raise TypeError('dataset_hash is {}, expected str'.format(
+        #             type(dataset_hash).__name__))
 
-        if set_field is not None:
-            if not isinstance(set_field, str):
-                raise TypeError('set_field is {}, expected None or str'.
-                                format(type(set_field).__name__))
+        # if set_field is not None:
+        #     if not isinstance(set_field, str):
+        #         raise TypeError('set_field is {}, expected None or str'.
+        #                         format(type(set_field).__name__))
 
         target_dataset = self._target_dataset(scene_hash, dataset_hash)
 
@@ -663,8 +662,9 @@ class SceneManager:
 
         dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
 
-        surface_mesh = target_dataset.surface_mesh()
+        surface_mesh = target_dataset.surface_mesh()  # here with argument?
 
+        surface_mesh_hash = surface_mesh['mesh_hash']
         surface_nodes = surface_mesh['nodes']
         surface_tets = surface_mesh['tets']
         surface_nodes_center = surface_mesh['nodes_center']
@@ -677,16 +677,21 @@ class SceneManager:
         # surface_wireframe = target_dataset.surface_wireframe()
         # surface_free_edges = target_dataset.surface_free_edges()
 
-        surface_field = target_dataset.surface_field()
+        surface_field = target_dataset.surface_field()  # here with argument?
+
+        surface_field_hash = surface_field['field_hash']
+        surface_field_values = surface_field['field']
 
         return_dict = {
             'datasetMeta': dataset_meta,
+            'datasetMeshHash': surface_mesh_hash,
             'datasetSurfaceNodes': surface_nodes,
             'datasetSurfaceTets': surface_tets,
             'datasetSurfaceNodesCenter': surface_nodes_center,
             'datasetSurfaceWireframe': surface_wireframe,
             'datasetSurfaceFreeEdges': surface_free_edges,
-            'datasetSurfaceField': surface_field
+            'datasetFieldHash': surface_field_hash,
+            'datasetSurfaceField': surface_field_values
         }
 
         return return_dict

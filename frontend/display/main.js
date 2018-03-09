@@ -29,6 +29,14 @@ var bufferFreeEdgesArray;
 var bufferWireframeArray;
 
 var shaders;
+var surfaceData = {
+    "nodes": [],
+    "nodesCenter": [],
+    "tets": [],
+    "wireframe": [],
+    "freeEdges": [],
+    "field": []
+};
 
 var model_metadata;
 var surfaceNodesCenter;
@@ -37,6 +45,9 @@ var fragmentShaderTMin = 0.0;
 var fragmentShaderTMax = 800.0;
 
 var bufferIndexArray;
+
+var currentMeshHash = '';
+var currentFieldHash = '';
 
 /**
  * Try to find a HTML5 canvas element. If found, try to assign it a WebGL2
@@ -87,14 +98,14 @@ function glRoutine(gl) {
     // var centerModel = model_metadata;
 
     var scaleTheWorldBy = 150;
-    var tarPos = twgl.v3.mulScalar(surfaceNodesCenter, scaleTheWorldBy);
+    var tarPos = twgl.v3.mulScalar(surfaceData['nodesCenter'], scaleTheWorldBy);
     var camPos = twgl.v3.create(tarPos[0], tarPos[1], 550); // Center the z-axis over the model
     var up = [0, -1, 0];
 
     modelMatrix.placeCamera(camPos, tarPos, up);
 
     // Place the center of rotation into the center of the model
-    modelMatrix.translateWorld(twgl.v3.negate(surfaceNodesCenter));
+    modelMatrix.translateWorld(twgl.v3.negate(surfaceData['nodesCenter']));
 
     // Automate this...
     modelMatrix.scaleWorld(scaleTheWorldBy);
@@ -115,7 +126,6 @@ function glRoutine(gl) {
     // Create opengl programs.
     var programInfoColor = twgl.createProgramInfo(gl, [vs_color, fs_color]);
     var programInfoEdge = twgl.createProgramInfo(gl, [vs_edge, fs_edge]);
-    console.log('done');
     var programInfoWireframe = twgl.createProgramInfo(gl, [vs_wireframe, fs_wireframe]);
 
     var bufferInfoColor = twgl.createBufferInfoFromArrays(gl, bufferDataArray);
@@ -178,7 +188,7 @@ function glRoutine(gl) {
 
         twgl.drawBufferInfo(gl, bufferInfoWireframe, type=gl.LINES);
 
-        // // draw scene
+        // draw scene
 
         window.requestAnimationFrame(drawScene);
 
@@ -198,26 +208,35 @@ function HACKupdateFragmentShaderData(dataset_hash) {
     mesh_data.then(function(value) {
         var parsed_json = JSON.parse(value);
 
-        var node_file = parsed_json['datasetSurfaceNodes'];
-        var index_file = parsed_json['datasetSurfaceNodesIndices'];
-        var timestep_data = parsed_json['datasetSurfaceColours'];
-        var meta_file = parsed_json['datasetCenterCoord'];
+        surfaceData['nodes'] = parsed_json['datasetSurfaceNodes'];
+        surfaceData['nodesCenter'] = parsed_json['datasetSurfaceNodesCenter'];
+        surfaceData['tets'] = parsed_json['datasetSurfaceTets'];
+        surfaceData['wireframe'] = parsed_json['datasetSurfaceWireframe'];
+        surfaceData['freeEdges'] = parsed_json['datasetSurfaceFreeEdges'];
+        surfaceData['field'] = parsed_json['datasetSurfaceField'];
 
-        var rescaledTimestepData = rescaleFieldValues(
-            timestep_data,
+        var expandedSurfaceWireframe = expandDataWithIndices(
+            surfaceData['wireframe'], surfaceData['nodes'], chunksize=3);
+
+        var expandedSurfaceFreeEdges = expandDataWithIndices(
+            surfaceData['freeEdges'], surfaceData['nodes'], chunksize=3);
+
+        var expandedSurfaceTets = expandDataWithIndices(
+            surfaceData['tets'], surfaceData['nodes'], chunksize=3);
+
+        var expandedSurfaceField = expandDataWithIndices(
+            surfaceData['tets'], surfaceData['field'], chunksize=1);
+
+        var rescaledField = rescaleFieldValues(
+            expandedSurfaceField,
             fragmentShaderTMin,
             fragmentShaderTMax
         );
 
-        timestep_data = expandDataWithIndices(
-            index_file,
-            rescaledTimestepData,
-            chunksize=1
-        );
-
-        // averageFieldValsOverElement(timestep_data);
-
-        bufferDataArray['a_temp']['data'] = new Float32Array(timestep_data);
+        bufferDataArray['a_field']['data'] = new Float32Array(rescaledField);
+        bufferDataArray['a_position']['data'] = expandedSurfaceTets;
+        bufferWireframeArray['a_line_data']['data'] = expandedSurfaceWireframe;
+        bufferFreeEdgesArray['a_line_data']['data'] = expandedSurfaceFreeEdges;
 
         fragmentDataHasChanged = true;
 
@@ -234,30 +253,49 @@ function HACKupdateFragmentShaderData(dataset_hash) {
  * @returns {undefined} Nothing
  */
 function updateFragmentShaderData(object_name, field, timestep) {
+    var current_scene = document.getElementById("webGlCanvas").getAttribute("data-scene-hash");
+    var scene_hash = current_scene;
+    var protocol = document.location.protocol;
+    var host = document.location.host;
+    var path = protocol + "//" + host + "/api/scenes/" + current_scene + "/" + dataset_hash + "/mesh";
 
-    var timestep_promise = postJSONPromise(
-        'api/get_timestep_data',
-        {'object_name': object_name, 'field': field, 'timestep': timestep}
-    );
-    var timestep_data;
+    var mesh_data = getDataSourcePromise(path);
 
-    timestep_promise.then(function(value){
-        var rescaledTimestepData = rescaleFieldValues(
-            value['timestep_data'],
+    mesh_data.then(function(value) {
+        var parsed_json = JSON.parse(value);
+
+        // surfaceData['nodes'] = parsed_json['datasetSurfaceNodes'];
+        // surfaceData['nodesCenter'] = parsed_json['datasetSurfaceNodesCenter'];
+        // surfaceData['tets'] = parsed_json['datasetSurfaceTets'];
+        // surfaceData['wireframe'] = parsed_json['datasetSurfaceWireframe'];
+        // surfaceData['freeEdges'] = parsed_json['datasetSurfaceFreeEdges'];
+        surfaceData['field'] = parsed_json['datasetSurfaceField'];
+
+        // var expandedSurfaceWireframe = expandDataWithIndices(
+        //     surfaceData['wireframe'], surfaceData['nodes'], chunksize=3);
+
+        // var expandedSurfaceFreeEdges = expandDataWithIndices(
+        //     surfaceData['freeEdges'], surfaceData['nodes'], chunksize=3);
+
+        // var expandedSurfaceTets = expandDataWithIndices(
+        //     surfaceData['tets'], surfaceData['nodes'], chunksize=3);
+
+        var expandedSurfaceField = expandDataWithIndices(
+            surfaceData['tets'], surfaceData['field'], chunksize=1);
+
+        var rescaledField = rescaleFieldValues(
+            expandedSurfaceField,
             fragmentShaderTMin,
             fragmentShaderTMax
         );
-        timestep_data = expandDataWithIndices(
-            bufferIndexArray,
-            rescaledTimestepData,
-            chunksize=1
-        );
 
-        averageFieldValsOverElement(timestep_data);
-
-        bufferDataArray['a_temp']['data'] = new Float32Array(timestep_data);
+        bufferDataArray['a_field']['data'] = new Float32Array(rescaledField);
+        // bufferDataArray['a_position']['data'] = expandedSurfaceTets;
+        // bufferWireframeArray['a_line_data']['data'] = expandedSurfaceWireframe;
+        // bufferFreeEdgesArray['a_line_data']['data'] = expandedSurfaceFreeEdges;
 
         fragmentDataHasChanged = true;
+
     });
 }
 
@@ -274,56 +312,49 @@ function updateFragmentShaderData(object_name, field, timestep) {
  */
 function updateVertexShaderData(
     object_name, field, nodepath, elementpath, timestep) {
+    var current_scene = document.getElementById("webGlCanvas").getAttribute("data-scene-hash");
+    var scene_hash = current_scene;
+    var protocol = document.location.protocol;
+    var host = document.location.host;
+    var path = protocol + "//" + host + "/api/scenes/" + current_scene + "/" + dataset_hash + "/mesh";
 
-    var node_file;
-    var meta_file;
+    var mesh_data = getDataSourcePromise(path);
 
-    var timestep_data;
+    mesh_data.then(function(value) {
+        var parsed_json = JSON.parse(value);
 
-    var meshPromise = postJSONPromise(
-        'api/mesher_init',
-        {'nodepath': nodepath, 'elementpath': elementpath}
-    );
+        surfaceData['nodes'] = parsed_json['datasetSurfaceNodes'];
+        surfaceData['nodesCenter'] = parsed_json['datasetSurfaceNodesCenter'];
+        surfaceData['tets'] = parsed_json['datasetSurfaceTets'];
+        surfaceData['wireframe'] = parsed_json['datasetSurfaceWireframe'];
+        surfaceData['freeEdges'] = parsed_json['datasetSurfaceFreeEdges'];
+        // surfaceData['field'] = parsed_json['datasetSurfaceField'];
 
-    meshPromise.then(function(value){
+        var expandedSurfaceWireframe = expandDataWithIndices(
+            surfaceData['wireframe'], surfaceData['nodes'], chunksize=3);
 
-        bufferIndexArray = value['surface_indexfile'];
-        node_file = expandDataWithIndices(
-            bufferIndexArray,
-            value['surface_nodes'],
-            chunksize=3
-        );
-        meta_file = value['surface_metadata'];
+        var expandedSurfaceFreeEdges = expandDataWithIndices(
+            surfaceData['freeEdges'], surfaceData['nodes'], chunksize=3);
 
-        var bary_coords = generateBarycentricCoordinatesFromIndices(bufferIndexArray);
+        var expandedSurfaceTets = expandDataWithIndices(
+            surfaceData['tets'], surfaceData['nodes'], chunksize=3);
 
-        var initialTimestepDataPromise = postJSONPromise(
-            'api/get_timestep_data',
-            {'object_name': object_name, 'field': field, 'timestep': timestep}
-        );
+        // var expandedSurfaceField = expandDataWithIndices(
+        //     surfaceData['tets'], surfaceData['field'], chunksize=1);
 
-        initialTimestepDataPromise.then(function(value){
-            var rescaledTimestepData = rescaleFieldValues(
-                value['timestep_data'],
-                fragmentShaderTMin,
-                fragmentShaderTMax
-            );
-            timestep_data = expandDataWithIndices(
-                bufferIndexArray,
-                rescaledTimestepData,
-                chunksize=1
-            );
+        // var rescaledField = rescaleFieldValues(
+        //     expandedSurfaceField,
+        //     fragmentShaderTMin,
+        //     fragmentShaderTMax
+        // );
 
-            averageFieldValsOverElement(timestep_data);
+        // bufferDataArray['a_field']['data'] = new Float32Array(rescaledField);
+        bufferDataArray['a_position']['data'] = expandedSurfaceTets;
+        bufferWireframeArray['a_line_data']['data'] = expandedSurfaceWireframe;
+        bufferFreeEdgesArray['a_line_data']['data'] = expandedSurfaceFreeEdges;
 
-            bufferDataArray['a_position']['data'] = node_file;
-            bufferDataArray['a_temp']['data'] = new Float32Array(timestep_data);
-            bufferDataArray['a_bc']['data'] = bary_coords;
+        vertexDataHasChanged = true;
 
-            model_metadata = meta_file;
-
-            vertexDataHasChanged = true;
-        });
     });
 }
 
@@ -423,19 +454,6 @@ function main() {
     // Init WebGL.
     gl = grabCanvas("webGlCanvas");
 
-    var surfaceNodes;
-    var surfaceTets;
-    var surfaceWireframe;
-    var surfaceFreeEdges;
-    var surfaceField;
-
-    // var node_file;
-    // var index_file;
-    // var meta_file;
-
-    // var timestep_data;
-    // var edges_data;
-
     // testing js json parse...
 	  var current_scene = document.getElementById("webGlCanvas").getAttribute("data-scene-hash");
     var protocol = document.location.protocol;
@@ -453,12 +471,14 @@ function main() {
         mesh_data.then(function(value) {
             var parsed_json = JSON.parse(value);
 
-            surfaceNodes = parsed_json['datasetSurfaceNodes'];
-            surfaceTets = parsed_json['datasetSurfaceTets'];
-            surfaceNodesCenter = parsed_json['datasetSurfaceNodesCenter'];
-            surfaceWireframe = parsed_json['datasetSurfaceWireframe'];
-            surfaceFreeEdges = parsed_json['datasetSurfaceFreeEdges'];
-            surfaceField = parsed_json['datasetSurfaceField'];
+            currentMeshHash = parsed_json['datasetMeshHash'];
+            currentFieldHash = parsed_json['datasetFieldHash'];
+            surfaceData['nodes'] = parsed_json['datasetSurfaceNodes'];
+            surfaceData['nodesCenter'] = parsed_json['datasetSurfaceNodesCenter'];
+            surfaceData['tets'] = parsed_json['datasetSurfaceTets'];
+            surfaceData['wireframe'] = parsed_json['datasetSurfaceWireframe'];
+            surfaceData['freeEdges'] = parsed_json['datasetSurfaceFreeEdges'];
+            surfaceData['field'] = parsed_json['datasetSurfaceField'];
 
             loadShaders();
         });
@@ -531,52 +551,36 @@ function main() {
      */
     function beginRendering() {
 
-        // var indexSource = index_file;
-
-        // var bary_coords = generateBarycentricCoordinatesFromIndices(
-        //     indexSource);
-
-        // var triangleSource = expandDataWithIndices(
-        //     indexSource, node_file, chunksize=3);
-
-        // var rescaledTimestepData = rescaleFieldValues(
-        //     timestep_data,
-        //     fragmentShaderTMin,
-        //     fragmentShaderTMax
-        // );
-
-        // var temperatureSource = expandDataWithIndices(
-        //     indexSource, rescaledTimestepData, chunksize=1);
-
-        // temperatureSource = averageFieldValsOverElement(temperatureSource);
-
-        // var metaSource = meta_file;
-
-        // var edgeSource = expandDataWithIndices(
-        //     edges_data, node_file, chunksize=3);
-        var expandedSurfaceNodes = expandDataWithIndices(
-            surfaceTets, surfaceNodes, chunksize=3);
-
         var expandedSurfaceWireframe = expandDataWithIndices(
-            surfaceWireframe, surfaceNodes, chunksize=3);
+            surfaceData['wireframe'], surfaceData['nodes'], chunksize=3);
 
         var expandedSurfaceFreeEdges = expandDataWithIndices(
-            surfaceFreeEdges, surfaceNodes, chunksize=3);
-        // console.log(expandedSurfaceFreeEdges);
-        // gl.lineWidth(2);
+            surfaceData['freeEdges'], surfaceData['nodes'], chunksize=3);
+
+        var expandedSurfaceTets = expandDataWithIndices(
+            surfaceData['tets'], surfaceData['nodes'], chunksize=3);
+
+        var expandedSurfaceField = expandDataWithIndices(
+            surfaceData['tets'], surfaceData['field'], chunksize=1);
+
+        var rescaledField = rescaleFieldValues(
+            expandedSurfaceField,
+            fragmentShaderTMin,
+            fragmentShaderTMax
+        );
 
         bufferDataArray = {
             a_position: {
                 numComponents: 3,
-                data: expandedSurfaceNodes
+                data: expandedSurfaceTets
             },
 
             a_field: {
                 numComponents: 1,
                 type: gl.FLOAT,
-                normalized: false,
+                normalized: true,
                 data: new Float32Array(
-                    surfaceField
+                    rescaledField
                 )
             }
         };
@@ -594,46 +598,6 @@ function main() {
                 data: expandedSurfaceFreeEdges
             }
         };
-
-        // bufferDataArray = {
-        //     // NOTE: This must be named indices or it will not work.
-        //     // indices: {
-        //     //     drawType: gl.DYNAMIC_DRAW,
-        //     //     numComponents: 1,
-        //     //     data: indexSource
-        //     // },
-
-        //     a_position: {
-        //         numComponents: 3,
-        //         data: triangleSource
-        //     },
-
-
-        //     a_bc: {
-        //         numComponents: 3,
-        //         data: bary_coords
-        //     },
-        //     a_temp: {
-        //         numComponents: 1,
-        //         type: gl.FLOAT,
-        //         normalized: false,
-        //         data: new Float32Array(
-        //             temperatureSource
-        //         )
-        //     }
-        // };
-
-        // edgeDataArray = {
-        //     a_model_edges : {
-        //         numComponents: 3,
-        //         // type: gl.FLOAT,
-        //         // normalized: false,
-        //         data: edges_data
-        //     }
-        // };
-
-        // Set model metadata.
-        // model_metadata = meta_file;
 
         // ... call the GL routine (i.e. do the graphics stuff)
         glRoutine(gl);

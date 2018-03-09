@@ -113,6 +113,7 @@ class ParseDataset:
         """
         Return the mesh data (nodes, elements) for the dataset.
 
+        Current hash is an array or None.
         """
         # parse nodes
         nodes_path = sorted(directory.glob('nodes.bin'))[0]
@@ -142,7 +143,7 @@ class ParseDataset:
         mesh_checksum = mesh_checksum.hexdigest()
         return_dict = {'hash': mesh_checksum}
 
-        if current_hash is None or not (current_hash == mesh_checksum):
+        if current_hash is None or mesh_checksum not in current_hash:# (current_hash == mesh_checksum)
             return_dict['nodes'] = {}
             return_dict['nodes']['data'] = self._read_binary_data(
                 nodes_path, nodes_format)
@@ -167,25 +168,72 @@ class ParseDataset:
         """
         Return the field data for the dataset.
 
-        """
-        field_paths = sorted(directory.glob('**/*.bin'))
+        Args:
+         directory (pathlib.Path): Path to the eo/no directories.
+         field (dict): Dictionary containing the requested field type and name.
+         current_hash (str, optional): Hash of the currently selected field.
 
+        """
+        # # get every binary path in the subfolders of directory
+        # field_paths = sorted(directory.glob('**/*.bin'))
+
+        # for index, field_path in enumerate(field_paths):
+
+        #     field_name = re.search(
+        #         r'(.*)\.bin', str(field_path.name)).groups(0)[0]
+
+        #     if field_name == field:
+        #         directory = field_path.parent.name
+
+        #         actual_field_path = field_path
+
+        #         if directory == 'no':
+        #             field_format = binary_formats.nodal_fields()
+        #         if directory == 'eo':
+        #             field_format = binary_formats.elemental_fields()
+
+        #         field_hash = self._file_hash(field_path)
+
+        #         break
+
+        # # this gets called if no break occured
+        # else:
+        #     # field was not found
+        #     return None
+
+        # if current_hash is None or field_hash not in current_hash:# (current_hash == field_hash):
+        #     data = self._read_binary_data(actual_field_path, field_format)
+        # else:
+        #     data = None
+
+        ##################
+        # Attempt two
+        req_field_type = field['type']
+        req_field_name = field['name']
+
+        if req_field_type == 'nodal':
+            sub_dir = 'no'
+            field_format = binary_formats.nodal_fields()
+        elif req_field_type == 'elemental':
+            sub_dir = 'eo'
+            field_format = binary_formats.elemental_fields()
+        else:
+            return None
+
+        # get every binary path in the subfolders of directory
+        field_paths = sorted(directory.glob('{}/*.bin'.format(sub_dir)))
+
+        # just go through every bin in the dir until we find the right one
         for index, field_path in enumerate(field_paths):
 
             field_name = re.search(
                 r'(.*)\.bin', str(field_path.name)).groups(0)[0]
 
-            if field_name == field:
-                directory = field_path.parent.name
+            # found the right bin
+            if field_name == req_field_name:
+                bin_path = field_path
 
-                actual_field_path = field_path
-
-                if directory == 'no':
-                    field_format = binary_formats.nodal_fields()
-                if directory == 'eo':
-                    field_format = binary_formats.elemental_fields()
-
-                field_hash = self._file_hash(field_path)
+                field_hash = self._file_hash(bin_path)
 
                 break
 
@@ -194,8 +242,8 @@ class ParseDataset:
             # field was not found
             return None
 
-        if current_hash is None or not (current_hash == field_hash):
-            data = self._read_binary_data(actual_field_path, field_format)
+        if current_hash is None or field_hash not in current_hash:# (current_hash == field_hash):
+            data = self._read_binary_data(bin_path, field_format)
         else:
             data = None
 
@@ -213,7 +261,7 @@ class ParseDataset:
         ret_dict = {
             'hash': None,
             'fmt': binary_formats.nodal_fields(),
-            'field': [0]*self._surface_node_count
+            'field': [0.0]*self._surface_node_count
         }
         return ret_dict
 
@@ -223,10 +271,11 @@ class ParseDataset:
 
         Args:
          timestep (str): The timestep from which we want to get data.
-         field (str): The field from which we want to get data.
+         field (dict): The field from which we want to get data. Structure is
+          {'type': TYPE (str), 'name': NAME (str)}.
          hash_dict (bool, optional, defaults to False): Read the data again,
           even if we already have data corresponding to the selected timestep
-          and field.
+          and field. Has fields 'mesh' and 'field'.
 
         Returns:
          dict or None: The data for the timestep or None, if the field could
@@ -234,45 +283,61 @@ class ParseDataset:
 
         Raises:
          TypeError: If ``type(timestep)`` is not `str`.
-         TypeError: If ``type(field)`` is not `str`.
+         TypeError: If ``type(field)`` is not `dict`.
          TypeError: If ``type(hash_dict)`` is not `bool`.
+
+        FIXME: hash dict bool OR dict, bool AND dict can not raise type error.
 
         """
         return_dict =  {
-            'nodes': None,
-            'tets': None,
+            'hash_dict': {
+                'mesh': None,
+                'field': None
+            },
+            'nodes': {'data': None},
+            'tets': {'data': None},
             'nodes_center': None,
-            'field': None,
-            'wireframe': None,
-            'free_edges': None
+            'field': {'data': None},
+            'wireframe': {'data': None},
+            'free_edges': {'data': None}
         }
 
-        if not isinstance(timestep, str):
-            raise TypeError('timestep is {}, expected str'.format(
-                type(timestep).__name__))
+        # if not isinstance(timestep, str):
+        #     raise TypeError('timestep is {}, expected str'.format(
+        #         type(timestep).__name__))
 
-        if not isinstance(field, str):
-            raise TypeError('field is {}, expected str'.format(
-                type(field).__name__))
+        # if not isinstance(field, dict):
+        #     raise TypeError('field is {}, expected dict'.format(
+        #         type(field).__name__))
 
-        if hash_dict is not None:
-            if not isinstance(hash_dict, dict):
-                raise TypeError('hash_dict is {}, expected dict'.format(
-                    type(hash_dict).__name__))
+        # # FIXME: Must allow for hash_dict to be a bool too. ???
+        # if hash_dict is not None:
+        #     if not isinstance(hash_dict, dict):
+        #         raise TypeError('hash_dict is {}, expected dict'.format(
+        #             type(hash_dict).__name__))
 
         timestep_path = self.fo_dir / timestep
 
         try:
             mesh_dict = self._mesh_data(
                 timestep_path, current_hash=hash_dict['mesh'])
-            field_dict = self._field_data(
-                timestep_path, field, current_hash=hash_dict['field'])
-
         except (TypeError, KeyError):
             mesh_dict = self._mesh_data(
                 timestep_path, current_hash=None)
-            field_dict = self._field_data(
-                timestep_path, field, current_hash=None)
+
+        if field is not None:
+            try:
+                field_dict = self._field_data(
+                    timestep_path, field, current_hash=hash_dict['field'])
+            except (TypeError, KeyError):
+                field_dict = self._field_data(
+                    timestep_path, field, current_hash=None)
+
+        else:
+            # Corner case for unsetting the fields once they were set
+            field_dict = None
+
+        return_dict['hash_dict']['mesh'] = mesh_dict['hash']
 
         mesh_nodes = mesh_dict['nodes']
         mesh_elements = mesh_dict['elements']
@@ -290,29 +355,17 @@ class ParseDataset:
             return_dict['free_edges'] = surface['free_edges']
             return_dict['wireframe'] = surface['wireframe']
 
-            self._surface_node_count = int(len(surface['tets']['data'])/3)
-
         # field does not exist
         if field_dict is None:
-            field_values = self._blank_field()
+            field_values = self._blank_field()['field']
+
         else:
             field_values = field_dict['field']
+            return_dict['hash_dict']['field'] = field_dict['hash']
 
-        return_dict['field'] = dm.model_surface_fields(
-            self.field_map, field_values)
-
-        # if field_dict is None:
-        #     return_dict['field'] = 'does_not_exist'
-        #     return return_dict
-
-        # # if field == '__no_field__':
-        # #     field_values = self._blank_field()
-        # # else:
-        # field_values = field_dict['field']
-        # print('hey')
-
-        # if field_values is not None:
-        #     return_dict['field'] = dm.model_surface_fields(
-        #         self.field_map, field_values)
+        if field_values is not None:
+            # Expand field
+            return_dict['field'] = dm.model_surface_fields(
+                self.field_map, field_values)
 
         return return_dict

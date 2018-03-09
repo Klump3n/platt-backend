@@ -451,4 +451,5 @@ class ServerAPI:
         """
         dataset_mesh = gloset.scene_manager.dataset_mesh(
             scene_hash, dataset_hash)
+
         return dataset_mesh

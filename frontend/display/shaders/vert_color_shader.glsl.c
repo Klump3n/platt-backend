@@ -5,11 +5,11 @@
 in vec3 a_position;
 /* in vec4 a_color; */
 
-in vec3 a_bc;
-out vec3 v_bc;
+/* in vec3 a_bc; */
+/* out vec3 v_bc; */
 
-in float a_temp;
-out float v_temp;
+in float a_field;
+out float v_field;
 
 out vec4 v_gl_Position;
 
@@ -28,7 +28,7 @@ void main() {
 
   v_gl_Position = gl_Position;
 
-  v_temp = a_temp;
-  v_bc = a_bc;
+  v_field = a_field;
+  /* v_bc = a_bc; */
 
 }

@@ -13,6 +13,7 @@ from _dos.do_scenes import scenes, scenes_help
 from _dos.do_datasets import datasets, datasets_help
 
 # Some utility functions
+from client.util_client.send_http_request import send_http_request
 from util_client.host_test import target_online_and_compatible
 
 # # Get the version from the parent directory
@@ -183,6 +184,79 @@ class Terminal(cmd.Cmd):
 
         """
         scenes(line, self.c_data)
+
+    def complete_scenes(self, text, line, begidx, endidx):
+        """
+        Completion for scenes.
+
+        """
+        options = [
+            'list',
+            'create',
+            'delete',
+            'select'
+        ]
+
+        line_args = line.split()
+
+        if (
+                ((len(line_args) == 1) and line[-1] == ' ') or
+                ((len(line_args) == 2) and line_args[1] not in options)
+        ):
+            mline = line.partition('scenes ')[2]
+            offs = len(mline) - len(text)
+            return [s[offs:] for s in options if s.startswith(mline)]
+
+        if (
+                (
+                    (line_args[1] == 'select') or
+                    (line_args[1] == 'delete')
+                ) and (
+                    ((len(line_args) == 2) and line[-1] == ' ') or
+                    (len(line_args) == 3)
+                )
+        ):
+            # Maybe later do this less often
+            response = send_http_request(
+                http_method='GET',
+                api_endpoint='scenes',
+                connection_data=self.c_data,
+                data_to_transmit=None
+            )
+
+            if response is None:
+                return None
+
+            # Extract activeScenes
+            active_scenes = response['activeScenes']
+
+            mline = line.partition('scenes {} '.format(line_args[1]))[2]
+            offs = len(mline) - len(text)
+            return [s[offs:] for s in active_scenes if s.startswith(mline)]
+
+        if (
+                (line_args[1] == 'create') and (
+                    ((len(line_args) == 2) and line[-1] == ' ') or
+                    (len(line_args) == 3)
+                )
+        ):
+            response = send_http_request(
+                http_method='GET',
+                api_endpoint='datasets',
+                connection_data=self.c_data,
+                data_to_transmit=None
+            )
+
+            if response is None:
+                return None
+
+            # availableDatasets
+            available_datasets = response['availableDatasets']
+
+            mline = line.partition('scenes create ')[2]
+            offs = len(mline) - len(text)
+            return [s[offs:] for s in available_datasets if s.startswith(mline)]
+
 
     def help_scenes(self):
         """
