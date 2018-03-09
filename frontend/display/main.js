@@ -158,6 +158,9 @@ function glRoutine(gl) {
 
         if (fragmentDataHasChanged){
             bufferInfoColor = twgl.createBufferInfoFromArrays(gl, bufferDataArray);
+            bufferInfoEdge = twgl.createBufferInfoFromArrays(gl, bufferFreeEdgesArray);
+            bufferInfoWireframe = twgl.createBufferInfoFromArrays(gl, bufferWireframeArray);
+
             fragmentDataHasChanged = false;
         };
 
@@ -208,6 +211,8 @@ function HACKupdateFragmentShaderData(dataset_hash) {
     mesh_data.then(function(value) {
         var parsed_json = JSON.parse(value);
 
+        currentMeshHash = parsed_json['datasetMeshHash'];
+        currentFieldHash = parsed_json['datasetFieldHash'];
         surfaceData['nodes'] = parsed_json['datasetSurfaceNodes'];
         surfaceData['nodesCenter'] = parsed_json['datasetSurfaceNodesCenter'];
         surfaceData['tets'] = parsed_json['datasetSurfaceTets'];
@@ -322,6 +327,7 @@ function updateVertexShaderData(
 
     mesh_data.then(function(value) {
         var parsed_json = JSON.parse(value);
+
 
         surfaceData['nodes'] = parsed_json['datasetSurfaceNodes'];
         surfaceData['nodesCenter'] = parsed_json['datasetSurfaceNodesCenter'];
