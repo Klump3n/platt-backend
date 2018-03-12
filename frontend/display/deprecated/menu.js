@@ -1,24 +1,5 @@
 function main() {
 
-    var current_scene = document.getElementById("webGlCanvas").getAttribute("data-scene-hash");
-    var scene_hash = current_scene;
-    var protocol = document.location.protocol;
-    var host = document.location.host;
-    var path = protocol + "//" + host + "/api/scenes/" + current_scene;
-
-    // This should not have to be executed again...
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', path, true);
-    xhr.send();
-    xhr.onload = function() {
-        var parsed_json = JSON.parse(xhr.responseText);
-        var datasets = parsed_json["loadedDatasets"];
-        var dataset_hash = datasets[0]["datasetHash"];
-        // var dataset_mesh_path = path + "/" + dataset_hash + "/mesh";
-
-        add_dataset(dataset_hash);
-    };
-
     var add_object_button = document.getElementById('add_objects_button');
     add_object_button.addEventListener("click", open_objects_menu);
     var add_objects_menu_container = document.getElementById('add_objects_menu_container');
@@ -89,12 +70,6 @@ function main() {
         };
     }
 
-    function add_dataset(dataset_hash) {
-        // Add a dataset
-        //
-        build_menu(dataset_hash);
-    }
-
     function add_object(){
         // Add an object to the list of objects
         //
@@ -131,15 +106,12 @@ function main() {
         // Load the timesteps via XHR. Do this every time to be able to
         // update the menu.
         var xhr = new XMLHttpRequest();
-        // xhr.open('POST', '/api/get_object_timesteps', true);
-        xhr.open('GET',  protocol + "//" + host + '/api/scenes/' + scene_hash + '/' + object_name + '/timesteps', true);
-        xhr.send();
-        // xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        // xhr.send(JSON.stringify({'object_name': object_name}));
+        xhr.open('POST', '/api/get_object_timesteps', true);
+        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xhr.send(JSON.stringify({'object_name': object_name}));
         xhr.onload = function() {
             var temp_json = JSON.parse(xhr.responseText);
-
-            var timesteps = temp_json['datasetTimestepList'];
+            var timesteps = temp_json['object_timesteps'];
 
             for (var it in timesteps) {
                 var timestep_menu_item = document.createElement("div");
@@ -162,28 +134,12 @@ function main() {
         var object_name = this.getAttribute('data-name');
         var timestep = this.getAttribute('data-timestep');
         var object_current_timestep = document.getElementById('object_timestep_current'+object_name);
-        // object_current_timestep.innerHTML = timestep;
+        object_current_timestep.innerHTML = timestep;
 
         // FIXME
-        // var field = 'nt11';
-        // HACKupdateFragmentShaderData(object_name);
-        // updateFragmentShaderData(object_name, field, timestep);
+        var field = 'nt11';
 
-        var xhr = new XMLHttpRequest();
-
-        xhr.open('PATCH',  protocol + "//" + host + '/api/scenes/' + scene_hash + '/' + object_name + '/timesteps', true);
-        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        xhr.send(JSON.stringify({"datasetTimestepSelected": timestep}));
-
-        xhr.onload = function() {
-            var temp_json = JSON.parse(xhr.responseText);
-            var new_ts = temp_json["datasetTimestepSelected"];
-            object_current_timestep.innerHTML = new_ts;
-            updateMesh(object_name);
-            // HACKupdateFragmentShaderData(object_name);
-        };
-
-
+        updateFragmentShaderData(object_name, field, timestep);
     }
 
     function decrease_timestep() {
@@ -193,36 +149,25 @@ function main() {
 
         var current_timestep = object_current_timestep.innerHTML;
 
-        var xhr = new XMLHttpRequest();
+        var previousTimestepPromise = postJSONPromise(
+            'api/get_timestep_before',
+            {'current_timestep': current_timestep, 'object_name': object_name}
+        );
+        // var previousTimestepPromise = postDataPromise(
+        //     '/get_timestep_before?current_timestep='+
+        //         current_timestep+'&object_name='+object_name);
 
-        xhr.open('PATCH',  protocol + "//" + host + '/api/scenes/' + scene_hash + '/' + object_name + '/timesteps', true);
-        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        xhr.send(JSON.stringify({"datasetTimestepSelected": "_prev_timestep"}));
+        previousTimestepPromise.then(function(value) {
+            var previous_timestep = value['previous_timestep'];
+            if (current_timestep != previous_timestep) {
 
-        xhr.onload = function() {
-            var temp_json = JSON.parse(xhr.responseText);
-            var new_ts = temp_json["datasetTimestepSelected"];
-            object_current_timestep.innerHTML = new_ts;
-            updateMesh(object_name);
-            // HACKupdateFragmentShaderData(object_name);
-        };
+                // FIXME
+                var field = 'nt11';
 
-        // var previousTimestepPromise = postJSONPromise(
-        //     'api/get_timestep_before',
-        //     {'current_timestep': current_timestep, 'object_name': object_name}
-        // );
-
-        // previousTimestepPromise.then(function(value) {
-        //     var previous_timestep = value['previous_timestep'];
-        //     if (current_timestep != previous_timestep) {
-
-        //         // FIXME
-        //         var field = 'nt11';
-
-        //         updateFragmentShaderData(object_name, field, previous_timestep);
-        //         object_current_timestep.innerHTML = previous_timestep;
-        //     }
-        // });
+                updateFragmentShaderData(object_name, field, previous_timestep);
+                object_current_timestep.innerHTML = previous_timestep;
+            }
+        });
     }
 
     function increase_timestep() {
@@ -232,36 +177,25 @@ function main() {
 
         var current_timestep = object_current_timestep.innerHTML;
 
-        var xhr = new XMLHttpRequest();
+        var nextTimestepPromise = postJSONPromise(
+            'api/get_timestep_after',
+            {'current_timestep': current_timestep, 'object_name': object_name}
+        );
+        // var nextTimestepPromise = postDataPromise(
+        //     '/get_timestep_after?current_timestep='+
+        //         current_timestep+'&object_name='+object_name);
 
-        xhr.open('PATCH',  protocol + "//" + host + '/api/scenes/' + scene_hash + '/' + object_name + '/timesteps', true);
-        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        xhr.send(JSON.stringify({"datasetTimestepSelected": "_next_timestep"}));
+        nextTimestepPromise.then(function(value) {
+            var next_timestep = value['next_timestep'];
+            if (current_timestep != next_timestep) {
 
-        xhr.onload = function() {
-            var temp_json = JSON.parse(xhr.responseText);
-            var new_ts = temp_json["datasetTimestepSelected"];
-            object_current_timestep.innerHTML = new_ts;
-            updateMesh(object_name);
-            // HACKupdateFragmentShaderData(object_name);
-        };
+                // FIXME
+                var field = 'nt11';
 
-        // var nextTimestepPromise = postJSONPromise(
-        //     'api/get_timestep_after',
-        //     {'current_timestep': current_timestep, 'object_name': object_name}
-        // );
-
-        // nextTimestepPromise.then(function(value) {
-        //     var next_timestep = value['next_timestep'];
-        //     if (current_timestep != next_timestep) {
-
-        //         // FIXME
-        //         var field = 'nt11';
-
-        //         updateFragmentShaderData(object_name, field, next_timestep);
-        //         object_current_timestep.innerHTML = next_timestep;
-        //     }
-        // });
+                updateFragmentShaderData(object_name, field, next_timestep);
+                object_current_timestep.innerHTML = next_timestep;
+            }
+        });
     }
 
     function close_timestep_menu() {
@@ -272,79 +206,79 @@ function main() {
         this.addEventListener('click', open_timestep_menu);
     }
 
-    function build_menu(dataset_hash) {
+    function build_menu(object_name) {
 
         var objects_container = document.getElementById('objects_container');
 
         var object_padding = document.createElement('div');
         object_padding.setAttribute('class', 'object_heading');
-        object_padding.setAttribute('id', 'object_heading'+dataset_hash);
+        object_padding.setAttribute('id', 'object_heading'+object_name);
 
         var object = document.createElement('details');
         object.setAttribute('class', 'object');
-        object.setAttribute('id', 'object'+dataset_hash);
+        object.setAttribute('id', 'object'+object_name);
 
         var object_heading = document.createElement('summary');
         object_heading.setAttribute('class', 'object_heading');
-        object_heading.setAttribute('id', 'object_heading'+dataset_hash);
-        object_heading.innerHTML = dataset_hash;
+        object_heading.setAttribute('id', 'object_heading'+object_name);
+        object_heading.innerHTML = object_name;
 
         var object_functions = document.createElement('div');
         object_functions.setAttribute('class', 'object_functions');
-        object_functions.setAttribute('id', 'object_functions'+dataset_hash);
+        object_functions.setAttribute('id', 'object_functions'+object_name);
 
         var object_timestep_container = document.createElement('div');
         object_timestep_container.setAttribute('class', 'object_timestep_container');
-        object_timestep_container.setAttribute('id', 'object_timestep_container'+dataset_hash);
+        object_timestep_container.setAttribute('id', 'object_timestep_container'+object_name);
 
         var object_timestep_heading = document.createElement('div');
         object_timestep_heading.setAttribute('class', 'object_timestep_heading');
-        object_timestep_heading.setAttribute('id', 'object_timestep_heading'+dataset_hash);
+        object_timestep_heading.setAttribute('id', 'object_timestep_heading'+object_name);
         object_timestep_heading.innerHTML = 'Timestep';
 
         var object_timestep_controls = document.createElement('div');
         object_timestep_controls.setAttribute('class', 'object_timestep_controls');
-        object_timestep_controls.setAttribute('id', 'object_timestep_controls'+dataset_hash);
+        object_timestep_controls.setAttribute('id', 'object_timestep_controls'+object_name);
 
         var object_timestep_previous = document.createElement('div');
         object_timestep_previous.setAttribute('class', 'object_timestep_previous');
-        object_timestep_previous.setAttribute('id', 'object_timestep_previous'+dataset_hash);
-        object_timestep_previous.setAttribute('data-name', dataset_hash);
+        object_timestep_previous.setAttribute('id', 'object_timestep_previous'+object_name);
+        object_timestep_previous.setAttribute('data-name', object_name);
         object_timestep_previous.innerHTML = '<';
         object_timestep_previous.addEventListener('click', decrease_timestep);
 
         var object_timestep_current = document.createElement('div');
         object_timestep_current.setAttribute('class', 'object_timestep_current');
-        object_timestep_current.setAttribute('id', 'object_timestep_current'+dataset_hash);
+        object_timestep_current.setAttribute('id', 'object_timestep_current'+object_name);
         // object_timestep_current.innerHTML = '##.##';     // This is set later.
         object_timestep_current.addEventListener('click', open_timestep_menu);
-        object_timestep_current.setAttribute('data-name', dataset_hash);
+        object_timestep_current.setAttribute('data-name', object_name);
 
         var object_timestep_next = document.createElement('div');
         object_timestep_next.setAttribute('class', 'object_timestep_next');
-        object_timestep_next.setAttribute('id', 'object_timestep_next'+dataset_hash);
-        object_timestep_next.setAttribute('data-name', dataset_hash);
+        object_timestep_next.setAttribute('id', 'object_timestep_next'+object_name);
+        object_timestep_next.setAttribute('data-name', object_name);
         object_timestep_next.innerHTML = '>';
         object_timestep_next.addEventListener('click', increase_timestep);
 
         var object_timestep_menu_padding_container = document.createElement('div');
         object_timestep_menu_padding_container.setAttribute('class', 'object_timestep_menu_padding_container');
-        object_timestep_menu_padding_container.setAttribute('id', 'object_timestep_menu_padding_container'+dataset_hash);
+        object_timestep_menu_padding_container.setAttribute('id', 'object_timestep_menu_padding_container'+object_name);
 
         var object_timestep_menu = document.createElement('div');
         object_timestep_menu.setAttribute('class', 'object_timestep_menu');
-        object_timestep_menu.setAttribute('id', 'object_timestep_menu'+dataset_hash);
+        object_timestep_menu.setAttribute('id', 'object_timestep_menu'+object_name);
 
         var object_property_container = document.createElement('div');
         object_property_container.setAttribute('class', 'object_property_container');
-        object_property_container.setAttribute('id', 'object_property_container'+dataset_hash);
+        object_property_container.setAttribute('id', 'object_property_container'+object_name);
 
         var xhr = new XMLHttpRequest();
-        // xhr.open('POST', '/get_object_properties?dataset_hash='+dataset_hash, true);
+        // xhr.open('POST', '/get_object_properties?object_name='+object_name, true);
         // xhr.send();
         xhr.open('POST', '/api/get_object_properties', true);
         xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        // xhr.send(JSON.stringify({'dataset_hash': dataset_hash}));
+        xhr.send(JSON.stringify({'object_name': object_name}));
 
         var object_properties;
         var initial_timestep;
@@ -360,22 +294,22 @@ function main() {
                 var property = object_properties[propertyId];
                 var object_property = document.createElement('div');
                 object_property.setAttribute('class', 'object_property');
-                object_property.setAttribute('id', 'object_property'+dataset_hash+property);
+                object_property.setAttribute('id', 'object_property'+object_name+property);
                 object_property.innerHTML = property;
                 object_property_container.appendChild(object_property);
             }
 
-            var nodepath = dataset_hash + '/fo/' + initial_timestep + '/nodes.bin';
-            var elementpath = dataset_hash + '/fo/' + initial_timestep + '/elements.dc3d8.bin';
+            var nodepath = object_name + '/fo/' + initial_timestep + '/nodes.bin';
+            var elementpath = object_name + '/fo/' + initial_timestep + '/elements.dc3d8.bin';
 
-            // var nodepath = dataset_hash + '/fo/' + initial_timestep + '/mesh/case.nodes.bin';
-            // var elementpath = dataset_hash + '/fo/' + initial_timestep + '/mesh/case.dc3d8.bin';
+            // var nodepath = object_name + '/fo/' + initial_timestep + '/mesh/case.nodes.bin';
+            // var elementpath = object_name + '/fo/' + initial_timestep + '/mesh/case.dc3d8.bin';
 
             // FIXME
             var field = 'nt11';
 
             updateVertexShaderData(
-                dataset_hash=dataset_hash,
+                object_name=object_name,
                 field=field,
                 nodepath=nodepath,
                 elementpath=elementpath,
@@ -384,13 +318,13 @@ function main() {
 
         var object_controls_container = document.createElement('div');
         object_controls_container.setAttribute('class', 'object_controls_container');
-        object_controls_container.setAttribute('id', 'object_controls_container'+dataset_hash);
+        object_controls_container.setAttribute('id', 'object_controls_container'+object_name);
 
         var object_controls_delete_object = document.createElement('div');
         object_controls_delete_object.setAttribute('class', 'object_controls_delete_object');
-        object_controls_delete_object.setAttribute('id', 'object_controls_delete_object'+dataset_hash);
+        object_controls_delete_object.setAttribute('id', 'object_controls_delete_object'+object_name);
         object_controls_delete_object.innerHTML = 'Delete Object';
-        object_controls_delete_object.setAttribute('data-name', dataset_hash);
+        object_controls_delete_object.setAttribute('data-name', object_name);
         object_controls_delete_object.addEventListener('click', delete_object);
 
         // Composing timestep control menu.

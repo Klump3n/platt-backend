@@ -116,3 +116,53 @@ function postJSONPromise(post_url, json_string) {
 	      };
     });
 }
+
+/**
+ * Contact the server at rootPath with apiEndpoint and apply HTTPMethod with
+ * optional payload.
+ * @param {string} rootPath - The root path of the servers api.
+ * @param {string} apiEndpoint - The API endpoint.
+ * @param {string} HTTPMethod - 'GET', 'POST', 'DELETE', 'PATCH'.
+ * @param {js object} payload - When POST or PATCH is used we want to transmit
+ * some payload to the server. This should be a js object, such as a dictionary
+ * or array.
+ * @returns {object promise} A promise on a JSON object that the server was
+ * contacted.
+ */
+function contactServer(basePath, apiEndpoint, HTTPMethod, payload) {
+    return new Promise(function(resolve, revoke) {
+        var xhr = new XMLHttpRequest;
+        xhr.responseType = 'text';
+
+        // Concat the complete path
+        var path = basePath + '/' + apiEndpoint;
+
+        // GET (or smth) from http://.... with async=true
+        xhr.open(HTTPMethod.toUpperCase(), path, true);
+
+        if (payload !== undefined) {
+            // Set the charset
+            xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            // Convert the payload into a JSON string
+            xhr.send(JSON.stringify(payload));
+        } else {
+            // empty string
+            xhr.send();
+        }
+
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+		            // Tries to get the shader source
+                var result = xhr.responseText;
+		            resolve(JSON.parse(result));
+	          } else {
+		            // If unsuccessful return an error
+		            reject(Error('contactServer() - ERROR with'+HTTPMethod.toUpperCase()+' '+apiEndpoint));
+	          }
+	      };
+	      xhr.onerror = function() {
+	          // Maybe we have more severe problems. Also return an error then
+	          reject(Error('contactServer() - network issues'));
+        };
+    });
+}

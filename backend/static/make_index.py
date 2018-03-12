@@ -45,10 +45,10 @@ HTML = """
   <!-- Import twgl.js WebGL helper functions -->
   <!-- <script src="twgl-dist-3.x/twgl-full.min.js"></script> -->
   <script src="twgl-dist-3.x/twgl-full.js"></script>
-  {html_script_menu}
   <script src="loadData.js"></script>
   <script src="setView.js"></script>
   {html_script_colorbar}
+  {html_script_menu}
   <script src="main.js" onload="main()"></script>
 </html>
 """
@@ -91,7 +91,7 @@ BODY_COLORBAR = """
 
 # Scripts to load for menu and colorbar
 SCRIPT_MENU = """
-  <script src="menu_2.js" onload="main()"></script>
+  <script src="menu.js" onload="main()"></script>
 """
 SCRIPT_COLORBAR = """
   <script src="colorbar.js"></script>
