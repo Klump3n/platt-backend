@@ -179,7 +179,8 @@ function main() {
             var temp_json = JSON.parse(xhr.responseText);
             var new_ts = temp_json["datasetTimestepSelected"];
             object_current_timestep.innerHTML = new_ts;
-            HACKupdateFragmentShaderData(object_name);
+            updateMesh(object_name);
+            // HACKupdateFragmentShaderData(object_name);
         };
 
 
@@ -202,7 +203,8 @@ function main() {
             var temp_json = JSON.parse(xhr.responseText);
             var new_ts = temp_json["datasetTimestepSelected"];
             object_current_timestep.innerHTML = new_ts;
-            HACKupdateFragmentShaderData(object_name);
+            updateMesh(object_name);
+            // HACKupdateFragmentShaderData(object_name);
         };
 
         // var previousTimestepPromise = postJSONPromise(
@@ -240,7 +242,8 @@ function main() {
             var temp_json = JSON.parse(xhr.responseText);
             var new_ts = temp_json["datasetTimestepSelected"];
             object_current_timestep.innerHTML = new_ts;
-            HACKupdateFragmentShaderData(object_name);
+            updateMesh(object_name);
+            // HACKupdateFragmentShaderData(object_name);
         };
 
         // var nextTimestepPromise = postJSONPromise(

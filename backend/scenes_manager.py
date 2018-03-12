@@ -662,7 +662,7 @@ class SceneManager:
 
         dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
 
-        surface_mesh = target_dataset.surface_mesh()  # here with argument?
+        surface_mesh = target_dataset.surface_mesh()
 
         surface_mesh_hash = surface_mesh['mesh_hash']
         surface_nodes = surface_mesh['nodes']
@@ -671,13 +671,7 @@ class SceneManager:
         surface_wireframe = surface_mesh['wireframe']
         surface_free_edges = surface_mesh['free_edges']
 
-        # surface_nodes = target_dataset.surface_nodes()
-        # surface_tets = target_dataset.surface_tets()
-        # surface_nodes_center = target_dataset.surface_nodes_center()
-        # surface_wireframe = target_dataset.surface_wireframe()
-        # surface_free_edges = target_dataset.surface_free_edges()
-
-        surface_field = target_dataset.surface_field()  # here with argument?
+        surface_field = target_dataset.surface_field()
 
         surface_field_hash = surface_field['field_hash']
         surface_field_values = surface_field['field']
@@ -714,6 +708,98 @@ class SceneManager:
             'datasetMeta': dataset_meta,
             'datasetMeshHash': surface_mesh_hash,
             'datasetFieldHash': surface_field_hash
+        }
+
+        return return_dict
+
+    def dataset_mesh_geometry(self, scene_hash, dataset_hash):
+        """
+        GET the currently displayable mesh of a dataset.
+
+        Args:
+         scene_hash (str): The hash of the scene.
+         dataset_hash (str): The hash of the dataset.
+
+        Returns:
+         dict: The dataset mesh with surface_nodes, wireframe_indices,
+         surface_indices and orientation.
+
+        Raises:
+         TypeError: If ``type(scene_hash)`` is not `str`.
+         TypeError: If ``type(dataset_hash)`` is not `str`.
+
+        """
+        # if not isinstance(scene_hash, str):
+        #     raise TypeError('scene_hash is {}, expected str'.format(
+        #             type(scene_hash).__name__))
+
+        # if not isinstance(dataset_hash, str):
+        #     raise TypeError('dataset_hash is {}, expected str'.format(
+        #             type(dataset_hash).__name__))
+
+        target_dataset = self._target_dataset(scene_hash, dataset_hash)
+
+        dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
+
+        surface_mesh = target_dataset.surface_mesh()
+
+        surface_mesh_hash = surface_mesh['mesh_hash']
+        surface_nodes = surface_mesh['nodes']
+        surface_tets = surface_mesh['tets']
+        surface_nodes_center = surface_mesh['nodes_center']
+        surface_wireframe = surface_mesh['wireframe']
+        surface_free_edges = surface_mesh['free_edges']
+
+        return_dict = {
+            'datasetMeta': dataset_meta,
+            'datasetMeshHash': surface_mesh_hash,
+            'datasetSurfaceNodes': surface_nodes,
+            'datasetSurfaceTets': surface_tets,
+            'datasetSurfaceNodesCenter': surface_nodes_center,
+            'datasetSurfaceWireframe': surface_wireframe,
+            'datasetSurfaceFreeEdges': surface_free_edges,
+        }
+
+        return return_dict
+
+    def dataset_mesh_field(self, scene_hash, dataset_hash):
+        """
+        GET the currently displayable mesh of a dataset.
+
+        Args:
+         scene_hash (str): The hash of the scene.
+         dataset_hash (str): The hash of the dataset.
+
+        Returns:
+         dict: The dataset mesh with surface_nodes, wireframe_indices,
+         surface_indices and orientation.
+
+        Raises:
+         TypeError: If ``type(scene_hash)`` is not `str`.
+         TypeError: If ``type(dataset_hash)`` is not `str`.
+
+        """
+        if not isinstance(scene_hash, str):
+            raise TypeError('scene_hash is {}, expected str'.format(
+                    type(scene_hash).__name__))
+
+        if not isinstance(dataset_hash, str):
+            raise TypeError('dataset_hash is {}, expected str'.format(
+                    type(dataset_hash).__name__))
+
+        target_dataset = self._target_dataset(scene_hash, dataset_hash)
+
+        dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
+
+        surface_field = target_dataset.surface_field()
+
+        surface_field_hash = surface_field['field_hash']
+        surface_field_values = surface_field['field']
+
+        return_dict = {
+            'datasetMeta': dataset_meta,
+            'datasetFieldHash': surface_field_hash,
+            'datasetSurfaceField': surface_field_values
         }
 
         return return_dict

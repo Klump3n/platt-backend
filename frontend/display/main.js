@@ -41,8 +41,8 @@ var surfaceData = {
 var model_metadata;
 var surfaceNodesCenter;
 
-var fragmentShaderTMin = -1.0;
-var fragmentShaderTMax = 1.0;
+var fragmentShaderTMin = 0.0;
+var fragmentShaderTMax = 800.0;
 
 var bufferIndexArray;
 
@@ -96,16 +96,16 @@ function glRoutine(gl) {
 
     // var centerModel = new Float32Array(model_metadata.split(','));
     // var centerModel = model_metadata;
-
+    var centerModel = surfaceData['nodesCenter'];
     var scaleTheWorldBy = 150;
-    var tarPos = twgl.v3.mulScalar(surfaceData['nodesCenter'], scaleTheWorldBy);
+    var tarPos = twgl.v3.mulScalar(centerModel, scaleTheWorldBy);
     var camPos = twgl.v3.create(tarPos[0], tarPos[1], 550); // Center the z-axis over the model
     var up = [0, -1, 0];
 
     modelMatrix.placeCamera(camPos, tarPos, up);
 
     // Place the center of rotation into the center of the model
-    modelMatrix.translateWorld(twgl.v3.negate(surfaceData['nodesCenter']));
+    modelMatrix.translateWorld(twgl.v3.negate(centerModel));
 
     // Automate this...
     modelMatrix.scaleWorld(scaleTheWorldBy);
@@ -148,9 +148,11 @@ function glRoutine(gl) {
         if (vertexDataHasChanged) {
             // Update the buffer.
             bufferInfoColor = twgl.createBufferInfoFromArrays(gl, bufferDataArray);
+            bufferInfoEdge = twgl.createBufferInfoFromArrays(gl, bufferFreeEdgesArray);
+            bufferInfoWireframe = twgl.createBufferInfoFromArrays(gl, bufferWireframeArray);
 
             // Center the new object.
-            centerModel = model_metadata;
+            centerModel = surfaceData['nodesCenter'];
             modelMatrix.translateWorld(twgl.v3.negate(centerModel));
 
             vertexDataHasChanged = false;
@@ -158,8 +160,6 @@ function glRoutine(gl) {
 
         if (fragmentDataHasChanged){
             bufferInfoColor = twgl.createBufferInfoFromArrays(gl, bufferDataArray);
-            bufferInfoEdge = twgl.createBufferInfoFromArrays(gl, bufferFreeEdgesArray);
-            bufferInfoWireframe = twgl.createBufferInfoFromArrays(gl, bufferWireframeArray);
 
             fragmentDataHasChanged = false;
         };
@@ -248,121 +248,208 @@ function HACKupdateFragmentShaderData(dataset_hash) {
     });
 }
 
-/**
- * Update the data that is handled by the fragment shader. This means colour
- * data that is usually loaded for each timestep. If we additionally want to
- * change geometrical data we have to call updateVertexShaderData().
- * @param {string} object_name The object for which we want to change some data.
- * @param {string} field The dataset that gets updated.
- * @param {string} timestep The corresponding timestep.
- * @returns {undefined} Nothing
- */
-function updateFragmentShaderData(object_name, field, timestep) {
+function updateMesh(dataset_hash) {
+    // Gets the current hashes for the field and geometry. If a mismatch is found the relevant routines are called
     var current_scene = document.getElementById("webGlCanvas").getAttribute("data-scene-hash");
     var scene_hash = current_scene;
     var protocol = document.location.protocol;
     var host = document.location.host;
-    var path = protocol + "//" + host + "/api/scenes/" + current_scene + "/" + dataset_hash + "/mesh";
+    var path = protocol + "//" + host + "/api/scenes/" + current_scene + "/" + dataset_hash + "/mesh/hash";
 
-    var mesh_data = getDataSourcePromise(path);
+    var hashes = getDataSourcePromise(path);
 
-    mesh_data.then(function(value) {
+    hashes.then(function(value) {
         var parsed_json = JSON.parse(value);
 
-        // surfaceData['nodes'] = parsed_json['datasetSurfaceNodes'];
-        // surfaceData['nodesCenter'] = parsed_json['datasetSurfaceNodesCenter'];
-        // surfaceData['tets'] = parsed_json['datasetSurfaceTets'];
-        // surfaceData['wireframe'] = parsed_json['datasetSurfaceWireframe'];
-        // surfaceData['freeEdges'] = parsed_json['datasetSurfaceFreeEdges'];
-        surfaceData['field'] = parsed_json['datasetSurfaceField'];
+        var newFieldHash = parsed_json['datasetFieldHash'];
+        var newMeshHash = parsed_json['datasetMeshHash'];
 
-        // var expandedSurfaceWireframe = expandDataWithIndices(
-        //     surfaceData['wireframe'], surfaceData['nodes'], chunksize=3);
+        var vertPromise;
+        var fragPromise;
 
-        // var expandedSurfaceFreeEdges = expandDataWithIndices(
-        //     surfaceData['freeEdges'], surfaceData['nodes'], chunksize=3);
+        if ((newFieldHash != currentFieldHash) && (newMeshHash == currentMeshHash)) {
+            fragPromise = updateFragmentShaderDataPromise(dataset_hash);
+            fragPromise.then(function(value) {
+                fragmentDataHasChanged = true;
+            });
+        }
 
-        // var expandedSurfaceTets = expandDataWithIndices(
-        //     surfaceData['tets'], surfaceData['nodes'], chunksize=3);
+        if ((newFieldHash == currentFieldHash) && (newMeshHash != currentMeshHash)) {
+            vertPromise = updateVertexShaderDataPromise(dataset_hash);
+            vertPromise.then(function(value) {
+                vertexDataHasChanged = true;
+            });
+        }
 
-        var expandedSurfaceField = expandDataWithIndices(
-            surfaceData['tets'], surfaceData['field'], chunksize=1);
-
-        var rescaledField = rescaleFieldValues(
-            expandedSurfaceField,
-            fragmentShaderTMin,
-            fragmentShaderTMax
-        );
-
-        bufferDataArray['a_field']['data'] = new Float32Array(rescaledField);
-        // bufferDataArray['a_position']['data'] = expandedSurfaceTets;
-        // bufferWireframeArray['a_line_data']['data'] = expandedSurfaceWireframe;
-        // bufferFreeEdgesArray['a_line_data']['data'] = expandedSurfaceFreeEdges;
-
-        fragmentDataHasChanged = true;
-
+        if ((newFieldHash != currentFieldHash) && (newMeshHash != currentMeshHash)) {
+            fragPromise = updateFragmentShaderDataPromise(dataset_hash);
+            vertPromise = updateVertexShaderDataPromise(dataset_hash);
+            Promise.all([fragPromise, vertPromise]).then(function(value){
+                fragmentDataHasChanged = true;
+                vertexDataHasChanged = true;
+            });
+        }
     });
 }
 
-/**
- * Update the data that is handled by the vertex shader. This means geometrical
- * data. This is usually loaded only once. If we want to change colour data we
- * have to call updateFragmentShaderData().
- * @param {string} object_name The object for which we want to change some data.
- * @param {string} field The dataset that gets updated.
- * @param {string} nodepath The path to the node file.
- * @param {string} elementpath The path to the element file.
- * @param {string} timestep The corresponding timestep.
- * @returns {undefined} Nothing
- */
-function updateVertexShaderData(
-    object_name, field, nodepath, elementpath, timestep) {
-    var current_scene = document.getElementById("webGlCanvas").getAttribute("data-scene-hash");
-    var scene_hash = current_scene;
-    var protocol = document.location.protocol;
-    var host = document.location.host;
-    var path = protocol + "//" + host + "/api/scenes/" + current_scene + "/" + dataset_hash + "/mesh";
+function updateFragmentShaderDataPromise(dataset_hash) {
+    return new Promise(function(resolve, revoke) {
+        var current_scene = document.getElementById("webGlCanvas").getAttribute("data-scene-hash");
+        var scene_hash = current_scene;
+        var protocol = document.location.protocol;
+        var host = document.location.host;
+        var path = protocol + "//" + host + "/api/scenes/" + current_scene + "/" + dataset_hash + "/mesh/field";
 
-    var mesh_data = getDataSourcePromise(path);
+        var mesh_data = getDataSourcePromise(path);
 
-    mesh_data.then(function(value) {
-        var parsed_json = JSON.parse(value);
+        mesh_data.then(function(value) {
+            var parsed_json = JSON.parse(value);
 
+            currentFieldHash = parsed_json['datasetFieldHash'];
+            surfaceData['field'] = parsed_json['datasetSurfaceField'];
 
-        surfaceData['nodes'] = parsed_json['datasetSurfaceNodes'];
-        surfaceData['nodesCenter'] = parsed_json['datasetSurfaceNodesCenter'];
-        surfaceData['tets'] = parsed_json['datasetSurfaceTets'];
-        surfaceData['wireframe'] = parsed_json['datasetSurfaceWireframe'];
-        surfaceData['freeEdges'] = parsed_json['datasetSurfaceFreeEdges'];
-        // surfaceData['field'] = parsed_json['datasetSurfaceField'];
+            var expandedSurfaceField = expandDataWithIndices(
+                surfaceData['tets'], surfaceData['field'], chunksize=1);
 
-        var expandedSurfaceWireframe = expandDataWithIndices(
-            surfaceData['wireframe'], surfaceData['nodes'], chunksize=3);
+            var rescaledField = rescaleFieldValues(
+                expandedSurfaceField,
+                fragmentShaderTMin,
+                fragmentShaderTMax
+            );
 
-        var expandedSurfaceFreeEdges = expandDataWithIndices(
-            surfaceData['freeEdges'], surfaceData['nodes'], chunksize=3);
+            bufferDataArray['a_field']['data'] = new Float32Array(rescaledField);
 
-        var expandedSurfaceTets = expandDataWithIndices(
-            surfaceData['tets'], surfaceData['nodes'], chunksize=3);
-
-        // var expandedSurfaceField = expandDataWithIndices(
-        //     surfaceData['tets'], surfaceData['field'], chunksize=1);
-
-        // var rescaledField = rescaleFieldValues(
-        //     expandedSurfaceField,
-        //     fragmentShaderTMin,
-        //     fragmentShaderTMax
-        // );
-
-        // bufferDataArray['a_field']['data'] = new Float32Array(rescaledField);
-        bufferDataArray['a_position']['data'] = expandedSurfaceTets;
-        bufferWireframeArray['a_line_data']['data'] = expandedSurfaceWireframe;
-        bufferFreeEdgesArray['a_line_data']['data'] = expandedSurfaceFreeEdges;
-
-        vertexDataHasChanged = true;
-
+            resolve();
+        });
     });
 }
+
+function updateVertexShaderDataPromise(dataset_hash) {
+    return new Promise(function(resolve, revoke) {
+        var current_scene = document.getElementById("webGlCanvas").getAttribute("data-scene-hash");
+        var scene_hash = current_scene;
+        var protocol = document.location.protocol;
+        var host = document.location.host;
+        var path = protocol + "//" + host + "/api/scenes/" + current_scene + "/" + dataset_hash + "/mesh/geometry";
+
+        var mesh_data = getDataSourcePromise(path);
+
+        mesh_data.then(function(value) {
+            var parsed_json = JSON.parse(value);
+
+            currentMeshHash = parsed_json['datasetMeshHash'];
+            surfaceData['nodes'] = parsed_json['datasetSurfaceNodes'];
+            surfaceData['nodesCenter'] = parsed_json['datasetSurfaceNodesCenter'];
+            surfaceData['tets'] = parsed_json['datasetSurfaceTets'];
+            surfaceData['wireframe'] = parsed_json['datasetSurfaceWireframe'];
+            surfaceData['freeEdges'] = parsed_json['datasetSurfaceFreeEdges'];
+
+            var expandedSurfaceWireframe = expandDataWithIndices(
+                surfaceData['wireframe'], surfaceData['nodes'], chunksize=3);
+
+            var expandedSurfaceFreeEdges = expandDataWithIndices(
+                surfaceData['freeEdges'], surfaceData['nodes'], chunksize=3);
+
+            var expandedSurfaceTets = expandDataWithIndices(
+                surfaceData['tets'], surfaceData['nodes'], chunksize=3);
+
+            bufferDataArray['a_position']['data'] = expandedSurfaceTets;
+            bufferWireframeArray['a_line_data']['data'] = expandedSurfaceWireframe;
+            bufferFreeEdgesArray['a_line_data']['data'] = expandedSurfaceFreeEdges;
+
+            resolve();
+        });
+    });
+}
+
+// /**
+//  * Update the data that is handled by the fragment shader. This means colour
+//  * data that is usually loaded for each timestep. If we additionally want to
+//  * change geometrical data we have to call updateVertexShaderData().
+//  * @param {string} object_name The object for which we want to change some data.
+//  * @param {string} field The dataset that gets updated.
+//  * @param {string} timestep The corresponding timestep.
+//  * @returns {undefined} Nothing
+//  */
+// function updateFragmentShaderData(object_name, field, timestep) {
+//     var current_scene = document.getElementById("webGlCanvas").getAttribute("data-scene-hash");
+//     var scene_hash = current_scene;
+//     var protocol = document.location.protocol;
+//     var host = document.location.host;
+//     var path = protocol + "//" + host + "/api/scenes/" + current_scene + "/" + dataset_hash + "/mesh/field";
+
+//     var mesh_data = getDataSourcePromise(path);
+
+//     mesh_data.then(function(value) {
+//         var parsed_json = JSON.parse(value);
+
+//         currentFieldHash = parsed_json['datasetFieldHash'];
+//         surfaceData['field'] = parsed_json['datasetSurfaceField'];
+
+//         var expandedSurfaceField = expandDataWithIndices(
+//             surfaceData['tets'], surfaceData['field'], chunksize=1);
+
+//         var rescaledField = rescaleFieldValues(
+//             expandedSurfaceField,
+//             fragmentShaderTMin,
+//             fragmentShaderTMax
+//         );
+
+//         bufferDataArray['a_field']['data'] = new Float32Array(rescaledField);
+
+//         fragmentDataHasChanged = true;
+
+//     });
+// }
+
+// /**
+//  * Update the data that is handled by the vertex shader. This means geometrical
+//  * data. This is usually loaded only once. If we want to change colour data we
+//  * have to call updateFragmentShaderData().
+//  * @param {string} object_name The object for which we want to change some data.
+//  * @param {string} field The dataset that gets updated.
+//  * @param {string} nodepath The path to the node file.
+//  * @param {string} elementpath The path to the element file.
+//  * @param {string} timestep The corresponding timestep.
+//  * @returns {undefined} Nothing
+//  */
+// function updateVertexShaderData(
+//     object_name, field, nodepath, elementpath, timestep) {
+//     var current_scene = document.getElementById("webGlCanvas").getAttribute("data-scene-hash");
+//     var scene_hash = current_scene;
+//     var protocol = document.location.protocol;
+//     var host = document.location.host;
+//     var path = protocol + "//" + host + "/api/scenes/" + current_scene + "/" + dataset_hash + "/mesh/geometry";
+
+//     var mesh_data = getDataSourcePromise(path);
+
+//     mesh_data.then(function(value) {
+//         var parsed_json = JSON.parse(value);
+
+//         currentMeshHash = parsed_json['datasetMeshHash'];
+//         surfaceData['nodes'] = parsed_json['datasetSurfaceNodes'];
+//         surfaceData['nodesCenter'] = parsed_json['datasetSurfaceNodesCenter'];
+//         surfaceData['tets'] = parsed_json['datasetSurfaceTets'];
+//         surfaceData['wireframe'] = parsed_json['datasetSurfaceWireframe'];
+//         surfaceData['freeEdges'] = parsed_json['datasetSurfaceFreeEdges'];
+
+//         var expandedSurfaceWireframe = expandDataWithIndices(
+//             surfaceData['wireframe'], surfaceData['nodes'], chunksize=3);
+
+//         var expandedSurfaceFreeEdges = expandDataWithIndices(
+//             surfaceData['freeEdges'], surfaceData['nodes'], chunksize=3);
+
+//         var expandedSurfaceTets = expandDataWithIndices(
+//             surfaceData['tets'], surfaceData['nodes'], chunksize=3);
+
+//         bufferDataArray['a_position']['data'] = expandedSurfaceTets;
+//         bufferWireframeArray['a_line_data']['data'] = expandedSurfaceWireframe;
+//         bufferFreeEdgesArray['a_line_data']['data'] = expandedSurfaceFreeEdges;
+
+//         vertexDataHasChanged = true;
+
+//     });
+// }
 
 
 /**

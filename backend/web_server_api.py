@@ -485,7 +485,7 @@ class ServerAPI:
 
         return dataset_mesh
 
-    def get_scenes_scenehash_datasethash_mesh_hashes(
+    def get_scenes_scenehash_datasethash_mesh_hash(
             self, scene_hash, dataset_hash):
         """
         Get the hashes of the mesh data of a dataset.
