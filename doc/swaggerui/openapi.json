@@ -559,6 +559,119 @@
 
             }
         },
+
+        "/scenes/{scene_hash}/{dataset_hash}/mesh": {
+
+            "get": {
+                "summary": "Returns the complete mesh data.",
+                "description": "Returns the complete mesh data, including hashes, geometry and field.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/scenePath"
+                    },
+                    {
+                        "$ref": "#/components/parameters/datasetPath"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/mesh_200"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/default"
+                    }
+                }
+
+            }
+        },
+
+        "/scenes/{scene_hash}/{dataset_hash}/mesh/hash": {
+
+            "get": {
+                "summary": "Returns the geometry and field hash for the mesh data.",
+                "description": "Returns the geometry and field hash for the mesh data.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/scenePath"
+                    },
+                    {
+                        "$ref": "#/components/parameters/datasetPath"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/mesh_hash_200"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/default"
+                    }
+                }
+
+            }
+        },
+
+        "/scenes/{scene_hash}/{dataset_hash}/mesh/geometry": {
+
+            "get": {
+                "summary": "Returns the geometry mesh data.",
+                "description": "Returns the geometry mesh data.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/scenePath"
+                    },
+                    {
+                        "$ref": "#/components/parameters/datasetPath"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/mesh_geometry_200"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/default"
+                    }
+                }
+
+            }
+        },
+
+        "/scenes/{scene_hash}/{dataset_hash}/mesh/field": {
+
+            "get": {
+                "summary": "Returns the field mesh data.",
+                "description": "Returns the field mesh data.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/scenePath"
+                    },
+                    {
+                        "$ref": "#/components/parameters/datasetPath"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/mesh_field_200"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/default"
+                    }
+                }
+
+            }
+        },
+
     },
 
     "components": {
@@ -807,8 +920,23 @@
                 ],
                 "properties": {
                     "datasetFieldSelected": {
-                        "type": "string",
-                        "example": "nodal_field_2"
+                        "type": "object",
+                        "required": [
+                            "type",
+                            "name"
+                        ],
+                        "properties": {
+                            "type": {
+                                "description": "Either set to 'nodal' or 'elemental' field.",
+                                "type": "string",
+                                "example": "nodal"
+                            },
+                            "name": {
+                                "description": "The name of a nodal or elemental field.",
+                                "type": "string",
+                                "example": "nt11"
+                            }
+                        }
                     }
                 }
             },
@@ -851,9 +979,226 @@
 
                     },
                     "datasetFieldSelected": {
-                        "type": "string",
-                        "example": "nodal_field_2"
+                        "type": "object",
+                        "required": [
+                            "type",
+                            "name"
+                        ],
+                        "properties": {
+                            "type": {
+                                "description": "Either set to 'nodal' or 'elemental' field.",
+                                "type": "string",
+                                "example": "nodal"
+                            },
+                            "name": {
+                                "description": "The name of a nodal or elemental field.",
+                                "type": "string",
+                                "example": "nt11"
+                            }
+                        }
                     }
+                }
+            },
+
+            "meshResponse": {
+                "description": "The metadata and field information of an dataset",
+                "required": [
+                    "datasetMeta",
+                    "datasetMeshHash",
+                    "datasetSurfaceNodesCenter",
+                    "datasetSurfaceNodes",
+                    "datasetSurfaceTets",
+                    "datasetSurfaceFreeEdges",
+                    "datasetSurfaceWireframe",
+                    "datasetFieldHash",
+                    "datasetSurfaceField"
+                ],
+                "properties": {
+                    "datasetMeta": {
+                        "type": "object",
+                        "$ref": "#/components/schemas/loadedDataset"
+                    },
+                    "datasetMeshHash": {
+                        "description": "The hash for the geometry that is currently served.",
+                        "type": "string",
+                        "example": "47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    },
+
+                    "datasetSurfaceNodesCenter": {
+                        "description": "The center of the geometry.",
+                        "type": "array",
+                        "items": {
+                            "type": "float"
+                        },
+                        "minItems": "16",
+                        "maxItems": "16",
+                        "example": [0.1, 0.2, 0.3]
+                    },
+                    "datasetSurfaceNodes": {
+                        "description": "The {x, y, z} coordinates of the nodes in the order {x1, y1, z1, x2, y2, z2, ...}.",
+                        "type": "array",
+                        "items": {
+                            "type": "float"
+                        },
+                        "example": [0.1, 0.2, 0.3]
+                    },
+                    "datasetSurfaceTets": {
+                        "description": "The ordering of the nodes to for tetrahedra. Every three-tuple refers to a set of three sets of {x, y, z} coordinates from the datasetSurfaceNodes.",
+                        "type": "array",
+                        "items": {
+                            "type": "int"
+                        },
+                        "example": [121, 41, 12]
+                    },
+                    "datasetSurfaceFreeEdges": {
+                        "description": "The nodes that make up the free edges of the model. Every two-tuple refers to two sets of {x, y, z} coordinates from the datasetSurfaceNodes.",
+                        "type": "array",
+                        "items": {
+                            "type": "int"
+                        },
+                        "example": [13, 125, 12, 55]
+                    },
+                    "datasetSurfaceWireframe": {
+                        "description": "The nodes that make up the wireframe of the model. Every two-tuple refers to two sets of {x, y, z} coordinates from the datasetSurfaceNodes.",
+                        "type": "array",
+                        "items": {
+                            "type": "int"
+                        },
+                        "example": [13, 125, 12, 55]
+                    },
+                    "datasetFieldHash": {
+                        "description": "The hash for the field that is currently served.",
+                        "type": "string",
+                        "example": "47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    },
+                    "datasetSurfaceField": {
+                        "description": "The field values for every surface node of the model. Every value refers to one single node.",
+                        "type": "array",
+                        "items": {
+                            "type": "float"
+                        },
+                        "example": [0.1, 0.2, 0.3, 0.8, 0]
+                    },
+                }
+            },
+
+            "meshHashResponse": {
+                "description": "The metadata and field information of an dataset",
+                "required": [
+                    "datasetMeta",
+                    "datasetMeshHash",
+                    "datasetFieldHash"
+                ],
+                "properties": {
+                    "datasetMeta": {
+                        "type": "object",
+                        "$ref": "#/components/schemas/loadedDataset"
+                    },
+                    "datasetMeshHash": {
+                        "description": "The hash for the geometry that is currently served.",
+                        "type": "string",
+                        "example": "47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    },
+                    "datasetFieldHash": {
+                        "description": "The hash for the field that is currently served.",
+                        "type": "string",
+                        "example": "47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    },
+                }
+            },
+
+            "meshGeometryResponse": {
+                "description": "The geometry information of a dataset",
+                "required": [
+                    "datasetMeta",
+                    "datasetMeshHash",
+                    "datasetSurfaceNodesCenter",
+                    "datasetSurfaceNodes",
+                    "datasetSurfaceTets",
+                    "datasetSurfaceFreeEdges",
+                    "datasetSurfaceWireframe"
+                ],
+                "properties": {
+                    "datasetMeta": {
+                        "type": "object",
+                        "$ref": "#/components/schemas/loadedDataset"
+                    },
+                    "datasetMeshHash": {
+                        "description": "The hash for the geometry that is currently served.",
+                        "type": "string",
+                        "example": "47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    },
+
+                    "datasetSurfaceNodesCenter": {
+                        "description": "The center of the geometry.",
+                        "type": "array",
+                        "items": {
+                            "type": "float"
+                        },
+                        "minItems": "16",
+                        "maxItems": "16",
+                        "example": [0.1, 0.2, 0.3]
+                    },
+                    "datasetSurfaceNodes": {
+                        "description": "The {x, y, z} coordinates of the nodes in the order {x1, y1, z1, x2, y2, z2, ...}.",
+                        "type": "array",
+                        "items": {
+                            "type": "float"
+                        },
+                        "example": [0.1, 0.2, 0.3]
+                    },
+                    "datasetSurfaceTets": {
+                        "description": "The ordering of the nodes to for tetrahedra. Every three-tuple refers to a set of three sets of {x, y, z} coordinates from the datasetSurfaceNodes.",
+                        "type": "array",
+                        "items": {
+                            "type": "int"
+                        },
+                        "example": [121, 41, 12]
+                    },
+                    "datasetSurfaceFreeEdges": {
+                        "description": "The nodes that make up the free edges of the model. Every two-tuple refers to two sets of {x, y, z} coordinates from the datasetSurfaceNodes.",
+                        "type": "array",
+                        "items": {
+                            "type": "int"
+                        },
+                        "example": [13, 125, 12, 55]
+                    },
+                    "datasetSurfaceWireframe": {
+                        "description": "The nodes that make up the wireframe of the model. Every two-tuple refers to two sets of {x, y, z} coordinates from the datasetSurfaceNodes.",
+                        "type": "array",
+                        "items": {
+                            "type": "int"
+                        },
+                        "example": [13, 125, 12, 55]
+                    },
+                }
+            },
+
+            "meshFieldResponse": {
+                "description": "The surface field information of a dataset",
+                "required": [
+                    "datasetMeta",
+                    "datasetFieldHash",
+                    "datasetSurfaceField"
+                ],
+                "properties": {
+                    "datasetMeta": {
+                        "type": "object",
+                        "$ref": "#/components/schemas/loadedDataset"
+                    },
+                    "datasetFieldHash": {
+                        "description": "The hash for the field that is currently served.",
+                        "type": "string",
+                        "example": "47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    },
+                    "datasetSurfaceField": {
+                        "description": "The field values for every surface node of the model. Every value refers to one single node.",
+                        "type": "array",
+                        "items": {
+                            "type": "float"
+                        },
+                        "example": [0.1, 0.2, 0.3, 0.8, 0]
+                    },
                 }
             },
 
@@ -1002,6 +1347,54 @@
                         "schema": {
                             "type": "object",
                             "$ref": "#/components/schemas/fieldResponse"
+                        }
+                    }
+                }
+            },
+
+            "mesh_200": {
+                "description": "Mesh data (hash, geometry, field) for the requested dataset.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/components/schemas/meshResponse"
+                        }
+                    }
+                }
+            },
+
+            "mesh_hash_200": {
+                "description": "Mesh hash data for the requested dataset.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/components/schemas/meshHashResponse"
+                        }
+                    }
+                }
+            },
+
+            "mesh_geometry_200": {
+                "description": "Mesh geometry data for the requested dataset.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/components/schemas/meshGeometryResponse"
+                        }
+                    }
+                }
+            },
+
+            "mesh_field_200": {
+                "description": "Mesh field data for the requested dataset.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/components/schemas/meshFieldResponse"
                         }
                     }
                 }
