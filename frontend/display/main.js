@@ -19,12 +19,19 @@
 
 var gl;
 
+// Base path to the API
+var protocol = document.location.protocol;
+var host = document.location.host;
+var basePath = protocol + "//" + host + "/api";
+
+// The hash for the scene we are looking at
+var scene_hash = document.getElementById("webGlCanvas").getAttribute("data-scene-hash");
+
 // Make the array for holding web gl data global.
 var vertexDataHasChanged = false;
 var fragmentDataHasChanged = false;
 
 var bufferDataArray;
-// var edgeDataArray;
 var bufferFreeEdgesArray;
 var bufferWireframeArray;
 
@@ -85,9 +92,6 @@ function grabCanvas(canvasElementName) {
  * This is the main WebGL routine. It is called when we have established a
  * context (i.e. loaded a canvas) and have loaded our shaders.
  * @param {context} gl The WebGL2 context.
- * @param {string} vs The vertex shader.
- * @param {string} fs The fragment shader.
- * @returns {undefined} Nothing
  */
 function glRoutine(gl) {
 
@@ -151,7 +155,7 @@ function glRoutine(gl) {
             bufferInfoEdge = twgl.createBufferInfoFromArrays(gl, bufferFreeEdgesArray);
             bufferInfoWireframe = twgl.createBufferInfoFromArrays(gl, bufferWireframeArray);
 
-            // Center the new object.
+            // Center the new dataset
             centerModel = surfaceData['nodesCenter'];
             modelMatrix.translateWorld(twgl.v3.negate(centerModel));
 
@@ -199,84 +203,40 @@ function glRoutine(gl) {
     drawScene();
 }
 
-function HACKupdateFragmentShaderData(dataset_hash) {
-    var current_scene = document.getElementById("webGlCanvas").getAttribute("data-scene-hash");
-    var scene_hash = current_scene;
-    var protocol = document.location.protocol;
-    var host = document.location.host;
-    var path = protocol + "//" + host + "/api/scenes/" + current_scene + "/" + dataset_hash + "/mesh";
-
-    var mesh_data = getDataSourcePromise(path);
-
-    mesh_data.then(function(value) {
-        var parsed_json = JSON.parse(value);
-
-        currentMeshHash = parsed_json['datasetMeshHash'];
-        currentFieldHash = parsed_json['datasetFieldHash'];
-        surfaceData['nodes'] = parsed_json['datasetSurfaceNodes'];
-        surfaceData['nodesCenter'] = parsed_json['datasetSurfaceNodesCenter'];
-        surfaceData['tets'] = parsed_json['datasetSurfaceTets'];
-        surfaceData['wireframe'] = parsed_json['datasetSurfaceWireframe'];
-        surfaceData['freeEdges'] = parsed_json['datasetSurfaceFreeEdges'];
-        surfaceData['field'] = parsed_json['datasetSurfaceField'];
-
-        var expandedSurfaceWireframe = expandDataWithIndices(
-            surfaceData['wireframe'], surfaceData['nodes'], chunksize=3);
-
-        var expandedSurfaceFreeEdges = expandDataWithIndices(
-            surfaceData['freeEdges'], surfaceData['nodes'], chunksize=3);
-
-        var expandedSurfaceTets = expandDataWithIndices(
-            surfaceData['tets'], surfaceData['nodes'], chunksize=3);
-
-        var expandedSurfaceField = expandDataWithIndices(
-            surfaceData['tets'], surfaceData['field'], chunksize=1);
-
-        var rescaledField = rescaleFieldValues(
-            expandedSurfaceField,
-            fragmentShaderTMin,
-            fragmentShaderTMax
-        );
-
-        bufferDataArray['a_field']['data'] = new Float32Array(rescaledField);
-        bufferDataArray['a_position']['data'] = expandedSurfaceTets;
-        bufferWireframeArray['a_line_data']['data'] = expandedSurfaceWireframe;
-        bufferFreeEdgesArray['a_line_data']['data'] = expandedSurfaceFreeEdges;
-
-        fragmentDataHasChanged = true;
-
-    });
-}
-
+/**
+ * Gets the current hashes for the field and geometry. If a mismatch is found
+ * the relevant routines are called.
+ * @param {string} dataset_hash - The hash of the dataset we want to update.
+ */
 function updateMesh(dataset_hash) {
-    // Gets the current hashes for the field and geometry. If a mismatch is found the relevant routines are called
-    var current_scene = document.getElementById("webGlCanvas").getAttribute("data-scene-hash");
-    var scene_hash = current_scene;
-    var protocol = document.location.protocol;
-    var host = document.location.host;
-    var path = protocol + "//" + host + "/api/scenes/" + current_scene + "/" + dataset_hash + "/mesh/hash";
 
-    var hashes = getDataSourcePromise(path);
-
+    // Get the currently served hashes from the API
+    var hashes = connectToAPIPromise(
+        basePath = basePath,
+        APIEndpoint = "scenes/" + scene_hash + "/" + dataset_hash + "/mesh/hash",
+        HTTPMethod = "get",
+        payload = {}
+    );
     hashes.then(function(value) {
-        var parsed_json = JSON.parse(value);
 
-        var newFieldHash = parsed_json['datasetFieldHash'];
-        var newMeshHash = parsed_json['datasetMeshHash'];
+        var newFieldHash = value['datasetFieldHash'];
+        var newMeshHash = value['datasetMeshHash'];
 
         var vertPromise;
         var fragPromise;
 
+        // If we find a mismatch between the data we have and the data the
+        // server currently serves we call for new data
         if ((newFieldHash != currentFieldHash) && (newMeshHash == currentMeshHash)) {
             fragPromise = updateFragmentShaderDataPromise(dataset_hash);
-            fragPromise.then(function(value) {
+            fragPromise.then(function(frag_value) {
                 fragmentDataHasChanged = true;
             });
         }
 
         if ((newFieldHash == currentFieldHash) && (newMeshHash != currentMeshHash)) {
             vertPromise = updateVertexShaderDataPromise(dataset_hash);
-            vertPromise.then(function(value) {
+            vertPromise.then(function(vert_value) {
                 vertexDataHasChanged = true;
             });
         }
@@ -284,7 +244,7 @@ function updateMesh(dataset_hash) {
         if ((newFieldHash != currentFieldHash) && (newMeshHash != currentMeshHash)) {
             fragPromise = updateFragmentShaderDataPromise(dataset_hash);
             vertPromise = updateVertexShaderDataPromise(dataset_hash);
-            Promise.all([fragPromise, vertPromise]).then(function(value){
+            Promise.all([fragPromise, vertPromise]).then(function(frag_vert_value){
                 fragmentDataHasChanged = true;
                 vertexDataHasChanged = true;
             });
@@ -292,58 +252,80 @@ function updateMesh(dataset_hash) {
     });
 }
 
+/**
+ * Update the field data of the mesh.
+ * @param {string} dataset_hash - Hash of the dataset.
+ * @returns {promose} When the data in the bufferDataArray has been replaced the
+ * promise is resolved.
+ */
 function updateFragmentShaderDataPromise(dataset_hash) {
+
+    // return a promise
     return new Promise(function(resolve, revoke) {
-        var current_scene = document.getElementById("webGlCanvas").getAttribute("data-scene-hash");
-        var scene_hash = current_scene;
-        var protocol = document.location.protocol;
-        var host = document.location.host;
-        var path = protocol + "//" + host + "/api/scenes/" + current_scene + "/" + dataset_hash + "/mesh/field";
 
-        var mesh_data = getDataSourcePromise(path);
-
+        // get the field data from the API
+        var mesh_data = connectToAPIPromise(       // returns a promise on some data
+            basePath = basePath,
+            APIEndpoint = "scenes/" + scene_hash + "/" + dataset_hash + "/mesh/field",
+            HTTPMethod = "get",
+            payload = {}
+        );
         mesh_data.then(function(value) {
-            var parsed_json = JSON.parse(value);
 
-            currentFieldHash = parsed_json['datasetFieldHash'];
-            surfaceData['field'] = parsed_json['datasetSurfaceField'];
+            surfaceData['field'] = value['datasetSurfaceField'];
 
+            // expand the data
             var expandedSurfaceField = expandDataWithIndices(
                 surfaceData['tets'], surfaceData['field'], chunksize=1);
 
+            // rescale the field values to a value between 0 and 1 (for the
+            // general purpose shader)
             var rescaledField = rescaleFieldValues(
                 expandedSurfaceField,
                 fragmentShaderTMin,
                 fragmentShaderTMax
             );
 
+            // update the data in the buffer
             bufferDataArray['a_field']['data'] = new Float32Array(rescaledField);
 
+            // update the field hash we have
+            currentFieldHash = value['datasetFieldHash'];
+
+            // resolve the promise
             resolve();
         });
     });
 }
 
+/**
+ * Update the geometry data of the mesh. That includes the tets, nodes, free
+ * edges and the wireframe.
+ * @param {string} dataset_hash - The hash of the dataset.
+ * @returns {promise} When the data in the different buffer arrays has been
+ * replaced the promise is resolved.
+ */
 function updateVertexShaderDataPromise(dataset_hash) {
+
+    // return a promise
     return new Promise(function(resolve, revoke) {
-        var current_scene = document.getElementById("webGlCanvas").getAttribute("data-scene-hash");
-        var scene_hash = current_scene;
-        var protocol = document.location.protocol;
-        var host = document.location.host;
-        var path = protocol + "//" + host + "/api/scenes/" + current_scene + "/" + dataset_hash + "/mesh/geometry";
 
-        var mesh_data = getDataSourcePromise(path);
-
+        // get the geometry data from the API
+        var mesh_data = connectToAPIPromise(
+            basePath = basePath,
+            APIEndpoint = "scenes/" + scene_hash + "/" + dataset_hash + "/mesh/geometry",
+            HTTPMethod = "get",
+            payload = {}
+        );
         mesh_data.then(function(value) {
-            var parsed_json = JSON.parse(value);
 
-            currentMeshHash = parsed_json['datasetMeshHash'];
-            surfaceData['nodes'] = parsed_json['datasetSurfaceNodes'];
-            surfaceData['nodesCenter'] = parsed_json['datasetSurfaceNodesCenter'];
-            surfaceData['tets'] = parsed_json['datasetSurfaceTets'];
-            surfaceData['wireframe'] = parsed_json['datasetSurfaceWireframe'];
-            surfaceData['freeEdges'] = parsed_json['datasetSurfaceFreeEdges'];
+            surfaceData['nodes'] = value['datasetSurfaceNodes'];
+            surfaceData['nodesCenter'] = value['datasetSurfaceNodesCenter'];
+            surfaceData['tets'] = value['datasetSurfaceTets'];
+            surfaceData['wireframe'] = value['datasetSurfaceWireframe'];
+            surfaceData['freeEdges'] = value['datasetSurfaceFreeEdges'];
 
+            // expand the received data
             var expandedSurfaceWireframe = expandDataWithIndices(
                 surfaceData['wireframe'], surfaceData['nodes'], chunksize=3);
 
@@ -353,10 +335,15 @@ function updateVertexShaderDataPromise(dataset_hash) {
             var expandedSurfaceTets = expandDataWithIndices(
                 surfaceData['tets'], surfaceData['nodes'], chunksize=3);
 
+            // replace the data in the buffer arrays with the expanded data
             bufferDataArray['a_position']['data'] = expandedSurfaceTets;
             bufferWireframeArray['a_line_data']['data'] = expandedSurfaceWireframe;
             bufferFreeEdgesArray['a_line_data']['data'] = expandedSurfaceFreeEdges;
 
+            // update the mesh promise we have
+            currentMeshHash = value['datasetMeshHash'];
+
+            // resolve the promise
             resolve();
         });
     });
@@ -409,25 +396,25 @@ function averageFieldValsOverElement(fieldValues) {
     return averageArray;
 }
 
-/**
- * Generate barycentric coordinates for a wireframe overlay.
- * @param {array} indices Index data used for the wireframe
- * @returns {array} barycentric_coordinates The barycentric coordinates
- */
-function generateBarycentricCoordinatesFromIndices(indices) {
+// /**
+//  * Generate barycentric coordinates for a wireframe overlay.
+//  * @param {array} indices Index data used for the wireframe
+//  * @returns {array} barycentric_coordinates The barycentric coordinates
+//  */
+// function generateBarycentricCoordinatesFromIndices(indices) {
 
-    var barycentric_coordinates = [];
-    for (index in indices) {
-        if (index % 3 == 0) {
-            barycentric_coordinates.push(1., 0., 0.);
-        } else if ((index - 1) % 3 == 0 ) {
-            barycentric_coordinates.push(0., 1., 0.);
-        } else if ((index - 2) % 3 == 0 ) {
-            barycentric_coordinates.push(0., 0., 1.);
-        };
-    }
-    return barycentric_coordinates;
-}
+//     var barycentric_coordinates = [];
+//     for (index in indices) {
+//         if (index % 3 == 0) {
+//             barycentric_coordinates.push(1., 0., 0.);
+//         } else if ((index - 1) % 3 == 0 ) {
+//             barycentric_coordinates.push(0., 1., 0.);
+//         } else if ((index - 2) % 3 == 0 ) {
+//             barycentric_coordinates.push(0., 0., 1.);
+//         };
+//     }
+//     return barycentric_coordinates;
+// }
 
 /**
  * We scale a field so that the interval that we want to look at lies between 0
@@ -457,34 +444,36 @@ function main() {
     // Init WebGL.
     gl = grabCanvas("webGlCanvas");
 
-    // testing js json parse...
-	  var current_scene = document.getElementById("webGlCanvas").getAttribute("data-scene-hash");
-    var protocol = document.location.protocol;
-    var host = document.location.host;
-    var path = protocol + "//" + host + "/api/scenes/" + current_scene;
-    var active_scenes = getDataSourcePromise(path);
-    active_scenes.then(function(value) {
-        var parsed_json = JSON.parse(value);
-
-        var datasets = parsed_json["loadedDatasets"];
+    var active_scenes = connectToAPIPromise(
+        basePath = basePath,
+        APIEndpoint = "scenes/" + scene_hash,
+        HTTPMethod = "get",
+        payload = {}
+    );
+    active_scenes.then(function(scenes_value) {
+        var datasets = scenes_value["loadedDatasets"];
         var dataset_hash = datasets[0]["datasetHash"];
-        var dataset_mesh_path = path + "/" + dataset_hash + "/mesh";
 
-        var mesh_data = getDataSourcePromise(dataset_mesh_path);
-        mesh_data.then(function(value) {
-            var parsed_json = JSON.parse(value);
+        var mesh_data = connectToAPIPromise(
+            basePath = basePath,
+            APIEndpoint = "scenes/" + scene_hash + "/" + dataset_hash + "/mesh",
+            HTTPMethod = "get",
+            payload = {}
+        );
+        mesh_data.then(function(mesh_value) {
 
-            currentMeshHash = parsed_json['datasetMeshHash'];
-            currentFieldHash = parsed_json['datasetFieldHash'];
-            surfaceData['nodes'] = parsed_json['datasetSurfaceNodes'];
-            surfaceData['nodesCenter'] = parsed_json['datasetSurfaceNodesCenter'];
-            surfaceData['tets'] = parsed_json['datasetSurfaceTets'];
-            surfaceData['wireframe'] = parsed_json['datasetSurfaceWireframe'];
-            surfaceData['freeEdges'] = parsed_json['datasetSurfaceFreeEdges'];
-            surfaceData['field'] = parsed_json['datasetSurfaceField'];
+            currentMeshHash = mesh_value['datasetMeshHash'];
+            currentFieldHash = mesh_value['datasetFieldHash'];
+            surfaceData['nodes'] = mesh_value['datasetSurfaceNodes'];
+            surfaceData['nodesCenter'] = mesh_value['datasetSurfaceNodesCenter'];
+            surfaceData['tets'] = mesh_value['datasetSurfaceTets'];
+            surfaceData['wireframe'] = mesh_value['datasetSurfaceWireframe'];
+            surfaceData['freeEdges'] = mesh_value['datasetSurfaceFreeEdges'];
+            surfaceData['field'] = mesh_value['datasetSurfaceField'];
 
             loadShaders();
         });
+
     });
 
     // // Load the dummy data.
@@ -506,17 +495,18 @@ function main() {
      * Load vertexshader and fragmentshader.
      */
     function loadShaders() {
-        var vert_ColorShaderPromise = getDataSourcePromise(
+
+        var vert_ColorShaderPromise = getLocalDataPromise(
             "shaders/vert_color_shader.glsl.c");
-        var frag_ColorShaderPromise = getDataSourcePromise(
+        var frag_ColorShaderPromise = getLocalDataPromise(
             "shaders/frag_color_shader.glsl.c");
-        var vert_EdgeShaderPromise = getDataSourcePromise(
+        var vert_EdgeShaderPromise = getLocalDataPromise(
             "shaders/vertex_dataset_edge.glsl.c");
-        var frag_EdgeShaderPromise = getDataSourcePromise(
+        var frag_EdgeShaderPromise = getLocalDataPromise(
             "shaders/fragment_dataset_edge.glsl.c");
-        var vert_WireframeShaderPromise = getDataSourcePromise(
+        var vert_WireframeShaderPromise = getLocalDataPromise(
             "shaders/vertex_dataset_wireframe.glsl.c");
-        var frag_WireframeShaderPromise = getDataSourcePromise(
+        var frag_WireframeShaderPromise = getLocalDataPromise(
             "shaders/fragment_dataset_wireframe.glsl.c");
 
         Promise.all([

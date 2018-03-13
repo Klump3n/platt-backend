@@ -68,15 +68,16 @@ CSS_COLORBAR = """
 BODY_OVERLAY = """
     <div class="overlay">{message}</div>
 """
+# <div class="add_objects_button_container">
+#   <div class="add_objects_button" id="add_objects_button">+</div>
+#   <div class="add_objects_menu_container" id="add_objects_menu_container">
+#       <div class="add_objects_menu" id="add_objects_menu"></div>
+#   </div>
+# </div>
+
 BODY_MENU = """
     <div class="main_container">
-      <div class="add_objects_button_container">
-        <div class="add_objects_button" id="add_objects_button">+</div>
-        <div class="add_objects_menu_container" id="add_objects_menu_container">
-            <div class="add_objects_menu" id="add_objects_menu"></div>
-        </div>
-      </div>
-      <div class="objects_container" id="objects_container"></div> <!-- The menus will be dropped here. -->
+      <div class="dataset_container" id="dataset_container"></div> <!-- The menus will be dropped here. -->
     </div>
 """
 BODY_COLORBAR = """

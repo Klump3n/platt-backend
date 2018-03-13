@@ -17,110 +17,97 @@
  *
  */
 
-// Return a promise for some xhr request.
-function getXHRPromise(dataFile) {
+
+// // Return a promise for some xhr request.
+// function getXHRPromise(dataFile) {
+//     return new Promise(function(resolve, reject) {
+// 	      var xhr = new XMLHttpRequest;
+// 	      xhr.responseType = 'text';
+// 	      xhr.open('GET', dataFile, true);
+// 	      xhr.onload = function() {
+// 	          if (xhr.status === 200) {
+// 		            // Tries to get the shader source
+// 		            resolve(xhr.responseText);
+// 	          } else {
+// 		            // If unsuccessful return an error
+// 		            reject(Error('getXHRPromise() - Could not load ' + dataFile));
+// 	          }
+// 	      };
+// 	      xhr.onerror = function() {
+// 	          // Maybe we have more severe problems. Also return an error then
+// 	          reject(Error('getXHRPromise() - network issues'));
+// 	      };
+// 	      // Send the request
+// 	      xhr.send();
+//     });
+// }
+
+// // Load the data from a file via xhr. Return a promise for this data.
+// function getLocalDataPromise(dataPath){
+//     return new Promise(function(resolve, revoke) {
+//         // Var that will hold the loaded string
+//         var dataSource;
+
+//         // Promise to load data from XHR
+//         var dataPromise = getXHRPromise(dataPath);
+
+//         // Promise to assign the loaded data to the source variable
+//         var assignDataToVar = dataPromise.then(function(value) {
+//             // console.log("Loading " + dataPath);
+//             dataSource = value;
+//         });
+
+//         // Once everything is loaded resolve the promise
+//         assignDataToVar.then(function() {
+//             resolve(dataSource);
+//         });
+//     });
+// }
+
+/**
+ * Load some data that is already on the web server, such as shaders or dummy
+ * mesh data. The difference to the connectToAPIPromise method is that we
+ * expect to read something which does not have to be converted into JSON.
+ * @param {string} dataPath - The path to the file we want to load.
+ * @returns {string, object} The contents of the file we want to load. This can
+ * be JSON or just a long string.
+ */
+function getLocalDataPromise(dataPath){
+
+    // return a promise
     return new Promise(function(resolve, reject) {
+
 	      var xhr = new XMLHttpRequest;
 	      xhr.responseType = 'text';
-	      xhr.open('GET', dataFile, true);
+	      xhr.open('GET', dataPath, true);
+        xhr.send();
+
 	      xhr.onload = function() {
 	          if (xhr.status === 200) {
-		            // Tries to get the shader source
-		            resolve(xhr.responseText);
+
+                // on success load the data and return it via the promise
+                var data = xhr.responseText;
+		            resolve(data);
+
 	          } else {
+
 		            // If unsuccessful return an error
-		            reject(Error('getXHRPromise() - Could not load ' + dataFile));
+		            reject(Error('getXHRPromise() - Could not load ' + dataPath));
 	          }
 	      };
+
 	      xhr.onerror = function() {
 	          // Maybe we have more severe problems. Also return an error then
 	          reject(Error('getXHRPromise() - network issues'));
-	      };
-	      // Send the request
-	      xhr.send();
-    });
-}
-
-// Load the data from a file via xhr. Return a promise for this data.
-function getDataSourcePromise(dataPath){
-    return new Promise(function(resolve, revoke) {
-        // Var that will hold the loaded string
-        var dataSource;
-
-        // Promise to load data from XHR
-        var dataPromise = getXHRPromise(dataPath);
-
-        // Promise to assign the loaded data to the source variable
-        var assignDataToVar = dataPromise.then(function(value) {
-            // console.log("Loading " + dataPath);
-            dataSource = value;
-        });
-
-        // Once everything is loaded resolve the promise
-        assignDataToVar.then(function() {
-            resolve(dataSource);
-        });
-    });
-}
-
-// Post a string to the server and return a promise for some data.
-function postDataPromise(postString) {
-    // Return a promise for XHR data
-    return new Promise(function(resolve, reject) {
-	      var xhr = new XMLHttpRequest;
-	      xhr.responseType = 'text';
-	      xhr.open('POST', postString, true);
-	      xhr.onload = function() {
-	          if (xhr.status === 200) {
-		            // Tries to get the shader source
-                var result = xhr.responseText;
-		            resolve(JSON.parse(result));
-	          } else {
-		            // If unsuccessful return an error
-		            reject(Error('postGetData() - ERROR with '+postString));
-	          }
-	      };
-	      xhr.onerror = function() {
-	          // Maybe we have more severe problems. Also return an error then
-	          reject(Error('postGetData() - network issues'));
-	      };
-	      // Send the request
-	      xhr.send();
-    });
-}
-
-// Post a json string to an url on the server and return a promise for some
-// data.
-function postJSONPromise(post_url, json_string) {
-    // Return a promise for XHR data
-    return new Promise(function(resolve, reject) {
-	      var xhr = new XMLHttpRequest;
-	      xhr.responseType = 'text';
-	      xhr.open('POST', '/' + post_url, true);
-        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-	      // Send the request
-	      xhr.send(JSON.stringify(json_string));
-	      xhr.onload = function() {
-	          if (xhr.status === 200) {
-		            // Tries to get the shader source
-                var result = xhr.responseText;
-		            resolve(JSON.parse(result));
-	          } else {
-		            // If unsuccessful return an error
-		            reject(Error('postJSONData() - ERROR with '+post_url+' and '+json_string));
-	          }
-	      };
-	      xhr.onerror = function() {
-	          // Maybe we have more severe problems. Also return an error then
-	          reject(Error('postJSONData() - network issues'));
 	      };
     });
 }
 
 /**
  * Contact the server at rootPath with apiEndpoint and apply HTTPMethod with
- * optional payload.
- * @param {string} rootPath - The root path of the servers api.
+ * optional payload. It is expected that the API returns a string of sorts,
+ * which then has to be converted into a JSON valid object.
+ * @param {string} basePath - The root path of the servers api.
  * @param {string} apiEndpoint - The API endpoint.
  * @param {string} HTTPMethod - 'GET', 'POST', 'DELETE', 'PATCH'.
  * @param {js object} payload - When POST or PATCH is used we want to transmit
@@ -129,17 +116,21 @@ function postJSONPromise(post_url, json_string) {
  * @returns {object promise} A promise on a JSON object that the server was
  * contacted.
  */
-function contactServer(basePath, apiEndpoint, HTTPMethod, payload) {
-    return new Promise(function(resolve, revoke) {
+function connectToAPIPromise(basePath, apiEndpoint, HTTPMethod, payload) {
+
+    // return a promise on data
+    return new Promise(function(resolve, reject) {
+
         var xhr = new XMLHttpRequest;
         xhr.responseType = 'text';
 
         // Concat the complete path
         var path = basePath + '/' + apiEndpoint;
 
-        // GET (or smth) from http://.... with async=true
+        // GET (or smth else) from http://.... with async=true
         xhr.open(HTTPMethod.toUpperCase(), path, true);
 
+        // In case no payload is supplied
         if (payload !== undefined) {
             // Set the charset
             xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
@@ -157,12 +148,12 @@ function contactServer(basePath, apiEndpoint, HTTPMethod, payload) {
 		            resolve(JSON.parse(result));
 	          } else {
 		            // If unsuccessful return an error
-		            reject(Error('contactServer() - ERROR with'+HTTPMethod.toUpperCase()+' '+apiEndpoint));
+		            reject(Error('connectToAPIPromise() - ERROR with '+HTTPMethod.toUpperCase()+' '+apiEndpoint));
 	          }
 	      };
 	      xhr.onerror = function() {
 	          // Maybe we have more severe problems. Also return an error then
-	          reject(Error('contactServer() - network issues'));
+	          reject(Error('connectToAPIPromise() - network issues'));
         };
     });
 }
