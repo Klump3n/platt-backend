@@ -29,10 +29,12 @@ function main() {
         // for every dataset spawn a menu entry
         for (var dataset_index in datasets) {
 
-            var dataset_hash = datasets[dataset_index]["datasetHash"];
+            var new_dataset = datasets[dataset_index];
+
+            var dataset_hash = new_dataset["datasetHash"];
 
             // Add the dataset to the menu
-            add_dataset(dataset_hash);
+            add_dataset(new_dataset);
 
             // initialise the displayed values for each dataset
             initialise_display(dataset_hash);
@@ -177,10 +179,17 @@ function main() {
      * Adds the control menu for a dataset to the main menu dock.
      * @param {string} dataset_hash - The hash of the dataset for which the menu should be.
      */
-    function add_dataset(dataset_hash) {
+    function add_dataset(new_dataset) {
 
+        var dataset_name = new_dataset['datasetName'];
+        var dataset_hash = new_dataset['datasetHash'];
+        var dataset_alias = new_dataset['datasetAlias'];
+        var dataset_href = new_dataset['datasetHref'];
+
+        // select the dataset container in which all datasets land
         var dataset_container = document.getElementById('dataset_container');
 
+        // a padding zone around the dataset
         var dataset_padding = document.createElement('div');
         dataset_padding.setAttribute('class', 'dataset_heading');
         dataset_padding.setAttribute('id', 'dataset_heading'+dataset_hash);
@@ -192,25 +201,29 @@ function main() {
         var dataset_heading = document.createElement('summary');
         dataset_heading.setAttribute('class', 'dataset_heading');
         dataset_heading.setAttribute('id', 'dataset_heading'+dataset_hash);
-        dataset_heading.innerHTML = dataset_hash;
+        dataset_heading.innerHTML = dataset_name;
 
         var dataset_functions = document.createElement('div');
         dataset_functions.setAttribute('class', 'dataset_functions');
         dataset_functions.setAttribute('id', 'dataset_functions'+dataset_hash);
 
+        // contains heading and controls
         var dataset_timestep_container = document.createElement('div');
         dataset_timestep_container.setAttribute('class', 'dataset_timestep_container');
         dataset_timestep_container.setAttribute('id', 'dataset_timestep_container'+dataset_hash);
 
+        // heading for timestep, just says 'Timestep'
         var dataset_timestep_heading = document.createElement('div');
         dataset_timestep_heading.setAttribute('class', 'dataset_timestep_heading');
         dataset_timestep_heading.setAttribute('id', 'dataset_timestep_heading'+dataset_hash);
         dataset_timestep_heading.innerHTML = 'Timestep';
 
+        // container for the controls, contains prev, current/menu and next timestep
         var dataset_timestep_controls = document.createElement('div');
         dataset_timestep_controls.setAttribute('class', 'dataset_timestep_controls');
         dataset_timestep_controls.setAttribute('id', 'dataset_timestep_controls'+dataset_hash);
 
+        // previous timestep box
         var dataset_timestep_previous = document.createElement('div');
         dataset_timestep_previous.setAttribute('class', 'dataset_timestep_previous');
         dataset_timestep_previous.setAttribute('id', 'dataset_timestep_previous'+dataset_hash);
@@ -218,13 +231,14 @@ function main() {
         dataset_timestep_previous.innerHTML = '<';
         dataset_timestep_previous.addEventListener('click', decrease_timestep);
 
+        // current timestep/menu button
         var dataset_timestep_current = document.createElement('div');
         dataset_timestep_current.setAttribute('class', 'dataset_timestep_current');
         dataset_timestep_current.setAttribute('id', 'dataset_timestep_current'+dataset_hash);
-        // dataset_timestep_current.innerHTML = '##.##';     // This is set later.
         dataset_timestep_current.addEventListener('click', open_timestep_menu);
         dataset_timestep_current.setAttribute('data-name', dataset_hash);
 
+        // next timestep box
         var dataset_timestep_next = document.createElement('div');
         dataset_timestep_next.setAttribute('class', 'dataset_timestep_next');
         dataset_timestep_next.setAttribute('id', 'dataset_timestep_next'+dataset_hash);
@@ -240,14 +254,6 @@ function main() {
         dataset_timestep_menu.setAttribute('class', 'dataset_timestep_menu');
         dataset_timestep_menu.setAttribute('id', 'dataset_timestep_menu'+dataset_hash);
 
-        // var dataset_property_container = document.createElement('div');
-        // dataset_property_container.setAttribute('class', 'dataset_property_container');
-        // dataset_property_container.setAttribute('id', 'dataset_property_container'+dataset_hash);
-
-        // var dataset_controls_container = document.createElement('div');
-        // dataset_controls_container.setAttribute('class', 'dataset_controls_container');
-        // dataset_controls_container.setAttribute('id', 'dataset_controls_container'+dataset_hash);
-
         // Composing timestep control menu.
         dataset_timestep_controls.appendChild(dataset_timestep_previous);
         dataset_timestep_controls.appendChild(dataset_timestep_current);
@@ -260,11 +266,6 @@ function main() {
         dataset_timestep_container.appendChild(dataset_timestep_controls);
 
         dataset_functions.appendChild(dataset_timestep_container);
-
-        // Properties have been set in a loop.
-        // dataset_functions.appendChild(dataset_property_container);
-
-        // dataset_functions.appendChild(dataset_controls_container);
 
         dataset.appendChild(dataset_heading);
         dataset.appendChild(dataset_functions);
