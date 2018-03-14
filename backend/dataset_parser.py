@@ -44,6 +44,12 @@ class ParseDataset:
         """
         Return a SHA1 hash for a file.
 
+        Args:
+         file_path (os.PathLike): Path to file we want to have a hash for.
+
+        Returns:
+         str: The hash of the file.
+
         """
         if not file_path.exists():
             return None
@@ -113,7 +119,20 @@ class ParseDataset:
         """
         Return the mesh data (nodes, elements) for the dataset.
 
-        Current hash is an array or None.
+        current_hash should contain all the hashes of the geometries that we
+        have in memory. If the geometry we are about to parse has a hash that
+        is already in current_hash, the parsing is skipped and lots of work
+        (and time) is saved.
+
+        Args:
+         directory (os.PathLike): Directory containing the geometry data.
+         current_hash (array, optional): The hashes for the geometry we already
+          have.
+
+        Returns:
+         dict: The geometry data for the dataset, if parsing was not required
+          it contains 'None'.
+
         """
         # parse nodes
         nodes_path = sorted(directory.glob('nodes.bin'))[0]
@@ -143,7 +162,7 @@ class ParseDataset:
         mesh_checksum = mesh_checksum.hexdigest()
         return_dict = {'hash': mesh_checksum}
 
-        if current_hash is None or mesh_checksum not in current_hash:# (current_hash == mesh_checksum)
+        if current_hash is None or mesh_checksum not in current_hash:
             return_dict['nodes'] = {}
             return_dict['nodes']['data'] = self._read_binary_data(
                 nodes_path, nodes_format)
@@ -168,46 +187,21 @@ class ParseDataset:
         """
         Return the field data for the dataset.
 
+        current_hash should contain all the hashes of the fields that we have
+        in memory. If the field we are about to parse has a hash that is
+        already in current_hash, the parsing is skipped and lots of work (and
+        time) is saved.
+
         Args:
          directory (pathlib.Path): Path to the eo/no directories.
          field (dict): Dictionary containing the requested field type and name.
          current_hash (str, optional): Hash of the currently selected field.
 
+        Returns:
+         dict: The field data for the dataset, if no parsing was required it
+          contains 'None'.
+
         """
-        # # get every binary path in the subfolders of directory
-        # field_paths = sorted(directory.glob('**/*.bin'))
-
-        # for index, field_path in enumerate(field_paths):
-
-        #     field_name = re.search(
-        #         r'(.*)\.bin', str(field_path.name)).groups(0)[0]
-
-        #     if field_name == field:
-        #         directory = field_path.parent.name
-
-        #         actual_field_path = field_path
-
-        #         if directory == 'no':
-        #             field_format = binary_formats.nodal_fields()
-        #         if directory == 'eo':
-        #             field_format = binary_formats.elemental_fields()
-
-        #         field_hash = self._file_hash(field_path)
-
-        #         break
-
-        # # this gets called if no break occured
-        # else:
-        #     # field was not found
-        #     return None
-
-        # if current_hash is None or field_hash not in current_hash:# (current_hash == field_hash):
-        #     data = self._read_binary_data(actual_field_path, field_format)
-        # else:
-        #     data = None
-
-        ##################
-        # Attempt two
         req_field_type = field['type']
         req_field_name = field['name']
 
@@ -256,6 +250,9 @@ class ParseDataset:
     def _blank_field(self):
         """
         Create an empty field.
+
+        Returns:
+         dict: Basically surface field values, where every value is 0.
 
         """
         ret_dict = {

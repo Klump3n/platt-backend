@@ -11,26 +11,45 @@ def model_surface(nodes, elements):
     """
     Get the surface of a dataset.
 
+    Args:
+     nodes (dict): The nodes of the dataset.
+     elements (dict): The elements of the dataset.
+
+    Returns:
+     dict: The surface data for the dataset, including instructions how to
+      remap the field data, as well as wireframe and free edges of the
+      geometry.
+
     """
+    # for every element get the faces and the edges of the element
     bulk_edges_and_faces = _dataset_bulk_faces_and_edges(elements)
 
+    # from the faces for every element find those faces that define the
+    # boundary (surface) of the dataset
     bulk_faces = bulk_edges_and_faces['bulk_faces']
     free_faces = _dataset_free_faces(bulk_faces)
 
+    # create tets (rather triangles) for the free faces/surface
     tets = _dataset_free_tets(free_faces)
 
+    # from the edges of every element find the wireframe for the surface of the
+    # dataset and the free edges of the dataset, that is edges that give a
+    # rough outline of the how the dataset looks
     bulk_edges = bulk_edges_and_faces['bulk_edges']
     wireframe_and_free_edges = _dataset_edges(bulk_edges)
 
     wireframe_lines = wireframe_and_free_edges['wireframe_lines']
     edge_lines = wireframe_and_free_edges['edge_lines']
 
+    # "compress" the data. only keep the nodes from the surface and remove
+    # redundant information. create a map for the field data so we can also
+    # compress that
     surface_nodes_and_map = _surface_nodes_and_map(nodes, free_faces)
     surface_node_map = surface_nodes_and_map['surface_node_map']
-
     remapped_nodes = surface_nodes_and_map['remapped_nodes']
     field_map = surface_nodes_and_map['field_map']
 
+    # "compress" the tetraeders on the surface
     remapped_tets_data = _remap_element_data(surface_node_map, tets)
 
     remapped_tets = {
@@ -39,20 +58,21 @@ def model_surface(nodes, elements):
         'data': remapped_tets_data
     }
 
+    # calculate the center of the dataset
     nodes_center = _nodes_center(remapped_nodes)
 
+    # "compress" the free edges of the dataset
     remapped_free_edges_data = _remap_element_data(
         surface_node_map, edge_lines)
-
     remapped_free_edges = {
         'type': 'free_edges',
         'points_per_unit': 2,
         'data': remapped_free_edges_data
     }
 
+    # compress the wireframe of the dataset
     remapped_wireframe_data = _remap_element_data(
         surface_node_map, wireframe_lines)
-
     remapped_wireframe = {
         'type': 'wireframe',
         'points_per_unit': 2,
@@ -60,19 +80,26 @@ def model_surface(nodes, elements):
     }
 
     return {
-        'field_map': field_map,
-        'tets': remapped_tets,
-        'node_count': len(surface_node_map),
-        'nodes': remapped_nodes,
-        'nodes_center': nodes_center,
-        'free_edges': remapped_free_edges,
-        'wireframe': remapped_wireframe
+        'field_map': field_map,  # the compression map for the fields
+        'tets': remapped_tets,   # the compressed surface tets
+        'node_count': len(surface_node_map),  # how many nodes on the surface
+        'nodes': remapped_nodes,              # the compressed nodes
+        'nodes_center': nodes_center,      # center of dataset
+        'free_edges': remapped_free_edges,  # compressed free edges
+        'wireframe': remapped_wireframe     # compressed wireframe
     }
 
 
 def model_surface_fields(field_map, field_values):
     """
-    Extract the surface field values.
+    Extract the surface field values from the bulk.
+
+    Args:
+     field_map (array): A list with indices for the bulk field data.
+     field_values (array): The field values for the bulk of the dataset.
+
+    Returns:
+     dict: The field values for the surface of the dataset.
 
     """
     remapped_field_data = _remap_index_data(field_map, field_values)
@@ -116,6 +143,12 @@ def _dataset_bulk_faces_and_edges(elements):
     the bulk of the dataset.
 
     The returned data is sorted by the hash value.
+
+    Args:
+     elements (dict): Element data for every element type (c3d6, c3d8, etc).
+
+    Returns:
+     dict: The faces and edges of every element in the bulk of the dataset.
 
     """
     fc = []
@@ -178,6 +211,13 @@ def _dataset_free_faces(bulk_faces):
 
     Works under the assumption that the faces_hashes are sorted.
 
+    Args:
+     bulk_faces (dict): Contains the faces and face hashes for the whole
+      dataset.
+
+    Returns:
+     dict: The free (surface) faces of the dataset.
+
     """
     faces = bulk_faces['faces']
     faces_hashes = bulk_faces['faces_hashes']
@@ -204,14 +244,23 @@ def _dataset_free_tets(free_faces):
     """
     Generate tetraeders for the free faces.
 
+    Args:
+     free_faces (dict): The free (outward pointing) faces of the dataset.
+      free_faces = {'free_faces': [ [face1], [face2], ...]}
+
+    Returns:
+     tets (array): The outward facing tetraeders.
+
     """
     faces_data = free_faces['free_faces']
 
     tets = []
 
     for face in faces_data:
+        # just append a triangle
         if len(face) == 3:
             tets.append(face)
+        # a quad has to be split up into two triangles
         if len(face) == 4:
             tets.append([face[0], face[1], face[2]])
             tets.append([face[0], face[2], face[3]])
@@ -223,6 +272,12 @@ def _dataset_edges(bulk_edges):
     """
     For for edges in the dataset we build a wireframe and the datasets corner
     edges.
+
+    Args:
+     bulk_edges (dict): The edges for every element in the dataset.
+
+    Returns:
+     dict: The free edges and the wireframe for the surface of the dataset.
 
     """
     edges = bulk_edges['edges']
@@ -262,6 +317,14 @@ def _surface_nodes_and_map(nodes, free_faces):
     """
     Return a map that points from the indices for the surface to new
     consecutive indices.
+
+    Args:
+     nodes (dict): The nodes of the bulk of the dataset.
+     free_faces (dict): The surface faces of the dataset.
+
+    Returns:
+     dict: The compressed nodes on the surface, a map to construct the surface
+      from the bulk and a map to construct a compressed surface field.
 
     """
     faces_data = free_faces['free_faces']
@@ -310,6 +373,15 @@ def _remap_element_data(surface_node_map, data):
 
     This is to compress the data for transmission to the frontend.
 
+    Args:
+     surface_node_map (array): A map for extracting surface nodes from bulk
+      nodes.
+     data (array): Some element data from which we want to extrapolate the
+      surface.
+
+    Returns:
+     array: The surface of data.
+
     """
     # flatten data
     flat_data = _flatten_nested_lists(data)
@@ -325,6 +397,15 @@ def _remap_index_data(field_map, data):
     """
     Remap data based on indices.
 
+    Args:
+     field_map (array): A map for extracting surface field values from bulk
+      field values.
+     data (array): Some field data from which we want to extrapolate the
+      surface values.
+
+    Returns:
+     array: The surface of data.
+
     """
     remapped_data = []
 
@@ -339,6 +420,16 @@ def _nodes_center(nodes_dict):
     Return the center of the mesh.
 
     Assume that nodes is a list with length divisible by 3.
+    This effectively calculates the average value of the x, y and z coordinates
+    of the nodes.
+
+    Args:
+     nodes_dict (dict): A dictionary containing the nodes,
+      nodes_dict = { ... , 'data': [x1, y1, z1, x2, ...], ... }.
+
+    Returns:
+     array: The average values of the x, y and z coordinates of
+      nodes_dict['data'].
 
     """
     nodes = nodes_dict['data']
