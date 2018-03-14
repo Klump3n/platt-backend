@@ -6,10 +6,9 @@ manipulating scenes.
 """
 import re
 import cmd
-import textwrap
-import argparse
 
 from client.util_client.send_http_request import send_http_request
+from client.util_client.print_function_usage import print_help
 
 
 class SceneTerminal(cmd.Cmd):
@@ -48,7 +47,6 @@ class SceneTerminal(cmd.Cmd):
         self._nodal_fields = []
         self._elememtal_fields = []
 
-
         prompt_info = self.scene_hash[0:7]
 
         # prompt = """({}) >>
@@ -73,7 +71,8 @@ class SceneTerminal(cmd.Cmd):
             try:
                 # Set the message we display on pressing Ctrl-C to an empty
                 # string.
-                super().cmdloop(intro="")  # super references the parent class, i.e. cmd.Cmd
+                # super references the parent class, i.e. cmd.Cmd
+                super().cmdloop(intro="")
                 self.postloop()
                 break
             except KeyboardInterrupt:
@@ -125,22 +124,34 @@ class SceneTerminal(cmd.Cmd):
         """
         List the LOADED datasets of the scene.
 
+        Args:
+         line (str): The parsed line for the command line.
+
         """
         from client._dos.do_scenes import scenes_list  # Does not work at top
         # of file, circular import shennanigans.
         scene_hash = [self.scene_hash]
         scenes_list(self.c_data, just=scene_hash)
 
-    # def help_list(self):
-    #     """
-    #     Print the help message for 'list'.
+    def help_list(self):
+        """
+        Print the help message for 'list'.
 
-    #     """
-    #     pass
+        """
+        help_text = """
+        List the datasets of the scene.
+        """
+
+        print_help(help_text)
+
+        return None
 
     def do_fields(self, line):
         """
         Get a list of fields or set the current field.
+
+        Args:
+         line (str): The parsed line for the command line.
 
         """
         line_args = line.split()
@@ -148,7 +159,8 @@ class SceneTerminal(cmd.Cmd):
         if len(line_args) == 0:
             return None
 
-        if not re.search('^[0-9a-f]{40}$', line_args[0]):  # if the first thing is not a hash
+        # if the first thing is not a hash
+        if not re.search('^[0-9a-f]{40}$', line_args[0]):
             print('{} not a hash'.format(line_args[0]))
 
         else:
@@ -163,10 +175,13 @@ class SceneTerminal(cmd.Cmd):
                 )
 
                 if response is not None:
-                    selected_field_name = response['datasetFieldSelected']['name']
-                    selected_field_type = response['datasetFieldSelected']['type']
+                    selected_field_name = (
+                        response['datasetFieldSelected']['name'])
+                    selected_field_type = (
+                        response['datasetFieldSelected']['type'])
 
-                    elemental_fields = response['datasetFieldList']['elemental']
+                    elemental_fields = (
+                        response['datasetFieldList']['elemental'])
                     nodal_fields = response['datasetFieldList']['nodal']
 
                     if not (
@@ -198,27 +213,25 @@ class SceneTerminal(cmd.Cmd):
                     line_args[1] == 'set' and
                     line_args[2] == 'none'
             ):
-                    data = {'datasetFieldSelected':
-                            {
-                                'type': '__no_type__',
-                                'name': '__no_field__'
-                            }
+                data = {
+                    'datasetFieldSelected': {
+                        'type': '__no_type__',
+                        'name': '__no_field__'
                     }
-                    response = send_http_request(
-                        http_method='PATCH',
-                        api_endpoint=api_endpoint,
-                        connection_data=self.c_data,
-                        data_to_transmit=data
-                    )
+                }
+                response = send_http_request(
+                    http_method='PATCH',
+                    api_endpoint=api_endpoint,
+                    connection_data=self.c_data,
+                    data_to_transmit=data
+                )
 
-                    if response is not None:
-                        if (
-                                data['datasetFieldSelected'] ==
-                                response['datasetFieldSelected']
-                        ):
-                            print('Unset fields')
-
-
+                if response is not None:
+                    if (
+                            data['datasetFieldSelected'] ==
+                            response['datasetFieldSelected']
+                    ):
+                        print('Unset fields')
 
             # set nodal or elemental
             if len(line_args) == 4:
@@ -232,11 +245,12 @@ class SceneTerminal(cmd.Cmd):
                 ):
                     nod_elem = line_args[2]
                     field_name = line_args[3]
-                    data = {'datasetFieldSelected':
-                            {
-                                'type': line_args[2],
-                                'name': line_args[3]
-                            }
+                    data = {
+                        'datasetFieldSelected':
+                        {
+                            'type': line_args[2],
+                            'name': line_args[3]
+                        }
                     }
                     response = send_http_request(
                         http_method='PATCH',
@@ -263,12 +277,29 @@ class SceneTerminal(cmd.Cmd):
         """
         Completion for dataset ids.
 
+        If we try to get or set the fields in a scene, we need the
+        dataset_hash. If we don't want to copy and paste these hashes it would
+        be nice to have a form of auto completion. This functions solves that
+        need.
+        It also completes get/set, elemental/nodal/none and the available field
+        names for either elemental or nodal fields.
+
+        Args:
+         text (str): The text we want to complete.
+         line (str): The whole command line input.
+         begidx (int): The position where text starts in line.
+         endidx (int): The position where text ends in line.
+
+        Returns:
+         array: An array with options for auto completion.
+
         """
         line_args = line.split()
 
         if (
                 (len(line_args) == 1 and line[-1] == ' ') or
-                (len(line_args) == 2 and not re.search('^[0-9a-f]{40}$', line_args[1]))
+                (len(line_args) == 2 and
+                 not re.search('^[0-9a-f]{40}$', line_args[1]))
         ):
             datasets_in_scene = send_http_request(
                 http_method='GET',
@@ -280,7 +311,8 @@ class SceneTerminal(cmd.Cmd):
             if datasets_in_scene is None:
                 return None
 
-            loaded_datasets = [x['datasetHash'] for x in datasets_in_scene['loadedDatasets']]
+            loaded_datasets = [x['datasetHash'] for x
+                               in datasets_in_scene['loadedDatasets']]
 
             mline = line.partition(' ')[2]
             offs = len(mline) - len(text)
@@ -331,7 +363,8 @@ class SceneTerminal(cmd.Cmd):
                 line_args[3] == 'nodal' and
                 (
                     (len(line_args) == 4 and line[-1] == ' ') or
-                    (len(line_args) == 5 and line_args[4] not in self._nodal_fields)
+                    (len(line_args) == 5 and line_args[4] not
+                     in self._nodal_fields)
                 )
         ):
             api_endpoint = 'scenes/{}/{}/fields'.format(
@@ -348,14 +381,16 @@ class SceneTerminal(cmd.Cmd):
 
                 mline = line.partition('nodal ')[2]
                 offs = len(mline) - len(text)
-                return [s[offs:] for s in self._nodal_fields if s.startswith(mline)]
+                return [s[offs:] for s in self._nodal_fields
+                        if s.startswith(mline)]
 
         # Autocomplete elemental fields
         if (
                 line_args[3] == 'elemental' and
                 (
                     (len(line_args) == 4 and line[-1] == ' ') or
-                    (len(line_args) == 5 and line_args[4] not in self._elemental_fields)
+                    (len(line_args) == 5 and line_args[4] not
+                     in self._elemental_fields)
                 )
         ):
             api_endpoint = 'scenes/{}/{}/fields'.format(
@@ -368,19 +403,45 @@ class SceneTerminal(cmd.Cmd):
             )
 
             if response is not None:
-                self._elemental_fields = response['datasetFieldList']['elemental']
+                self._elemental_fields = (
+                    response['datasetFieldList']['elemental'])
 
                 mline = line.partition('elemental ')[2]
                 offs = len(mline) - len(text)
-                return [s[offs:] for s in self._elemental_fields if s.startswith(mline)]
+                return [s[offs:] for s in self._elemental_fields
+                        if s.startswith(mline)]
 
-    # def help_fields(self):
-    #     """
-    #     Print the help message for 'fields'.
+    def help_fields(self):
+        """
+        Print the help message for 'fields'.
 
-    #     """
-    #     pass
+        """
+        help_text = """
+        Get information about the available and set fields or set a field for a
+        dataset.
 
+        Use cases:
+        fields 1ed75019714252d45effb9b5d0408a2f4f31da7a
+
+        Returns the set field and the available fields for the dataset hash
+        1ed75019714252d45effb9b5d0408a2f4f31da7a.
+
+
+        fields 1ed75019714252d45effb9b5d0408a2f4f31da7a set nodal nt11
+
+        Sets the field for the dataset hash
+        1ed75019714252d45effb9b5d0408a2f4f31da7a to the nodal field nt11.
+
+
+        fields 1ed75019714252d45effb9b5d0408a2f4f31da7a set none
+
+        Unsets the field for the dataset hash
+        1ed75019714252d45effb9b5d0408a2f4f31da7a.
+        """
+
+        print_help(help_text)
+
+        return None
 
 
 def select(c_data, scene_hash):

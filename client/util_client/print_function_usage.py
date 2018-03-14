@@ -20,7 +20,6 @@ def print_help(help_text):
      I think this can be done waaay more elegant...
 
     """
-
     # Take out indentation
     dedented = textwrap.dedent(help_text)
 

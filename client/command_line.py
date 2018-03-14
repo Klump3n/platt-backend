@@ -6,7 +6,6 @@ Terminal-like interface for interacting with the backend.
 import cmd
 import sys
 import argparse
-import textwrap
 
 # Command line interface functionality
 from _dos.do_scenes import scenes, scenes_help
@@ -187,7 +186,16 @@ class Terminal(cmd.Cmd):
 
     def complete_scenes(self, text, line, begidx, endidx):
         """
-        Completion for scenes.
+        Auto completion for the scenes command.
+
+        Args:
+         text (str): The text we want to complete.
+         line (str): The whole command line input.
+         begidx (int): The position where text starts in line.
+         endidx (int): The position where text ends in line.
+
+        Returns:
+         array: An array with options for auto completion.
 
         """
         options = [
@@ -313,8 +321,8 @@ class Terminal(cmd.Cmd):
 if __name__ == '__main__':
     """
     Start the client.
-    """
 
+    """
     ARGS = parse_commandline()
 
     HOST = ARGS.host

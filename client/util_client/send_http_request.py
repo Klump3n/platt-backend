@@ -5,7 +5,6 @@ returns the response.
 
 """
 import requests
-import json
 
 
 def send_http_request(
@@ -79,6 +78,7 @@ def send_http_request(
 
     # Send the requests to the server
     try:
+        # http_methods is an array with methods
         response = http_methods[http_method](  # requests.get, etc
             url=target_path,
             json=data_to_transmit,
