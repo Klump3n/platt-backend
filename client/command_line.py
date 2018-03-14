@@ -237,7 +237,7 @@ class Terminal(cmd.Cmd):
         if (
                 (line_args[1] == 'create') and (
                     ((len(line_args) == 2) and line[-1] == ' ') or
-                    (len(line_args) == 3)
+                    (len(line_args) > 2)
                 )
         ):
             response = send_http_request(
@@ -253,7 +253,10 @@ class Terminal(cmd.Cmd):
             # availableDatasets
             available_datasets = response['availableDatasets']
 
-            mline = line.partition('scenes create ')[2]
+            # finds the last space in the line string
+            last_space_in_line = line[::-1].find(' ')
+
+            mline = line.partition(str(line[0:len(line) - last_space_in_line]))[2]
             offs = len(mline) - len(text)
             return [s[offs:] for s in available_datasets if s.startswith(mline)]
 
