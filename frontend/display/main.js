@@ -27,6 +27,68 @@ var basePath = protocol + "//" + host + "/api";
 // The hash for the scene we are looking at
 var scene_hash = document.getElementById("webGlCanvas").getAttribute("data-scene-hash");
 
+// the store for all datasets rendered
+var meshData = {};
+
+// all the data required for rendering a dataset
+var datasetPrototype = {
+
+    // if this is true, the buffers will be reloaded with new data and the
+    // bufferInfo is then recreated
+    vertexDataHasChanged: false,
+    fragmentDataHasChanged: false,
+
+    // the hashes of the currently displayed geometry and field
+    currentMeshHash: '',
+    currentFieldHash: '',
+
+    // the current orientation as set via mouse manipulation or via the API
+    currentOrientation: twgl.m4.identity(),
+
+    // the compressed model data as received from the api
+    surfaceData: {
+        "nodes": [],
+        "nodesCenter": [],
+        "tets": [],
+        "wireframe": [],
+        "freeEdges": [],
+        "field": []
+    },
+
+    // bufferDataArray contains postions of tets and field values
+    bufferDataArray: {
+        a_position: {
+            numComponents: 3,
+            data: []
+        },
+
+        a_field: {
+            numComponents: 1,
+            // type: gl.FLOAT,
+            // normalized: true,
+            data: []
+        }
+    },
+
+    // bufferFreeEdgesArray contains all the nodes for drawing the free edges
+    // of the model
+    bufferFreeEdgesArray: {
+        a_line_data: {
+            numComponents: 3,
+            data: []
+        }
+    },
+
+    // bufferWireframeArray contains all the nodes for drawing the wireframe
+    // of the model
+    bufferWireframeArray: {
+        a_line_data: {
+            numComponents: 3,
+            data: []
+        }
+    }
+};
+
 // Make the array for holding web gl data global.
 var vertexDataHasChanged = false;
 var fragmentDataHasChanged = false;
@@ -45,13 +107,8 @@ var surfaceData = {
     "field": []
 };
 
-var model_metadata;
-var surfaceNodesCenter;
-
 var fragmentShaderTMin = 0.0;
 var fragmentShaderTMax = 800.0;
-
-var bufferIndexArray;
 
 var currentMeshHash = '';
 var currentFieldHash = '';
@@ -100,7 +157,8 @@ function glRoutine(gl) {
 
     // var centerModel = new Float32Array(model_metadata.split(','));
     // var centerModel = model_metadata;
-    var centerModel = surfaceData['nodesCenter'];
+    // var centerModel = surfaceData['nodesCenter'];
+    var centerModel = [0, 0, 0];
     var scaleTheWorldBy = 150;
     var tarPos = twgl.v3.mulScalar(centerModel, scaleTheWorldBy);
     var camPos = twgl.v3.create(tarPos[0], tarPos[1], 550); // Center the z-axis over the model
@@ -132,9 +190,13 @@ function glRoutine(gl) {
     var programInfoEdge = twgl.createProgramInfo(gl, [vs_edge, fs_edge]);
     var programInfoWireframe = twgl.createProgramInfo(gl, [vs_wireframe, fs_wireframe]);
 
-    var bufferInfoColor = twgl.createBufferInfoFromArrays(gl, bufferDataArray);
-    var bufferInfoEdge = twgl.createBufferInfoFromArrays(gl, bufferFreeEdgesArray);
-    var bufferInfoWireframe = twgl.createBufferInfoFromArrays(gl, bufferWireframeArray);
+    for (var dataset_index in meshData) {
+        var m = meshData[dataset_index];
+
+        m.bufferInfoColor = twgl.createBufferInfoFromArrays(gl, m.bufferDataArray);
+        m.bufferInfoEdge = twgl.createBufferInfoFromArrays(gl, m.bufferFreeEdgesArray);
+        m.bufferInfoWireframe = twgl.createBufferInfoFromArrays(gl, m.bufferWireframeArray);
+    }
 
     var uniforms = {
         u_transform: twgl.m4.identity() // mat4
@@ -148,58 +210,62 @@ function glRoutine(gl) {
     // The main drawing loop
     function drawScene(now) {
 
-        // Check if our data has been updated at some point.
-        if (vertexDataHasChanged) {
-            // Update the buffer.
-            bufferInfoColor = twgl.createBufferInfoFromArrays(gl, bufferDataArray);
-            bufferInfoEdge = twgl.createBufferInfoFromArrays(gl, bufferFreeEdgesArray);
-            bufferInfoWireframe = twgl.createBufferInfoFromArrays(gl, bufferWireframeArray);
+        // update every dataset
+        for (var dataset_index in meshData) {
+            var m = meshData[dataset_index];
 
-            // Center the new dataset
-            centerModel = surfaceData['nodesCenter'];
-            modelMatrix.translateWorld(twgl.v3.negate(centerModel));
+            // Check if our data has been updated at some point.
+            if (m.vertexDataHasChanged) {
+                // Update the buffer.
+                m.bufferInfoColor = twgl.createBufferInfoFromArrays(gl, m.bufferDataArray);
+                m.bufferInfoEdge = twgl.createBufferInfoFromArrays(gl, m.bufferFreeEdgesArray);
+                m.bufferInfoWireframe = twgl.createBufferInfoFromArrays(gl, m.bufferWireframeArray);
 
-            vertexDataHasChanged = false;
-        };
+                // Center the new dataset
+                centerModel = m.surfaceData['nodesCenter'];
+                modelMatrix.translateWorld(twgl.v3.negate(centerModel));
 
-        if (fragmentDataHasChanged){
-            bufferInfoColor = twgl.createBufferInfoFromArrays(gl, bufferDataArray);
+                m.vertexDataHasChanged = false;
+            };
 
-            fragmentDataHasChanged = false;
-        };
+            if (m.fragmentDataHasChanged){
+                m.bufferInfoColor = twgl.createBufferInfoFromArrays(gl, m.bufferDataArray);
 
-        // Update the model view
-        uniforms.u_transform = modelMatrix.updateView();
+                m.fragmentDataHasChanged = false;
+            };
 
-        // colors
+            // Update the model view
+            uniforms.u_transform = modelMatrix.updateView();
 
-        gl.useProgram(programInfoColor.program);
-        twgl.setBuffersAndAttributes(gl, programInfoColor, bufferInfoColor);
-        twgl.setUniforms(programInfoColor, uniforms);
+            // colors
 
-        twgl.drawBufferInfo(gl, bufferInfoColor);
+            gl.useProgram(programInfoColor.program);
+            twgl.setBuffersAndAttributes(gl, programInfoColor, m.bufferInfoColor);
+            twgl.setUniforms(programInfoColor, uniforms);
 
-        // edges
+            twgl.drawBufferInfo(gl, m.bufferInfoColor);
 
-        gl.useProgram(programInfoEdge.program);
-        twgl.setBuffersAndAttributes(gl, programInfoEdge, bufferInfoEdge);
-        twgl.setUniforms(programInfoEdge, uniforms);
+            // edges
 
-        twgl.drawBufferInfo(gl, bufferInfoEdge, type=gl.LINES);
+            gl.useProgram(programInfoEdge.program);
+            twgl.setBuffersAndAttributes(gl, programInfoEdge, m.bufferInfoEdge);
+            twgl.setUniforms(programInfoEdge, uniforms);
 
-        // wireframe
+            twgl.drawBufferInfo(gl, m.bufferInfoEdge, type=gl.LINES);
 
-        gl.useProgram(programInfoWireframe.program);
-        twgl.setBuffersAndAttributes(gl, programInfoWireframe, bufferInfoWireframe);
-        twgl.setUniforms(programInfoWireframe, uniforms);
+            // wireframe
 
-        twgl.drawBufferInfo(gl, bufferInfoWireframe, type=gl.LINES);
+            gl.useProgram(programInfoWireframe.program);
+            twgl.setBuffersAndAttributes(gl, programInfoWireframe, m.bufferInfoWireframe);
+            twgl.setUniforms(programInfoWireframe, uniforms);
+
+            twgl.drawBufferInfo(gl, m.bufferInfoWireframe, type=gl.LINES);
+        }
 
         // draw scene
-
         window.requestAnimationFrame(drawScene);
-
     }
+
     drawScene();
 }
 
@@ -225,28 +291,30 @@ function updateMesh(dataset_hash) {
         var vertPromise;
         var fragPromise;
 
+        var m = meshData[dataset_hash];
+
         // If we find a mismatch between the data we have and the data the
         // server currently serves we call for new data
-        if ((newFieldHash != currentFieldHash) && (newMeshHash == currentMeshHash)) {
+        if ((newFieldHash != m.currentFieldHash) && (newMeshHash == m.currentMeshHash)) {
             fragPromise = updateFragmentShaderDataPromise(dataset_hash);
             fragPromise.then(function(frag_value) {
-                fragmentDataHasChanged = true;
+                m.fragmentDataHasChanged = true;
             });
         }
 
-        if ((newFieldHash == currentFieldHash) && (newMeshHash != currentMeshHash)) {
+        if ((newFieldHash == m.currentFieldHash) && (newMeshHash != m.currentMeshHash)) {
             vertPromise = updateVertexShaderDataPromise(dataset_hash);
             vertPromise.then(function(vert_value) {
-                vertexDataHasChanged = true;
+                m.vertexDataHasChanged = true;
             });
         }
 
-        if ((newFieldHash != currentFieldHash) && (newMeshHash != currentMeshHash)) {
+        if ((newFieldHash != m.currentFieldHash) && (newMeshHash != m.currentMeshHash)) {
             fragPromise = updateFragmentShaderDataPromise(dataset_hash);
             vertPromise = updateVertexShaderDataPromise(dataset_hash);
             Promise.all([fragPromise, vertPromise]).then(function(frag_vert_value){
-                fragmentDataHasChanged = true;
-                vertexDataHasChanged = true;
+                m.fragmentDataHasChanged = true;
+                m.vertexDataHasChanged = true;
             });
         }
     });
@@ -264,19 +332,21 @@ function updateFragmentShaderDataPromise(dataset_hash) {
     return new Promise(function(resolve, revoke) {
 
         // get the field data from the API
-        var mesh_data = connectToAPIPromise(       // returns a promise on some data
+        var mesh_data_promise = connectToAPIPromise(       // returns a promise on some data
             basePath = basePath,
             APIEndpoint = "scenes/" + scene_hash + "/" + dataset_hash + "/mesh/field",
             HTTPMethod = "get",
             payload = {}
         );
-        mesh_data.then(function(value) {
+        mesh_data_promise.then(function(value) {
 
-            surfaceData['field'] = value['datasetSurfaceField'];
+            var m = meshData[dataset_hash];
+
+            m.surfaceData['field'] = value['datasetSurfaceField'];
 
             // expand the data
             var expandedSurfaceField = expandDataWithIndices(
-                surfaceData['tets'], surfaceData['field'], chunksize=1);
+                m.surfaceData['tets'], m.surfaceData['field'], chunksize=1);
 
             // rescale the field values to a value between 0 and 1 (for the
             // general purpose shader)
@@ -287,10 +357,10 @@ function updateFragmentShaderDataPromise(dataset_hash) {
             );
 
             // update the data in the buffer
-            bufferDataArray['a_field']['data'] = new Float32Array(rescaledField);
+            m.bufferDataArray['a_field']['data'] = new Float32Array(rescaledField);
 
             // update the field hash we have
-            currentFieldHash = value['datasetFieldHash'];
+            m.currentFieldHash = value['datasetFieldHash'];
 
             // resolve the promise
             resolve();
@@ -311,37 +381,39 @@ function updateVertexShaderDataPromise(dataset_hash) {
     return new Promise(function(resolve, revoke) {
 
         // get the geometry data from the API
-        var mesh_data = connectToAPIPromise(
+        var mesh_data_promise = connectToAPIPromise(
             basePath = basePath,
             APIEndpoint = "scenes/" + scene_hash + "/" + dataset_hash + "/mesh/geometry",
             HTTPMethod = "get",
             payload = {}
         );
-        mesh_data.then(function(value) {
+        mesh_data_promise.then(function(value) {
 
-            surfaceData['nodes'] = value['datasetSurfaceNodes'];
-            surfaceData['nodesCenter'] = value['datasetSurfaceNodesCenter'];
-            surfaceData['tets'] = value['datasetSurfaceTets'];
-            surfaceData['wireframe'] = value['datasetSurfaceWireframe'];
-            surfaceData['freeEdges'] = value['datasetSurfaceFreeEdges'];
+            var m = meshData[dataset_hash];
+
+            m.surfaceData['nodes'] = value['datasetSurfaceNodes'];
+            m.surfaceData['nodesCenter'] = value['datasetSurfaceNodesCenter'];
+            m.surfaceData['tets'] = value['datasetSurfaceTets'];
+            m.surfaceData['wireframe'] = value['datasetSurfaceWireframe'];
+            m.surfaceData['freeEdges'] = value['datasetSurfaceFreeEdges'];
 
             // expand the received data
             var expandedSurfaceWireframe = expandDataWithIndices(
-                surfaceData['wireframe'], surfaceData['nodes'], chunksize=3);
+                m.surfaceData['wireframe'], m.surfaceData['nodes'], chunksize=3);
 
             var expandedSurfaceFreeEdges = expandDataWithIndices(
-                surfaceData['freeEdges'], surfaceData['nodes'], chunksize=3);
+                m.surfaceData['freeEdges'], m.surfaceData['nodes'], chunksize=3);
 
             var expandedSurfaceTets = expandDataWithIndices(
-                surfaceData['tets'], surfaceData['nodes'], chunksize=3);
+                m.surfaceData['tets'], m.surfaceData['nodes'], chunksize=3);
 
             // replace the data in the buffer arrays with the expanded data
-            bufferDataArray['a_position']['data'] = expandedSurfaceTets;
-            bufferWireframeArray['a_line_data']['data'] = expandedSurfaceWireframe;
-            bufferFreeEdgesArray['a_line_data']['data'] = expandedSurfaceFreeEdges;
+            m.bufferDataArray['a_position']['data'] = expandedSurfaceTets;
+            m.bufferWireframeArray['a_line_data']['data'] = expandedSurfaceWireframe;
+            m.bufferFreeEdgesArray['a_line_data']['data'] = expandedSurfaceFreeEdges;
 
             // update the mesh promise we have
-            currentMeshHash = value['datasetMeshHash'];
+            m.currentMeshHash = value['datasetMeshHash'];
 
             // resolve the promise
             resolve();
@@ -396,26 +468,6 @@ function averageFieldValsOverElement(fieldValues) {
     return averageArray;
 }
 
-// /**
-//  * Generate barycentric coordinates for a wireframe overlay.
-//  * @param {array} indices Index data used for the wireframe
-//  * @returns {array} barycentric_coordinates The barycentric coordinates
-//  */
-// function generateBarycentricCoordinatesFromIndices(indices) {
-
-//     var barycentric_coordinates = [];
-//     for (index in indices) {
-//         if (index % 3 == 0) {
-//             barycentric_coordinates.push(1., 0., 0.);
-//         } else if ((index - 1) % 3 == 0 ) {
-//             barycentric_coordinates.push(0., 1., 0.);
-//         } else if ((index - 2) % 3 == 0 ) {
-//             barycentric_coordinates.push(0., 0., 1.);
-//         };
-//     }
-//     return barycentric_coordinates;
-// }
-
 /**
  * We scale a field so that the interval that we want to look at lies between 0
  * and 1. Note: this function does NOT return a field with values that are
@@ -444,37 +496,103 @@ function main() {
     // Init WebGL.
     gl = grabCanvas("webGlCanvas");
 
-    var active_scenes = connectToAPIPromise(
-        basePath = basePath,
-        APIEndpoint = "scenes/" + scene_hash,
-        HTTPMethod = "get",
-        payload = {}
-    );
-    active_scenes.then(function(scenes_value) {
-        var datasets = scenes_value["loadedDatasets"];
-        var dataset_hash = datasets[0]["datasetHash"];
+    /**
+     * Load vertexshader and fragmentshader.
+     */
+    var vert_ColorShaderPromise = getLocalDataPromise(
+        "shaders/vert_color_shader.glsl.c");
+    var frag_ColorShaderPromise = getLocalDataPromise(
+        "shaders/frag_color_shader.glsl.c");
+    var vert_EdgeShaderPromise = getLocalDataPromise(
+        "shaders/vertex_dataset_edge.glsl.c");
+    var frag_EdgeShaderPromise = getLocalDataPromise(
+        "shaders/fragment_dataset_edge.glsl.c");
+    var vert_WireframeShaderPromise = getLocalDataPromise(
+        "shaders/vertex_dataset_wireframe.glsl.c");
+    var frag_WireframeShaderPromise = getLocalDataPromise(
+        "shaders/fragment_dataset_wireframe.glsl.c");
 
-        var mesh_data = connectToAPIPromise(
+    Promise.all([
+        vert_ColorShaderPromise,
+        frag_ColorShaderPromise,
+        vert_EdgeShaderPromise,
+        frag_EdgeShaderPromise,
+        vert_WireframeShaderPromise,
+        frag_WireframeShaderPromise
+    ]).then(
+        function(value) {
+            var vert_ColorShaderSource = value[0];
+            var frag_ColorShaderSource = value[1];
+            var vert_EdgeShaderSource = value[2];
+            var frag_EdgeShaderSource = value[3];
+            var vert_WireframeShaderSource = value[4];
+            var frag_WireframeShaderSource = value[5];
+
+            shaders = {
+                vert_colors: vert_ColorShaderSource,
+                frag_colors: frag_ColorShaderSource,
+                vert_edges: vert_EdgeShaderSource,
+                frag_edges: frag_EdgeShaderSource,
+                vert_wireframe: vert_WireframeShaderSource,
+                frag_wireframe: frag_WireframeShaderSource
+            };
+
+            loadMeshData();
+        });
+
+    function loadMeshData() {
+        var active_scenes = connectToAPIPromise(
             basePath = basePath,
-            APIEndpoint = "scenes/" + scene_hash + "/" + dataset_hash + "/mesh",
+            APIEndpoint = "scenes/" + scene_hash,
             HTTPMethod = "get",
             payload = {}
         );
-        mesh_data.then(function(mesh_value) {
+        active_scenes.then(function(scenes_value) {
+            var datasets = scenes_value["loadedDatasets"];
 
-            currentMeshHash = mesh_value['datasetMeshHash'];
-            currentFieldHash = mesh_value['datasetFieldHash'];
-            surfaceData['nodes'] = mesh_value['datasetSurfaceNodes'];
-            surfaceData['nodesCenter'] = mesh_value['datasetSurfaceNodesCenter'];
-            surfaceData['tets'] = mesh_value['datasetSurfaceTets'];
-            surfaceData['wireframe'] = mesh_value['datasetSurfaceWireframe'];
-            surfaceData['freeEdges'] = mesh_value['datasetSurfaceFreeEdges'];
-            surfaceData['field'] = mesh_value['datasetSurfaceField'];
+            var dataset_index;
 
-            loadShaders();
+            // array for all the promises waiting to be resolved
+            var mesh_data_promise_array = [];
+
+            // append a dataset to the meshes of the scene
+            for (dataset_index in datasets) {
+                var dataset_hash = datasets[dataset_index]["datasetHash"];
+
+                // What piece-of-shit language does not have an easy way to
+                // deep-clone objects????
+                meshData[dataset_hash] = JSON.parse(JSON.stringify(datasetPrototype));
+
+                var mesh_data_promise = connectToAPIPromise(
+                    basePath = basePath,
+                    APIEndpoint = "scenes/" + scene_hash + "/" + dataset_hash + "/mesh",
+                    HTTPMethod = "get",
+                    payload = {}
+                );
+                mesh_data_promise_array.push(mesh_data_promise);
+            }
+
+            Promise.all(mesh_data_promise_array).then(function(mesh_data_values) {
+                for (dataset_index in mesh_data_values) {
+
+                    var d = mesh_data_values[dataset_index];
+                    var dataset_hash = mesh_data_values[dataset_index].datasetMeta.datasetHash;
+                    var m = meshData[dataset_hash];
+
+                    m.currentMeshHash = d['datasetMeshHash'];
+                    m.currentFieldHash = d['datasetFieldHash'];
+                    m.surfaceData['nodes'] = d['datasetSurfaceNodes'];
+                    m.surfaceData['nodesCenter'] = d['datasetSurfaceNodesCenter'];
+                    m.surfaceData['tets'] = d['datasetSurfaceTets'];
+                    m.surfaceData['wireframe'] = d['datasetSurfaceWireframe'];
+                    m.surfaceData['freeEdges'] = d['datasetSurfaceFreeEdges'];
+                    m.surfaceData['field'] = d['datasetSurfaceField'];
+                }
+
+                beginRendering();
+            });
         });
-
-    });
+    }
 
     // // Load the dummy data.
     // var dodec_promise = getDataSourcePromise("data/dodecahedron.json");
@@ -491,52 +609,6 @@ function main() {
     //     loadShaders();
     // });
 
-    /**
-     * Load vertexshader and fragmentshader.
-     */
-    function loadShaders() {
-
-        var vert_ColorShaderPromise = getLocalDataPromise(
-            "shaders/vert_color_shader.glsl.c");
-        var frag_ColorShaderPromise = getLocalDataPromise(
-            "shaders/frag_color_shader.glsl.c");
-        var vert_EdgeShaderPromise = getLocalDataPromise(
-            "shaders/vertex_dataset_edge.glsl.c");
-        var frag_EdgeShaderPromise = getLocalDataPromise(
-            "shaders/fragment_dataset_edge.glsl.c");
-        var vert_WireframeShaderPromise = getLocalDataPromise(
-            "shaders/vertex_dataset_wireframe.glsl.c");
-        var frag_WireframeShaderPromise = getLocalDataPromise(
-            "shaders/fragment_dataset_wireframe.glsl.c");
-
-        Promise.all([
-            vert_ColorShaderPromise,
-            frag_ColorShaderPromise,
-            vert_EdgeShaderPromise,
-            frag_EdgeShaderPromise,
-            vert_WireframeShaderPromise,
-            frag_WireframeShaderPromise
-        ]).then(
-            function(value) {
-                var vert_ColorShaderSource = value[0];
-                var frag_ColorShaderSource = value[1];
-                var vert_EdgeShaderSource = value[2];
-                var frag_EdgeShaderSource = value[3];
-                var vert_WireframeShaderSource = value[4];
-                var frag_WireframeShaderSource = value[5];
-
-                shaders = {
-                    vert_colors: vert_ColorShaderSource,
-                    frag_colors: frag_ColorShaderSource,
-                    vert_edges: vert_EdgeShaderSource,
-                    frag_edges: frag_EdgeShaderSource,
-                    vert_wireframe: vert_WireframeShaderSource,
-                    frag_wireframe: frag_WireframeShaderSource
-                };
-
-                beginRendering();
-            });
-    }
 
     /**
      * Once we have the dodecahedron and the shaders loaded we begin the
@@ -544,53 +616,32 @@ function main() {
      */
     function beginRendering() {
 
-        var expandedSurfaceWireframe = expandDataWithIndices(
-            surfaceData['wireframe'], surfaceData['nodes'], chunksize=3);
+        for (var dataset_index in meshData) {
+            var m = meshData[dataset_index];
 
-        var expandedSurfaceFreeEdges = expandDataWithIndices(
-            surfaceData['freeEdges'], surfaceData['nodes'], chunksize=3);
+            var expandedSurfaceWireframe = expandDataWithIndices(
+                m.surfaceData['wireframe'], m.surfaceData['nodes'], chunksize=3);
 
-        var expandedSurfaceTets = expandDataWithIndices(
-            surfaceData['tets'], surfaceData['nodes'], chunksize=3);
+            var expandedSurfaceFreeEdges = expandDataWithIndices(
+                m.surfaceData['freeEdges'], m.surfaceData['nodes'], chunksize=3);
 
-        var expandedSurfaceField = expandDataWithIndices(
-            surfaceData['tets'], surfaceData['field'], chunksize=1);
+            var expandedSurfaceTets = expandDataWithIndices(
+                m.surfaceData['tets'], m.surfaceData['nodes'], chunksize=3);
 
-        var rescaledField = rescaleFieldValues(
-            expandedSurfaceField,
-            fragmentShaderTMin,
-            fragmentShaderTMax
-        );
+            var expandedSurfaceField = expandDataWithIndices(
+                m.surfaceData['tets'], m.surfaceData['field'], chunksize=1);
 
-        bufferDataArray = {
-            a_position: {
-                numComponents: 3,
-                data: expandedSurfaceTets
-            },
+            var rescaledField = rescaleFieldValues(
+                expandedSurfaceField,
+                fragmentShaderTMin,
+                fragmentShaderTMax
+            );
 
-            a_field: {
-                numComponents: 1,
-                type: gl.FLOAT,
-                normalized: true,
-                data: new Float32Array(
-                    rescaledField
-                )
-            }
-        };
-
-        bufferWireframeArray = {
-            a_line_data: {
-                numComponents: 3,
-                data: expandedSurfaceWireframe
-            }
-        };
-
-        bufferFreeEdgesArray = {
-            a_line_data: {
-                numComponents: 3,
-                data: expandedSurfaceFreeEdges
-            }
-        };
+            m.bufferDataArray.a_position.data = expandedSurfaceTets;
+            m.bufferDataArray.a_field.data = new Float32Array(rescaledField);
+            m.bufferWireframeArray.a_line_data.data = expandedSurfaceWireframe;
+            m.bufferFreeEdgesArray.a_line_data.data = expandedSurfaceFreeEdges;
+        }
 
         // ... call the GL routine (i.e. do the graphics stuff)
         glRoutine(gl);
