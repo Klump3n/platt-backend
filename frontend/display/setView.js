@@ -18,8 +18,7 @@
  */
 
 /**
- * @fileOverview
- * Contains an object that sets the view matrix and keeps track of
+ * @fileOverview Contains an object that sets the view matrix and keeps track of
  * mouse-dragging events.
  * @name setView.js
  * @author Matthias Plock <matthias.plock@bam.de>
@@ -323,7 +322,8 @@ function ModelMatrix(gl, fovIn, aspectIn, zNearIn, zFarIn) {
         x_start, y_start,
         x_end, y_end,
         radius,
-        reference_frame_x, reference_frame_y, reference_frame_z){
+        reference_frame_x, reference_frame_y, reference_frame_z
+    ){
 
         // Define a surface on which we want to measure our mouse movements
         function z_on_surface(x, y) {
