@@ -30,34 +30,50 @@ function main() {
         for (var dataset_index in datasets) {
 
             var new_dataset = datasets[dataset_index];
-
-            var dataset_hash = new_dataset["datasetHash"];
-
-            // Add the dataset to the menu
-            add_dataset(new_dataset);
-
-            // initialise the displayed values for each dataset
-            initialise_display(dataset_hash);
+            new DatasetMenu(basePath, scene_hash, new_dataset);
         }
     });
+}
 
+/**
+ * Append a new menu item for a dataset to the datasets menu
+ * @param {string} basePath - The base path to the API.
+ * @param {string} scene_hash - The hash of the scene.
+ * @param {dict} new_dataset - A dictionary containing meta information about
+ * the dataset.
+ */
+function DatasetMenu(basePath, scene_hash, new_dataset) {
+    this.currentTimestep = '';
+    this.currentFieldType = '';
+    this.currentFieldName = '';
+
+    this.dataset_name = new_dataset['datasetName'];
+    this.dataset_hash = new_dataset['datasetHash'];
+    this.dataset_alias = new_dataset['datasetAlias'];
+    this.dataset_href = new_dataset['datasetHref'];
+
+    // Fucking javascript
+    var that = this;
+
+    // build and attach the menu and setup the initial display
+    build_menu();
+    initialise_display();
 
     /**
-     * Set the displayed initial timestep and field for the given dataset.
-     * @param {string} dataset_hash - The hash of the dataset.
+     * Set the displayed initial timestep and field for the dataset.
      */
-    function initialise_display(dataset_hash) {
+    function initialise_display() {
 
-        var dataset_current_timestep = document.getElementById('dataset_timestep_current'+dataset_hash);
+        var dataset_current_timestep = document.getElementById('dataset_timestep_current'+that.dataset_hash);
 
         var set_timestep = connectToAPIPromise(
             basePath,
-            APIEndpoint = 'scenes/' + scene_hash + '/' + dataset_hash + '/timesteps',
+            APIEndpoint = 'scenes/' + scene_hash + '/' + that.dataset_hash + '/timesteps',
             'get'
         );
         set_timestep.then(function(value) {
-            var new_ts = value["datasetTimestepSelected"];
-            dataset_current_timestep.innerHTML = new_ts;
+            that.currentTimestep = value["datasetTimestepSelected"];
+            dataset_current_timestep.innerHTML = that.currentTimestep;
         });
     }
 
@@ -68,12 +84,12 @@ function main() {
 
         // get the dataset hash and the timestep menu and -padding container
         var dataset_hash = this.getAttribute('data-name');
-        var dataset_timestep_menu = document.getElementById('dataset_timestep_menu_padding_container'+dataset_hash);
-        var dataset_timestep_menu_padding_container = document.getElementById('dataset_timestep_menu_padding_container'+dataset_hash);
+        var dataset_timestep_menu = document.getElementById('dataset_timestep_menu_padding_container'+that.dataset_hash);
+        var dataset_timestep_menu_padding_container = document.getElementById('dataset_timestep_menu_padding_container'+that.dataset_hash);
 
         var get_timesteps = connectToAPIPromise(
             basePath = basePath,
-            APIEndpoint = 'scenes/' + scene_hash + '/' + dataset_hash + '/timesteps',
+            APIEndpoint = 'scenes/' + scene_hash + '/' + that.dataset_hash + '/timesteps',
             HTTPMethod = 'get',
             // payload = {}
         );
@@ -83,9 +99,9 @@ function main() {
             for (var it in timesteps) {
                 var timestep_menu_item = document.createElement("div");
                 timestep_menu_item.innerHTML = timesteps[it];
-                timestep_menu_item.setAttribute("id", 'timestep_menu_item_'+dataset_hash+'_'+timesteps[it]);
+                timestep_menu_item.setAttribute("id", 'timestep_menu_item_'+that.dataset_hash+'_'+timesteps[it]);
                 timestep_menu_item.setAttribute("data-timestep", timesteps[it]);
-                timestep_menu_item.setAttribute("data-name", dataset_hash);
+                timestep_menu_item.setAttribute("data-name", that.dataset_hash);
                 // timestep_menu_item.setAttribute("class", "timestep_menu_item");
                 timestep_menu_item.addEventListener('click', select_timestep);
                 dataset_timestep_menu_padding_container.appendChild(timestep_menu_item);
@@ -102,7 +118,7 @@ function main() {
      */
     function close_timestep_menu() {
         var dataset_hash = this.getAttribute('data-name');
-        var dataset_timestep_menu = document.getElementById('dataset_timestep_menu_padding_container'+dataset_hash);
+        var dataset_timestep_menu = document.getElementById('dataset_timestep_menu_padding_container'+that.dataset_hash);
         dataset_timestep_menu.style.visibility = 'hidden';
         this.removeEventListener('click', close_timestep_menu);
         this.addEventListener('click', open_timestep_menu);
@@ -114,18 +130,18 @@ function main() {
     function select_timestep() {
         var dataset_hash = this.getAttribute('data-name');
         var timestep = this.getAttribute('data-timestep');
-        var dataset_current_timestep = document.getElementById('dataset_timestep_current'+dataset_hash);
+        var dataset_current_timestep = document.getElementById('dataset_timestep_current'+that.dataset_hash);
 
         var set_timestep = connectToAPIPromise(
             basePath,
-            APIEndpoint = 'scenes/' + scene_hash + '/' + dataset_hash + '/timesteps',
+            APIEndpoint = 'scenes/' + scene_hash + '/' + that.dataset_hash + '/timesteps',
             'patch',
             {"datasetTimestepSelected": timestep}
         );
         set_timestep.then(function(value) {
-            var new_ts = value["datasetTimestepSelected"];
-            dataset_current_timestep.innerHTML = new_ts;
-            updateMesh(dataset_hash);
+            that.currentTimestep = value["datasetTimestepSelected"];
+            dataset_current_timestep.innerHTML = that.currentTimestep;
+            updateMesh(that.dataset_hash);
         });
     }
 
@@ -135,20 +151,20 @@ function main() {
     function decrease_timestep() {
         var dataset_hash = this.getAttribute('data-name');
         var dataset_current_timestep = document.getElementById(
-            'dataset_timestep_current'+dataset_hash);
+            'dataset_timestep_current'+that.dataset_hash);
 
         var current_timestep = dataset_current_timestep.innerHTML;
 
         var patch_timesteps = connectToAPIPromise(
             basePath = basePath,
-            APIEndpoint = 'scenes/' + scene_hash + '/' + dataset_hash + '/timesteps',
+            APIEndpoint = 'scenes/' + scene_hash + '/' + that.dataset_hash + '/timesteps',
             HTTPMethod = 'patch',
             payload = {"datasetTimestepSelected": "_prev_timestep"}
         );
         patch_timesteps.then(function(value) {
-            var new_ts = value["datasetTimestepSelected"];
-            dataset_current_timestep.innerHTML = new_ts;
-            updateMesh(dataset_hash);
+            that.currentTimestep = value["datasetTimestepSelected"];
+            dataset_current_timestep.innerHTML = that.currentTimestep;
+            updateMesh(that.dataset_hash);
         });
     }
 
@@ -158,33 +174,27 @@ function main() {
     function increase_timestep() {
         var dataset_hash = this.getAttribute('data-name');
         var dataset_current_timestep = document.getElementById(
-            'dataset_timestep_current'+dataset_hash);
+            'dataset_timestep_current'+that.dataset_hash);
 
         var current_timestep = dataset_current_timestep.innerHTML;
 
         var patch_timesteps = connectToAPIPromise(
             basePath = basePath,
-            APIEndpoint = 'scenes/' + scene_hash + '/' + dataset_hash + '/timesteps',
+            APIEndpoint = 'scenes/' + scene_hash + '/' + that.dataset_hash + '/timesteps',
             HTTPMethod = 'patch',
             payload = {"datasetTimestepSelected": "_next_timestep"}
         );
         patch_timesteps.then(function(value) {
-            var new_ts = value["datasetTimestepSelected"];
-            dataset_current_timestep.innerHTML = new_ts;
-            updateMesh(dataset_hash);
+            that.currentTimestep = value["datasetTimestepSelected"];
+            dataset_current_timestep.innerHTML = that.currentTimestep;
+            updateMesh(that.dataset_hash);
         });
     }
 
     /**
      * Adds the control menu for a dataset to the main menu dock.
-     * @param {string} dataset_hash - The hash of the dataset for which the menu should be.
      */
-    function add_dataset(new_dataset) {
-
-        var dataset_name = new_dataset['datasetName'];
-        var dataset_hash = new_dataset['datasetHash'];
-        var dataset_alias = new_dataset['datasetAlias'];
-        var dataset_href = new_dataset['datasetHref'];
+    function build_menu() {
 
         // select the dataset container in which all datasets land
         var dataset_container = document.getElementById('dataset_container');
@@ -192,67 +202,67 @@ function main() {
         // a padding zone around the dataset
         var dataset_padding = document.createElement('div');
         dataset_padding.setAttribute('class', 'dataset_heading');
-        dataset_padding.setAttribute('id', 'dataset_heading'+dataset_hash);
+        dataset_padding.setAttribute('id', 'dataset_heading'+that.dataset_hash);
 
         var dataset = document.createElement('details');
         dataset.setAttribute('class', 'dataset');
-        dataset.setAttribute('id', 'dataset'+dataset_hash);
+        dataset.setAttribute('id', 'dataset'+that.dataset_hash);
 
         var dataset_heading = document.createElement('summary');
         dataset_heading.setAttribute('class', 'dataset_heading');
-        dataset_heading.setAttribute('id', 'dataset_heading'+dataset_hash);
-        dataset_heading.innerHTML = dataset_name;
+        dataset_heading.setAttribute('id', 'dataset_heading'+that.dataset_hash);
+        dataset_heading.innerHTML = that.dataset_name;
 
         var dataset_functions = document.createElement('div');
         dataset_functions.setAttribute('class', 'dataset_functions');
-        dataset_functions.setAttribute('id', 'dataset_functions'+dataset_hash);
+        dataset_functions.setAttribute('id', 'dataset_functions'+that.dataset_hash);
 
         // contains heading and controls
         var dataset_timestep_container = document.createElement('div');
         dataset_timestep_container.setAttribute('class', 'dataset_timestep_container');
-        dataset_timestep_container.setAttribute('id', 'dataset_timestep_container'+dataset_hash);
+        dataset_timestep_container.setAttribute('id', 'dataset_timestep_container'+that.dataset_hash);
 
         // heading for timestep, just says 'Timestep'
         var dataset_timestep_heading = document.createElement('div');
         dataset_timestep_heading.setAttribute('class', 'dataset_timestep_heading');
-        dataset_timestep_heading.setAttribute('id', 'dataset_timestep_heading'+dataset_hash);
+        dataset_timestep_heading.setAttribute('id', 'dataset_timestep_heading'+that.dataset_hash);
         dataset_timestep_heading.innerHTML = 'Timestep';
 
         // container for the controls, contains prev, current/menu and next timestep
         var dataset_timestep_controls = document.createElement('div');
         dataset_timestep_controls.setAttribute('class', 'dataset_timestep_controls');
-        dataset_timestep_controls.setAttribute('id', 'dataset_timestep_controls'+dataset_hash);
+        dataset_timestep_controls.setAttribute('id', 'dataset_timestep_controls'+that.dataset_hash);
 
         // previous timestep box
         var dataset_timestep_previous = document.createElement('div');
         dataset_timestep_previous.setAttribute('class', 'dataset_timestep_previous');
-        dataset_timestep_previous.setAttribute('id', 'dataset_timestep_previous'+dataset_hash);
-        dataset_timestep_previous.setAttribute('data-name', dataset_hash);
+        dataset_timestep_previous.setAttribute('id', 'dataset_timestep_previous'+that.dataset_hash);
+        dataset_timestep_previous.setAttribute('data-name', that.dataset_hash);
         dataset_timestep_previous.innerHTML = '<';
         dataset_timestep_previous.addEventListener('click', decrease_timestep);
 
         // current timestep/menu button
         var dataset_timestep_current = document.createElement('div');
         dataset_timestep_current.setAttribute('class', 'dataset_timestep_current');
-        dataset_timestep_current.setAttribute('id', 'dataset_timestep_current'+dataset_hash);
+        dataset_timestep_current.setAttribute('id', 'dataset_timestep_current'+that.dataset_hash);
         dataset_timestep_current.addEventListener('click', open_timestep_menu);
-        dataset_timestep_current.setAttribute('data-name', dataset_hash);
+        dataset_timestep_current.setAttribute('data-name', that.dataset_hash);
 
         // next timestep box
         var dataset_timestep_next = document.createElement('div');
         dataset_timestep_next.setAttribute('class', 'dataset_timestep_next');
-        dataset_timestep_next.setAttribute('id', 'dataset_timestep_next'+dataset_hash);
-        dataset_timestep_next.setAttribute('data-name', dataset_hash);
+        dataset_timestep_next.setAttribute('id', 'dataset_timestep_next'+that.dataset_hash);
+        dataset_timestep_next.setAttribute('data-name', that.dataset_hash);
         dataset_timestep_next.innerHTML = '>';
         dataset_timestep_next.addEventListener('click', increase_timestep);
 
         var dataset_timestep_menu_padding_container = document.createElement('div');
         dataset_timestep_menu_padding_container.setAttribute('class', 'dataset_timestep_menu_padding_container');
-        dataset_timestep_menu_padding_container.setAttribute('id', 'dataset_timestep_menu_padding_container'+dataset_hash);
+        dataset_timestep_menu_padding_container.setAttribute('id', 'dataset_timestep_menu_padding_container'+that.dataset_hash);
 
         var dataset_timestep_menu = document.createElement('div');
         dataset_timestep_menu.setAttribute('class', 'dataset_timestep_menu');
-        dataset_timestep_menu.setAttribute('id', 'dataset_timestep_menu'+dataset_hash);
+        dataset_timestep_menu.setAttribute('id', 'dataset_timestep_menu'+that.dataset_hash);
 
         // Composing timestep control menu.
         dataset_timestep_controls.appendChild(dataset_timestep_previous);
@@ -267,11 +277,14 @@ function main() {
 
         dataset_functions.appendChild(dataset_timestep_container);
 
+        // attach heading and display to dataset
         dataset.appendChild(dataset_heading);
         dataset.appendChild(dataset_functions);
 
+        // put dataset into padding
         dataset_padding.appendChild(dataset);
 
+        // attach new menu to the menu list
         dataset_container.appendChild(dataset_padding);
     }
 }
