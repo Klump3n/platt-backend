@@ -47,6 +47,7 @@ HTML = """
   <script src="twgl-dist-3.x/twgl-full.js"></script>
   <script src="loadData.js"></script>
   <script src="setView.js"></script>
+  <script src="datasetView.js"></script>
   {html_script_colorbar}
   {html_script_menu}
   <script src="main.js" onload="main()"></script>

@@ -192,6 +192,20 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
     }
 
     /**
+     * Based on a checkbox turn on/off the control of the orientation of a dataset.
+     */
+    function control_orientation() {
+        var dataset_hash = this.getAttribute('data-name');
+        if (document.getElementById(this.id).checked) {
+            meshData[dataset_hash].changeThisOrientation = true;
+            meshData[dataset_hash].datasetView.addEventListener();
+        } else {
+            meshData[dataset_hash].changeThisOrientation = false;
+            meshData[dataset_hash].datasetView.removeEventListener();
+        }
+    }
+
+    /**
      * Adds the control menu for a dataset to the main menu dock.
      */
     function build_menu() {
@@ -275,7 +289,26 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
         dataset_timestep_container.appendChild(dataset_timestep_heading);
         dataset_timestep_container.appendChild(dataset_timestep_controls);
 
+
+        var dataset_change_orientation_container = document.createElement('div');
+        dataset_change_orientation_container.setAttribute('class', 'dataset_change_orientation_container');
+
+        var dataset_change_orientation_checkbox = document.createElement('input');
+        dataset_change_orientation_checkbox.setAttribute('type', 'checkbox');
+        dataset_change_orientation_checkbox.setAttribute('data-name', that.dataset_hash);
+        dataset_change_orientation_checkbox.setAttribute('class', 'dataset_change_orientation_checkbox');
+        dataset_change_orientation_checkbox.setAttribute('id', 'dataset_change_orientation_checkbox'+that.dataset_hash);
+        dataset_change_orientation_checkbox.addEventListener('click', control_orientation);
+
+        var dataset_change_orientation_label = document.createElement('label');
+        dataset_change_orientation_label.setAttribute('for', 'dataset_change_orientation_checkbox'+that.dataset_hash);
+        dataset_change_orientation_label.innerHTML = 'Change orientation';
+
+        dataset_change_orientation_container.appendChild(dataset_change_orientation_checkbox);
+        dataset_change_orientation_container.appendChild(dataset_change_orientation_label);
+
         dataset_functions.appendChild(dataset_timestep_container);
+        dataset_functions.appendChild(dataset_change_orientation_container);
 
         // attach heading and display to dataset
         dataset.appendChild(dataset_heading);

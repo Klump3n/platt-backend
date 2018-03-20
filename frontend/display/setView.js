@@ -157,7 +157,9 @@ function ModelMatrix(gl, fovIn, aspectIn, zNearIn, zFarIn) {
         return this.modelView;
     };
 
-    /** Variables for tracking the mouse movement and dragging events. */
+    /**
+     * Variables for tracking the mouse movement and dragging events.
+     */
     var x_center = gl.canvas.clientWidth / 2,
         x_prev = 0,
         x_now = 0;

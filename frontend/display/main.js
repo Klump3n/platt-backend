@@ -42,6 +42,9 @@ var datasetPrototype = {
     currentMeshHash: '',
     currentFieldHash: '',
 
+    // whether or not we want to change the orientation of THIS dataset
+    changeThisOrientation: false,
+
     // the current orientation as set via mouse manipulation or via the API
     currentOrientation: twgl.m4.identity(),
 
@@ -89,29 +92,8 @@ var datasetPrototype = {
     }
 };
 
-// Make the array for holding web gl data global.
-var vertexDataHasChanged = false;
-var fragmentDataHasChanged = false;
-
-var bufferDataArray;
-var bufferFreeEdgesArray;
-var bufferWireframeArray;
-
-var shaders;
-var surfaceData = {
-    "nodes": [],
-    "nodesCenter": [],
-    "tets": [],
-    "wireframe": [],
-    "freeEdges": [],
-    "field": []
-};
-
 var fragmentShaderTMin = 0.0;
 var fragmentShaderTMax = 800.0;
-
-var currentMeshHash = '';
-var currentFieldHash = '';
 
 /**
  * Try to find a HTML5 canvas element. If found, try to assign it a WebGL2
@@ -153,24 +135,17 @@ function grabCanvas(canvasElementName) {
 function glRoutine(gl) {
 
     // Prepare the viewport.
-    var modelMatrix = new ModelMatrix(gl);
+    var centerModel,
+        datasetView;
+    // for (var dataset_index in meshData) {
+    //     centerModel = meshData[dataset_index].surfaceData['nodesCenter'];
+    //     datasetView = new DatasetView(gl, centerModel);
+    //     meshData[dataset_index].datasetView = datasetView;
+    // }
 
-    // var centerModel = new Float32Array(model_metadata.split(','));
-    // var centerModel = model_metadata;
-    // var centerModel = surfaceData['nodesCenter'];
-    var centerModel = [0, 0, 0];
-    var scaleTheWorldBy = 150;
-    var tarPos = twgl.v3.mulScalar(centerModel, scaleTheWorldBy);
-    var camPos = twgl.v3.create(tarPos[0], tarPos[1], 550); // Center the z-axis over the model
-    var up = [0, -1, 0];
-
-    modelMatrix.placeCamera(camPos, tarPos, up);
-
-    // Place the center of rotation into the center of the model
-    modelMatrix.translateWorld(twgl.v3.negate(centerModel));
-
-    // Automate this...
-    modelMatrix.scaleWorld(scaleTheWorldBy);
+    var uniforms = {
+        u_transform: twgl.m4.identity() // mat4
+    };
 
     twgl.resizeCanvasToDisplaySize(gl.canvas);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -193,19 +168,21 @@ function glRoutine(gl) {
     for (var dataset_index in meshData) {
         var m = meshData[dataset_index];
 
+        centerModel = meshData[dataset_index].surfaceData['nodesCenter'];
+        datasetView = new DatasetView(gl, centerModel);
+        meshData[dataset_index].datasetView = datasetView;
+
         m.bufferInfoColor = twgl.createBufferInfoFromArrays(gl, m.bufferDataArray);
         m.bufferInfoEdge = twgl.createBufferInfoFromArrays(gl, m.bufferFreeEdgesArray);
         m.bufferInfoWireframe = twgl.createBufferInfoFromArrays(gl, m.bufferWireframeArray);
-    }
 
-    var uniforms = {
-        u_transform: twgl.m4.identity() // mat4
-    };
+        m.currentOrientation = m.datasetView.updateView();
+        uniforms.u_transform = m.currentOrientation;
+
+    }
 
 	  gl.enable(gl.CULL_FACE);
 	  gl.enable(gl.DEPTH_TEST);
-
-    var transformationMatrix = twgl.m4.identity();
 
     // The main drawing loop
     function drawScene(now) {
@@ -221,10 +198,6 @@ function glRoutine(gl) {
                 m.bufferInfoEdge = twgl.createBufferInfoFromArrays(gl, m.bufferFreeEdgesArray);
                 m.bufferInfoWireframe = twgl.createBufferInfoFromArrays(gl, m.bufferWireframeArray);
 
-                // Center the new dataset
-                centerModel = m.surfaceData['nodesCenter'];
-                modelMatrix.translateWorld(twgl.v3.negate(centerModel));
-
                 m.vertexDataHasChanged = false;
             };
 
@@ -235,7 +208,10 @@ function glRoutine(gl) {
             };
 
             // Update the model view
-            uniforms.u_transform = modelMatrix.updateView();
+            if (m.changeThisOrientation) {
+                m.currentOrientation = m.datasetView.updateView();
+                uniforms.u_transform = m.currentOrientation;
+            }
 
             // colors
 
@@ -267,6 +243,7 @@ function glRoutine(gl) {
     }
 
     drawScene();
+
 }
 
 /**
@@ -558,6 +535,7 @@ function main() {
             // append a dataset to the meshes of the scene
             for (dataset_index in datasets) {
                 var dataset_hash = datasets[dataset_index]["datasetHash"];
+
 
                 // What piece-of-shit language does not have an easy way to
                 // deep-clone objects????
