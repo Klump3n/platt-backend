@@ -207,11 +207,9 @@ function glRoutine(gl) {
                 m.fragmentDataHasChanged = false;
             };
 
-            // Update the model view
-            if (m.changeThisOrientation) {
-                m.currentOrientation = m.datasetView.updateView();
-                uniforms.u_transform = m.currentOrientation;
-            }
+            // change the orientation of the dataset
+            m.currentOrientation = m.datasetView.updateView();
+            uniforms.u_transform = m.currentOrientation;
 
             // colors
 

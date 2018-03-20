@@ -198,10 +198,10 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
         var dataset_hash = this.getAttribute('data-name');
         if (document.getElementById(this.id).checked) {
             meshData[dataset_hash].changeThisOrientation = true;
-            meshData[dataset_hash].datasetView.addEventListener();
+            meshData[dataset_hash].datasetView.change_orientation = true;
         } else {
             meshData[dataset_hash].changeThisOrientation = false;
-            meshData[dataset_hash].datasetView.removeEventListener();
+            meshData[dataset_hash].datasetView.change_orientation = false;
         }
     }
 

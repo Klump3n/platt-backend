@@ -58,12 +58,18 @@ function DatasetView(gl, datasetCenter, datasetSize) {
     var dragging = false;
     var translating_model = false;
 
+    this.change_orientation = false;
+
     var translationFactor;
 
     var thetaAxis = twgl.v3.create(0, 0, 0);
 
     // scale the dataset a bit so the handling is easier
     datasetMatrix = twgl.m4.scale(datasetMatrix, twgl.v3.create(100, 100, 100));
+
+    /** Initialise the eventListener for mouse-button-pressing */
+    gl.canvas.addEventListener("mousedown", doMouseDown, false);
+    gl.canvas.addEventListener("DOMMouseScroll", doMouseWheel, false);
 
     // setup/place camera and stuff
     setupWorld();
@@ -75,17 +81,17 @@ function DatasetView(gl, datasetCenter, datasetSize) {
         return twgl.m4.multiply(viewProjectionMatrix, datasetMatrix);
     };
 
-    this.addEventListener = function() {
-        /** Initialise the eventListener for mouse-button-pressing */
-        gl.canvas.addEventListener("mousedown", doMouseDown, false);
-        gl.canvas.addEventListener("DOMMouseScroll", doMouseWheel, false);
-    };
+    // this.addEventListener = function() {
+    //     /** Initialise the eventListener for mouse-button-pressing */
+    //     gl.canvas.addEventListener("mousedown", doMouseDown, false);
+    //     gl.canvas.addEventListener("DOMMouseScroll", doMouseWheel, false);
+    // };
 
-    this.removeEventListener = function() {
-        /** Initialise the eventListener for mouse-button-pressing */
-        gl.canvas.removeEventListener("mousedown", doMouseDown, false);
-        gl.canvas.removeEventListener("DOMMouseScroll", doMouseWheel, false);
-    };
+    // this.removeEventListener = function() {
+    //     /** Initialise the eventListener for mouse-button-pressing */
+    //     gl.canvas.removeEventListener("mousedown", doMouseDown, false);
+    //     gl.canvas.removeEventListener("DOMMouseScroll", doMouseWheel, false);
+    // };
 
     /**
      * Setup the world. Set the frustum and place the camera in the world.
@@ -154,32 +160,36 @@ function DatasetView(gl, datasetCenter, datasetSize) {
      */
     function translateDataset(translation) {
 
-        datasetTranslation = twgl.v3.add(datasetTranslation, translation);
+        if (that.change_orientation) {
+            datasetTranslation = twgl.v3.add(datasetTranslation, translation);
 
-        var translateBy = twgl.m4.translation(translation);
-        datasetTranslationMatrix = twgl.m4.multiply(translateBy, datasetTranslationMatrix);
+            var translateBy = twgl.m4.translation(translation);
+            datasetTranslationMatrix = twgl.m4.multiply(translateBy, datasetTranslationMatrix);
 
-        datasetMatrix = twgl.m4.multiply(translateBy, datasetMatrix);
+            datasetMatrix = twgl.m4.multiply(translateBy, datasetMatrix);
 
-        // only translation of the dataset will change its position in space
-        // and thus make the recomputation of the axis vector for rotation
-        // necessary
-        cameraToTargetVector = twgl.v3.subtract(datasetTranslation, viewerPosition);
+            // only translation of the dataset will change its position in space
+            // and thus make the recomputation of the axis vector for rotation
+            // necessary
+            cameraToTargetVector = twgl.v3.subtract(datasetTranslation, viewerPosition);
 
-        datasetScreenCenter = worldToScreen(datasetTranslation);
-        x_center = datasetScreenCenter[0];
-        y_center = datasetScreenCenter[1];
+            datasetScreenCenter = worldToScreen(datasetTranslation);
+            x_center = datasetScreenCenter[0];
+            y_center = datasetScreenCenter[1];
+        }
     }
 
     function rotateDataset(differentialRotation) {
 
-        // move to center, apply rotation and move back
-        datasetMatrix = twgl.m4.multiply(twgl.m4.inverse(datasetTranslationMatrix), datasetMatrix);
-        datasetMatrix = twgl.m4.multiply(differentialRotation, datasetMatrix);
-        datasetMatrix = twgl.m4.multiply(datasetTranslationMatrix, datasetMatrix);
+        if (that.change_orientation) {
+            // move to center, apply rotation and move back
+            datasetMatrix = twgl.m4.multiply(twgl.m4.inverse(datasetTranslationMatrix), datasetMatrix);
+            datasetMatrix = twgl.m4.multiply(differentialRotation, datasetMatrix);
+            datasetMatrix = twgl.m4.multiply(datasetTranslationMatrix, datasetMatrix);
 
-        // Update the rotation matrix
-        datasetRotationMatrix = twgl.m4.multiply(differentialRotation, datasetRotationMatrix);
+            // Update the rotation matrix
+            datasetRotationMatrix = twgl.m4.multiply(differentialRotation, datasetRotationMatrix);
+        }
     }
 
     /**
