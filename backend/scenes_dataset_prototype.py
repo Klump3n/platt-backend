@@ -65,12 +65,20 @@ class _DatasetPrototype:
         }
 
         # Init
-        self._selected_orientation = [
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1
-        ]                           # List
+        self._selected_orientation = {
+            'datasetOrientation': {
+                'datasetTranslation': [],
+                'datasetRotation': []
+            },
+            'datasetOrientationInit': False
+        }
+
+        # self._selected_orientation = [
+        #     1, 0, 0, 0,
+        #     0, 1, 0, 0,
+        #     0, 0, 1, 0,
+        #     0, 0, 0, 1
+        # ]                           # List
         self._selected_timestep = ''  # String
         # self._selected_field = '__no_field__'
         # self._selected_field = 'nt11'
@@ -121,9 +129,9 @@ class _DatasetPrototype:
         """
         return self.dataset_meta_dict
 
-    def orientation(self, view_matrix=None):
+    def orientation(self, set_orientation=None):
         """
-        Get (if view_matrix is None) or set (if view_matrix is not None)
+        Get (if set_orientation is None) or set (if set_orientation is not None)
         the orientation of a dataset in the scene.
 
         The index mapping is as follows:
@@ -135,25 +143,27 @@ class _DatasetPrototype:
         ]
 
         Args:
-         view_matrix (list or None, optional, defaults to None): A 16-tuple
+         set_orientation (list or None, optional, defaults to None): A 16-tuple
           for setting the orientation of the dataset. The top-left 3x3 matrix
           should be unitary, so rotation is represented. The rest can contain
           scaling values.
 
         Raises:
-         TypeError: If ``type(view_matrix)`` is not None or list.
-         ValueError: If the lenght of ``view_matrix`` is not 16.
+         TypeError: If ``type(set_orientation)`` is not None or list.
+         ValueError: If the lenght of ``set_orientation`` is not 16.
 
         """
-        if view_matrix is not None:
-            if not isinstance(view_matrix, list):
-                raise TypeError('view_matrix is {}, expected list'.format(
-                        type(view_matrix).__name__))
+        if set_orientation is not None:
+            # if not isinstance(set_orientation, list):
+            #     raise TypeError('set_orientation is {}, expected list'.format(
+            #             type(set_orientation).__name__))
 
-            if not len(view_matrix) == 16:
-                raise ValueError('len(view_matrix) must be 16')
+            # if not len(set_orientation) == 16:
+            #     raise ValueError('len(set_orientation) must be 16')
+            self._selected_orientation['datasetOrientation'] = set_orientation
 
-            self._selected_orientation = view_matrix
+            if self._selected_orientation['datasetOrientationInit'] is False:
+                self._selected_orientation['datasetOrientationInit'] = True
 
         return self._selected_orientation
 

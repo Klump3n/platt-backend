@@ -503,10 +503,8 @@ class SceneManager:
         dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
         dataset_orientation = target_dataset.orientation(set_orientation)
 
-        return_dict = {
-            'datasetMeta': dataset_meta,
-            'datasetOrientation': dataset_orientation
-        }
+        return_dict = dataset_orientation
+        return_dict['datasetMeta'] = dataset_meta
 
         return return_dict
 

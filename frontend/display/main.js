@@ -169,16 +169,16 @@ function glRoutine(gl) {
         var m = meshData[dataset_index];
 
         centerModel = meshData[dataset_index].surfaceData['nodesCenter'];
-        datasetView = new DatasetView(gl, centerModel);
+        datasetView = new DatasetView(gl, scene_hash, dataset_index);
         meshData[dataset_index].datasetView = datasetView;
 
         m.bufferInfoColor = twgl.createBufferInfoFromArrays(gl, m.bufferDataArray);
         m.bufferInfoEdge = twgl.createBufferInfoFromArrays(gl, m.bufferFreeEdgesArray);
         m.bufferInfoWireframe = twgl.createBufferInfoFromArrays(gl, m.bufferWireframeArray);
 
-        m.currentOrientation = m.datasetView.updateView();
-        uniforms.u_transform = m.currentOrientation;
-
+        setInterval(function() {
+            updateMesh(dataset_index);
+        }, 1000);
     }
 
 	  gl.enable(gl.CULL_FACE);
@@ -187,6 +187,7 @@ function glRoutine(gl) {
     // The main drawing loop
     function drawScene(now) {
 
+        // console.log(now % 1000);
         // update every dataset
         for (var dataset_index in meshData) {
             var m = meshData[dataset_index];

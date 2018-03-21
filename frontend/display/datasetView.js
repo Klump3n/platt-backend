@@ -17,7 +17,11 @@
  *
  */
 
-function DatasetView(gl, datasetCenter, datasetSize) {
+function DatasetView(gl, sceneHash, datasetHash) {
+
+    var m = meshData[datasetHash];
+
+    var datasetCenter = m.surfaceData['nodesCenter'];
 
     // fucking javascript
     var that = this;
@@ -27,7 +31,8 @@ function DatasetView(gl, datasetCenter, datasetSize) {
     var viewMatrix = twgl.m4.identity();
     var viewProjectionMatrix = twgl.m4.identity();
 
-    var datasetMatrix = twgl.m4.identity();
+    var centerDatasetMatrix = twgl.m4.identity(); // just a centered and upscaled dataset
+    var datasetMatrix = twgl.m4.identity(); // the centered, upscaled, BUT ALSO moved dataset
 
     var datasetTranslation = twgl.v3.create(0, 0, 0);
     var datasetTranslationMatrix = twgl.m4.identity();
@@ -38,9 +43,13 @@ function DatasetView(gl, datasetCenter, datasetSize) {
     var viewingTargetPosition = [0, 0, 0]; // look at the coordinate center
     var upVector =  [0, -1, 0]; // the up vector is defined in the -y direction
 
-    // a vector pointing from the camera to the datasets center
-    var cameraToTargetVector = twgl.v3.subtract(datasetTranslation, viewerPosition);
+    var cameraToTargetVector;
 
+    var datasetScreenCenter;
+    var x_center;
+    var y_center;
+
+    var datasetScalingFactor = 100;
     /**
      * Variables for tracking the mouse movement and dragging events.
      */
@@ -49,10 +58,6 @@ function DatasetView(gl, datasetCenter, datasetSize) {
 
     var y_prev = 0,
         y_now = 0;
-
-    var datasetScreenCenter = worldToScreen(datasetTranslation);
-    var x_center = datasetScreenCenter[0];
-    var y_center = datasetScreenCenter[1];
 
     var start_mouse = false;
     var dragging = false;
@@ -64,15 +69,25 @@ function DatasetView(gl, datasetCenter, datasetSize) {
 
     var thetaAxis = twgl.v3.create(0, 0, 0);
 
-    // scale the dataset a bit so the handling is easier
-    datasetMatrix = twgl.m4.scale(datasetMatrix, twgl.v3.create(100, 100, 100));
-
-    /** Initialise the eventListener for mouse-button-pressing */
-    gl.canvas.addEventListener("mousedown", doMouseDown, false);
-    gl.canvas.addEventListener("DOMMouseScroll", doMouseWheel, false);
-
     // setup/place camera and stuff
-    setupWorld();
+    setupWorld().then(function() {
+
+        // check the server for updates on the orientation every second or send it there
+        setInterval(orientationCheck, 1000);
+
+        // a vector pointing from the camera to the datasets center
+        cameraToTargetVector = twgl.v3.subtract(datasetTranslation, viewerPosition);
+
+        datasetScreenCenter = worldToScreen(datasetTranslation);
+        x_center = datasetScreenCenter[0];
+        y_center = datasetScreenCenter[1];
+
+        /** Initialise the eventListener for mouse-button-pressing */
+        gl.canvas.addEventListener("mousedown", doMouseDown, false);
+        gl.canvas.addEventListener("DOMMouseScroll", doMouseWheel, false);
+    });
+
+
 
     /**
      * Update the orientation of the dataset before the camera.
@@ -81,38 +96,128 @@ function DatasetView(gl, datasetCenter, datasetSize) {
         return twgl.m4.multiply(viewProjectionMatrix, datasetMatrix);
     };
 
-    // this.addEventListener = function() {
-    //     /** Initialise the eventListener for mouse-button-pressing */
-    //     gl.canvas.addEventListener("mousedown", doMouseDown, false);
-    //     gl.canvas.addEventListener("DOMMouseScroll", doMouseWheel, false);
-    // };
-
-    // this.removeEventListener = function() {
-    //     /** Initialise the eventListener for mouse-button-pressing */
-    //     gl.canvas.removeEventListener("mousedown", doMouseDown, false);
-    //     gl.canvas.removeEventListener("DOMMouseScroll", doMouseWheel, false);
-    // };
-
     /**
      * Setup the world. Set the frustum and place the camera in the world.
      */
     function setupWorld() {
+        return new Promise(function(resolve, reject) {
 
-        // Set the frustum of the camera (angle of camera, depth of field and so on)
-        var fovIn;
-        var aspectIn;
-        var zNearIn;
-        var zFarIn;
-        setFrustum(fovIn, aspectIn, zNearIn, zFarIn);
+            // Set the frustum of the camera (angle of camera, depth of field and so on)
+            var fovIn;
+            var aspectIn;
+            var zNearIn;
+            var zFarIn;
+            setFrustum(fovIn, aspectIn, zNearIn, zFarIn);
 
-        // place the camera in the world
-        placeCamera(viewerPosition, viewingTargetPosition, upVector);
+            // place the camera in the world
+            placeCamera(viewerPosition, viewingTargetPosition, upVector);
 
-        // combine the two camera matrices. this will remain unchanged
-        viewProjectionMatrix = twgl.m4.multiply(projectionMatrix, viewMatrix);
+            // combine the two camera matrices. this will remain unchanged
+            viewProjectionMatrix = twgl.m4.multiply(projectionMatrix, viewMatrix);
 
-        // translate the model so its centered
-        datasetMatrix = twgl.m4.translate(datasetMatrix, twgl.v3.negate(datasetCenter));
+            // scale the dataset a bit so the handling is easier
+            centerDatasetMatrix = twgl.m4.scale(
+                centerDatasetMatrix,
+                twgl.v3.create(
+                    datasetScalingFactor,
+                    datasetScalingFactor,
+                    datasetScalingFactor
+                )
+            );
+
+            // translate the model so its centered
+            centerDatasetMatrix = twgl.m4.translate(centerDatasetMatrix, twgl.v3.negate(datasetCenter));
+
+            var updateTimestep = connectToAPIPromise(
+                basePath = basePath,
+                APIEndpoint = "scenes/" + sceneHash + "/" + datasetHash + "/orientation",
+                HTTPMethod = "get",
+                payload = {}
+            );
+            updateTimestep.then(function(value) {
+
+                var init = value['datasetOrientationInit'];
+
+                if (init) {
+
+                    // get the orientation from the server
+                    datasetTranslationMatrix = new Float32Array(value['datasetOrientation']['datasetTranslation']);
+                    datasetRotationMatrix = new Float32Array(value['datasetOrientation']['datasetRotation']);
+                    // extract the translation from it
+
+                    datasetTranslation = twgl.m4.getTranslation(datasetTranslationMatrix);
+
+                    // update the dataset matrix
+                    datasetMatrix = twgl.m4.multiply(datasetRotationMatrix, centerDatasetMatrix);
+                    datasetMatrix = twgl.m4.multiply(datasetTranslationMatrix, datasetMatrix);
+
+                } else {
+
+                    // update the dataset matrix on init
+                    datasetMatrix = twgl.m4.multiply(datasetRotationMatrix, centerDatasetMatrix);
+                    datasetMatrix = twgl.m4.multiply(datasetTranslationMatrix, datasetMatrix);
+
+                    // upload the initial translation and rotation to the server (will be unity)
+                    var payload = {
+                        'datasetTranslation': Array.from(datasetTranslationMatrix),
+                        'datasetRotation': Array.from(datasetRotationMatrix)
+                    };
+
+                    updateTimestep = connectToAPIPromise(
+                        basePath = basePath,
+                        APIEndpoint = "scenes/" + sceneHash + "/" + datasetHash + "/orientation",
+                        HTTPMethod = "patch",
+                        payload = {'datasetOrientation': payload} // upload basically nothing... its unity anyway
+                    );
+                }
+
+                resolve();
+            });
+        });
+    }
+
+
+    function orientationCheck() {
+
+        // var m = meshData[datasetHash];
+
+        var updateTimestep;
+
+        if (m.changeThisOrientation) {
+
+            var payload = {
+                'datasetTranslation': Array.from(datasetTranslationMatrix),
+                'datasetRotation': Array.from(datasetRotationMatrix)
+            };
+
+            updateTimestep = connectToAPIPromise(
+                basePath = basePath,
+                APIEndpoint = "scenes/" + sceneHash + "/" + datasetHash + "/orientation",
+                HTTPMethod = "patch",
+                payload = {'datasetOrientation': payload}
+            );
+
+        } else {
+
+            updateTimestep = connectToAPIPromise(
+                basePath = basePath,
+                APIEndpoint = "scenes/" + sceneHash + "/" + datasetHash + "/orientation",
+                HTTPMethod = "get",
+                payload = {}
+            );
+            updateTimestep.then(function(value) {
+
+                datasetTranslationMatrix = new Float32Array(value['datasetOrientation']['datasetTranslation']);
+                datasetRotationMatrix = new Float32Array(value['datasetOrientation']['datasetRotation']);
+
+                // extract the translation from it
+                datasetTranslation = twgl.m4.getTranslation(datasetTranslationMatrix);
+
+                // update the dataset matrix
+                datasetMatrix = twgl.m4.multiply(datasetRotationMatrix, centerDatasetMatrix);
+                datasetMatrix = twgl.m4.multiply(datasetTranslationMatrix, datasetMatrix);
+            });
+        }
     }
 
     /**
@@ -187,7 +292,6 @@ function DatasetView(gl, datasetCenter, datasetSize) {
             datasetMatrix = twgl.m4.multiply(differentialRotation, datasetMatrix);
             datasetMatrix = twgl.m4.multiply(datasetTranslationMatrix, datasetMatrix);
 
-            // Update the rotation matrix
             datasetRotationMatrix = twgl.m4.multiply(differentialRotation, datasetRotationMatrix);
         }
     }
@@ -386,7 +490,6 @@ function DatasetView(gl, datasetCenter, datasetSize) {
             x_prev = event.clientX - x_center;
             y_prev = y_center - event.clientY;
         }
-
     }
 
     /**
