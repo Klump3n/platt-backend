@@ -8,7 +8,10 @@ import os
 # conda install cherrypy
 import cherrypy
 
+from ws4py.server.cherrypyserver import WebSocketTool
+
 from backend.web_server_api import ServerAPI
+from backend.web_server_websocket import WebSocketHandler, WebSocketAPI, SceneManagerPlugin
 from backend.web_server_control import ServerRoot
 from backend.web_server_display import ServerScenesDispatcher
 import backend.global_settings as global_settings
@@ -62,7 +65,7 @@ class Web_Server:
         control_path = os.path.join(frontend_directory, 'control')
         display_path = os.path.join(frontend_directory, 'display')
 
-        self.root_conf = {
+        self._root_conf = {
             '/': {
                 'tools.gzip.on': True,
                 'tools.staticdir.on': True,
@@ -71,7 +74,7 @@ class Web_Server:
             }
         }
 
-        self.scenes_conf = {
+        self._scenes_conf = {
             '/': {
                 'tools.gzip.on': True,
                 # 'tools.staticdir.debug' : True,
@@ -81,9 +84,16 @@ class Web_Server:
             }
         }
 
-        self.api_conf = {
+        self._api_conf = {
             '/': {
                 'tools.gzip.on': True
+            }
+        }
+
+        self._websocket_conf = {
+            '/': {
+                'tools.websocket.on': True,
+                'tools.websocket.handler_cls': WebSocketHandler
             }
         }
 
@@ -129,15 +139,18 @@ class Web_Server:
             }
         )
 
+        SceneManagerPlugin(cherrypy.engine).subscribe()
+        cherrypy.tools.websocket = WebSocketTool()
+
         # Load the server class for displaying fem data
         cherrypy.tree.mount(
-            ServerRoot(), '/', self.root_conf)
+            ServerRoot(), '/', self._root_conf)
         cherrypy.tree.mount(
-            ServerScenesDispatcher(), '/scenes', self.scenes_conf)
-        # cherrypy.tree.mount(
-        #     OLDServerAPI(data_directory=self.data_directory), '/api', self.api_conf)
+            ServerScenesDispatcher(), '/scenes', self._scenes_conf)
         cherrypy.tree.mount(
-            ServerAPI(), '/api', self.api_conf)
+            ServerAPI(), '/api', self._api_conf)
+        cherrypy.tree.mount(
+            WebSocketAPI(), '/websocket', self._websocket_conf)
 
         # Start the server
         cherrypy.engine.start()

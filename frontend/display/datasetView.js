@@ -19,6 +19,8 @@
 
 function DatasetView(gl, sceneHash, datasetHash) {
 
+    var ogl = gl;
+
     var m = meshData[datasetHash];
 
     var datasetCenter = m.surfaceData['nodesCenter'];
@@ -72,8 +74,9 @@ function DatasetView(gl, sceneHash, datasetHash) {
     // setup/place camera and stuff
     setupWorld().then(function() {
 
-        // check the server for updates on the orientation every second or send it there
-        setInterval(orientationCheck, 1000);
+        // DO THIS WITH THE WEBSOCKET CONNECTION. LESS SPAMMING
+        // // check the server for updates on the orientation every second or send it there
+        // setInterval(orientationCheck, 1000);
 
         // a vector pointing from the camera to the datasets center
         cameraToTargetVector = twgl.v3.subtract(datasetTranslation, viewerPosition);
@@ -83,10 +86,9 @@ function DatasetView(gl, sceneHash, datasetHash) {
         y_center = datasetScreenCenter[1];
 
         /** Initialise the eventListener for mouse-button-pressing */
-        gl.canvas.addEventListener("mousedown", doMouseDown, false);
-        gl.canvas.addEventListener("DOMMouseScroll", doMouseWheel, false);
+        ogl.canvas.addEventListener("mousedown", doMouseDown, false);
+        ogl.canvas.addEventListener("DOMMouseScroll", doMouseWheel, false);
     });
-
 
 
     /**
@@ -94,6 +96,29 @@ function DatasetView(gl, sceneHash, datasetHash) {
      */
     this.updateView = function() {
         return twgl.m4.multiply(viewProjectionMatrix, datasetMatrix);
+    };
+
+    this.updateCamera = function(new_gl) {
+        ogl = new_gl;
+
+        // Set the frustum of the camera (angle of camera, depth of field and so on)
+        var fovIn;
+        var aspectIn;
+        var zNearIn;
+        var zFarIn;
+        setFrustum(fovIn, aspectIn, zNearIn, zFarIn);
+
+        // place the camera in the world
+        placeCamera(viewerPosition, viewingTargetPosition, upVector);
+
+        // combine the two camera matrices. this will remain unchanged
+        viewProjectionMatrix = twgl.m4.multiply(projectionMatrix, viewMatrix);
+
+        // update the rotation center
+        datasetScreenCenter = worldToScreen(datasetTranslation);
+        x_center = datasetScreenCenter[0];
+        y_center = datasetScreenCenter[1];
+
     };
 
     /**
@@ -179,25 +204,9 @@ function DatasetView(gl, sceneHash, datasetHash) {
 
     function orientationCheck() {
 
-        // var m = meshData[datasetHash];
-
         var updateTimestep;
 
-        if (m.changeThisOrientation) {
-
-            var payload = {
-                'datasetTranslation': Array.from(datasetTranslationMatrix),
-                'datasetRotation': Array.from(datasetRotationMatrix)
-            };
-
-            updateTimestep = connectToAPIPromise(
-                basePath = basePath,
-                APIEndpoint = "scenes/" + sceneHash + "/" + datasetHash + "/orientation",
-                HTTPMethod = "patch",
-                payload = {'datasetOrientation': payload}
-            );
-
-        } else {
+        if (!m.changeThisOrientation) {
 
             updateTimestep = connectToAPIPromise(
                 basePath = basePath,
@@ -220,6 +229,34 @@ function DatasetView(gl, sceneHash, datasetHash) {
         }
     }
 
+    // THIS IS THE SAME AS orientationCheck() !!!!
+    this.getOrientation = function() {
+
+        var updateTimestep;
+
+        if (!m.changeThisOrientation) {
+
+            updateTimestep = connectToAPIPromise(
+                basePath = basePath,
+                APIEndpoint = "scenes/" + sceneHash + "/" + datasetHash + "/orientation",
+                HTTPMethod = "get",
+                payload = {}
+            );
+            updateTimestep.then(function(value) {
+
+                datasetTranslationMatrix = new Float32Array(value['datasetOrientation']['datasetTranslation']);
+                datasetRotationMatrix = new Float32Array(value['datasetOrientation']['datasetRotation']);
+
+                // extract the translation from it
+                datasetTranslation = twgl.m4.getTranslation(datasetTranslationMatrix);
+
+                // update the dataset matrix
+                datasetMatrix = twgl.m4.multiply(datasetRotationMatrix, centerDatasetMatrix);
+                datasetMatrix = twgl.m4.multiply(datasetTranslationMatrix, datasetMatrix);
+            });
+        }
+    };
+
     /**
      * Create the frustum of our view.
      * @param {float} fovIn - [OPTIONAL] Field Of View -- The angle with which
@@ -236,7 +273,7 @@ function DatasetView(gl, sceneHash, datasetHash) {
         projectionMatrix = twgl.m4.identity();
 
         var fov = 30 * Math.PI / 180 || fovIn;
-        var aspect = gl.canvas.clientWidth/gl.canvas.clientHeight || aspectIn;
+        var aspect = ogl.canvas.clientWidth/gl.canvas.clientHeight || aspectIn;
         var zNear = 1 || zNearIn;
         var zFar = 2000 || zFarIn;
 
@@ -287,6 +324,7 @@ function DatasetView(gl, sceneHash, datasetHash) {
     function rotateDataset(differentialRotation) {
 
         if (that.change_orientation) {
+
             // move to center, apply rotation and move back
             datasetMatrix = twgl.m4.multiply(twgl.m4.inverse(datasetTranslationMatrix), datasetMatrix);
             datasetMatrix = twgl.m4.multiply(differentialRotation, datasetMatrix);
@@ -335,11 +373,11 @@ function DatasetView(gl, sceneHash, datasetHash) {
             yn = y/w,
             zn = z/w;
 
-        var sx = (xn + 1)/2 * gl.canvas.clientWidth,
-            sy = (1 - yn)/2 * gl.canvas.clientHeight;
+        var sx = (xn + 1)/2 * ogl.canvas.clientWidth,
+            sy = (1 - yn)/2 * ogl.canvas.clientHeight;
 
-        // var sx = Math.round((x + 1)/2 * gl.canvas.clientWidth),
-        //     sy = Math.round((1 - y)/2 * gl.canvas.clientHeight);
+        // var sx = Math.round((x + 1)/2 * ogl.canvas.clientWidth),
+        //     sy = Math.round((1 - y)/2 * ogl.canvas.clientHeight);
 
         return twgl.v3.create(sx, sy, 0);
     }
@@ -355,8 +393,8 @@ function DatasetView(gl, sceneHash, datasetHash) {
         var sx = screenSpacePoint[0],
             sy = screenSpacePoint[1];
 
-        var x = 2 * sx / gl.canvas.clientWidth - 1,
-            y = -2 * sy / gl.canvas.clientHeight + 1;
+        var x = 2 * sx / ogl.canvas.clientWidth - 1,
+            y = -2 * sy / ogl.canvas.clientHeight + 1;
 
         var M = twgl.m4.inverse(twgl.m4.transpose(viewProjectionMatrix));
 
@@ -502,6 +540,22 @@ function DatasetView(gl, sceneHash, datasetHash) {
         if (!dragging && !translating_model) {
             return;
         }
+
+        if (m.changeThisOrientation) {
+            // update data on the server
+            var payload = {
+                'datasetTranslation': Array.from(datasetTranslationMatrix),
+                'datasetRotation': Array.from(datasetRotationMatrix)
+            };
+
+            updateTimestep = connectToAPIPromise(
+                basePath = basePath,
+                APIEndpoint = "scenes/" + sceneHash + "/" + datasetHash + "/orientation",
+                HTTPMethod = "patch",
+                payload = {'datasetOrientation': payload}
+            );
+        }
+
         document.removeEventListener("mousemove", doMouseMove, false);
         document.removeEventListener("mouseup", doMouseUp, false);
         prevx = 0;

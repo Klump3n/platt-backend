@@ -6,9 +6,11 @@ A scene contains a number of datasets.
 
 """
 import os
+import json
 from backend.util.timestamp_to_sha1 import timestamp_to_sha1
 from backend.scenes_dataset_prototype import _DatasetPrototype
 
+from ws4py.messaging import TextMessage
 
 class _ScenePrototype:
     """
@@ -55,6 +57,9 @@ class _ScenePrototype:
         self._scene_name = timestamp_to_sha1()
 
         self._dataset_list = {}
+
+        # an empty list for the websockets that connect to this scene
+        self._websocket_list = []
 
     def name(self):
         """
@@ -219,3 +224,31 @@ class _ScenePrototype:
     #         result = self._delete_one_dataset(dataset_hash)
 
     #     return None
+
+    def websocket_add(self, new_websocket):
+        """
+        Add a websocket to the scene.
+
+        """
+        self._websocket_list.append(new_websocket)
+        return None
+
+    def websocket_remove(self, old_websocket):
+        """
+        Remove a websocket from the scene.
+
+        This happens when a (web) client disconnects or closes the window.
+
+        """
+        self._websocket_list.remove(old_websocket)
+        return None
+
+    def websocket_send(self, message):
+        """
+        Send a message to all connected websockets.
+
+        """
+        msg = TextMessage(json.dumps(message))
+        for socket in self._websocket_list:
+            socket.send(msg.data, msg.is_binary)
+        return None

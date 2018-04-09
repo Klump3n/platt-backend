@@ -96,6 +96,47 @@ var fragmentShaderTMin = 0.0;
 var fragmentShaderTMax = 800.0;
 
 /**
+ * Specify operations for the WebSocket connection
+ */
+function websocketOps() {
+    var websock = new WebSocket('ws://localhost:8008/websocket/' + scene_hash);
+
+    window.addEventListener("beforeunload", function() {
+        console.log("Close web socket");
+        websock.close();
+    });
+
+    websock.onopen = function() {
+        console.log('WebSocket connection opened');
+    };
+
+    websock.onclose = function() {
+        console.log('WebSocket connection closed');
+    };
+
+    websock.onmessage = function(value) {
+        var msg = JSON.parse(value.data);
+
+        var datasetHash = msg['datasetHash'];
+        var update = msg['update'];
+
+        if (update == 'orientation') {
+            meshData[datasetHash].datasetView.getOrientation();
+        }
+
+        if (update == 'mesh') {
+            updateMesh(datasetHash);
+        }
+    };
+
+    websock.onerror = function(value) {
+        console.log('WebSocket error: ' + value);
+    };
+}
+
+websocketOps();
+
+/**
  * Try to find a HTML5 canvas element. If found, try to assign it a WebGL2
  * context. If this fails throw an error, else return the context.
  * @param {string} canvasElementName The HTML5 canvas element.
@@ -147,9 +188,6 @@ function glRoutine(gl) {
         u_transform: twgl.m4.identity() // mat4
     };
 
-    twgl.resizeCanvasToDisplaySize(gl.canvas);
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-
     // Unpack shaders
     var vs_color = shaders['vert_colors'];
     var fs_color = shaders['frag_colors'];
@@ -176,16 +214,31 @@ function glRoutine(gl) {
         m.bufferInfoEdge = twgl.createBufferInfoFromArrays(gl, m.bufferFreeEdgesArray);
         m.bufferInfoWireframe = twgl.createBufferInfoFromArrays(gl, m.bufferWireframeArray);
 
-        setInterval(function() {
-            updateMesh(dataset_index);
-        }, 1000);
+        // DO THIS WITH THE WEBSOCKET CONNECTION. LESS SPAMMING
+        // setInterval(function() {
+        //     updateMesh(dataset_index);
+        // }, 1000);
     }
 
 	  gl.enable(gl.CULL_FACE);
 	  gl.enable(gl.DEPTH_TEST);
 
+    var gl_width,
+        gl_height,
+        gl_view_changed = true;
+
     // The main drawing loop
     function drawScene(now) {
+
+        if ((gl_width != gl.canvas.clientWidth) || (gl_height != gl.canvas.clientHeight)) {
+            gl_view_changed = true;
+        }
+
+        // resize the viewport
+        if (gl_view_changed) {
+            twgl.resizeCanvasToDisplaySize(gl.canvas);
+            gl.viewport(0, 0, gl.canvas.clientWidth, gl.canvas.clientHeight);
+        }
 
         // console.log(now % 1000);
         // update every dataset
@@ -207,6 +260,11 @@ function glRoutine(gl) {
 
                 m.fragmentDataHasChanged = false;
             };
+
+            // update the camera
+            if (gl_view_changed) {
+                m.datasetView.updateCamera(gl);
+            }
 
             // change the orientation of the dataset
             m.currentOrientation = m.datasetView.updateView();
@@ -236,6 +294,9 @@ function glRoutine(gl) {
 
             twgl.drawBufferInfo(gl, m.bufferInfoWireframe, type=gl.LINES);
         }
+
+        gl_width = gl.canvas.clientWidth;
+        gl_height = gl.canvas.clientHeight;
 
         // draw scene
         window.requestAnimationFrame(drawScene);
