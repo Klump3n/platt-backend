@@ -15,12 +15,18 @@ small amounts of data are transmitted this way.
 
 """
 import re
+import logging
 import cherrypy
+from ws4py import configure_logger
 from ws4py.server.cherrypyserver import WebSocketPlugin
 from ws4py.websocket import WebSocket
 
 # import global variables (scene_manager)
 import backend.global_settings as gloset
+
+# configure the ws4py logger
+configure_logger(level=logging.DEBUG)
+logger = logging.getLogger('ws4py')
 
 
 class SceneManagerPlugin(WebSocketPlugin):
@@ -63,9 +69,6 @@ class SceneManagerPlugin(WebSocketPlugin):
         """
         target_scene = gloset.scene_manager.scene(scene_hash)
         target_scene.websocket_add(websocket)
-
-        # amount = len(target_scene._websocket_list)
-        # target_scene.websocket_send('There are {} clients connected'.format(amount))
 
     def websocket_remove(self, scene_hash, websocket):
         """

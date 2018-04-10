@@ -7,10 +7,14 @@ A scene contains a number of datasets.
 """
 import os
 import json
+import logging
 from backend.util.timestamp_to_sha1 import timestamp_to_sha1
 from backend.scenes_dataset_prototype import _DatasetPrototype
 
 from ws4py.messaging import TextMessage
+
+# configure the ws4py logger
+logger = logging.getLogger('ws4py')
 
 
 class _ScenePrototype:
@@ -55,7 +59,7 @@ class _ScenePrototype:
 
         # This turns a linux timestamp into a sha1 hash, to uniquely identify a
         # scene based on the time it was created.
-        self._scene_name = timestamp_to_sha1()
+        self._scene_hash = timestamp_to_sha1()
 
         self._dataset_list = {}
 
@@ -73,7 +77,7 @@ class _ScenePrototype:
          str: The name (hash) of the scene.
 
         """
-        return self._scene_name
+        return self._scene_hash
 
     def add_dataset(self, dataset_path):
         """
@@ -201,6 +205,7 @@ class _ScenePrototype:
           want to add to the scene.
 
         """
+        logger.info('Adding WebSocket to scene {}'.format(self._scene_hash))
         self._websocket_list.append(new_websocket)
         return None
 
@@ -215,6 +220,7 @@ class _ScenePrototype:
           want to remove from the scene.
 
         """
+        logger.info('Removing WebSocket from scene {}'.format(self._scene_hash))
         self._websocket_list.remove(old_websocket)
         return None
 
@@ -228,6 +234,7 @@ class _ScenePrototype:
           so strings, dicts, arrays and so on.
 
         """
+        logger.info('Broadcasting message to scene {}'.format(self._scene_hash))
         msg = TextMessage(json.dumps(message))
         for socket in self._websocket_list:
             socket.send(msg.data, msg.is_binary)
