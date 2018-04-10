@@ -7,7 +7,6 @@ import re
 import cherrypy
 from ws4py.server.cherrypyserver import WebSocketPlugin
 from ws4py.websocket import WebSocket
-# from ws4py.messaging import TextMessage
 
 # import global variables (scene_manager)
 import backend.global_settings as gloset
@@ -31,9 +30,8 @@ class SceneManagerPlugin(WebSocketPlugin):
         target_scene = gloset.scene_manager.scene(scene_hash)
         target_scene.websocket_add(websocket)
 
-        # dummy
-        amount = len(target_scene._websocket_list)
-        target_scene.websocket_send('There are {} clients connected'.format(amount))
+        # amount = len(target_scene._websocket_list)
+        # target_scene.websocket_send('There are {} clients connected'.format(amount))
 
     def websocket_remove(self, scene_hash, websocket):
         target_scene = gloset.scene_manager.scene(scene_hash)

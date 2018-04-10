@@ -141,7 +141,7 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
         set_timestep.then(function(value) {
             that.currentTimestep = value["datasetTimestepSelected"];
             dataset_current_timestep.innerHTML = that.currentTimestep;
-            updateMesh(that.dataset_hash);
+            // updateMesh(that.dataset_hash);
         });
     }
 
@@ -164,7 +164,7 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
         patch_timesteps.then(function(value) {
             that.currentTimestep = value["datasetTimestepSelected"];
             dataset_current_timestep.innerHTML = that.currentTimestep;
-            updateMesh(that.dataset_hash);
+            // updateMesh(that.dataset_hash);
         });
     }
 
@@ -187,7 +187,7 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
         patch_timesteps.then(function(value) {
             that.currentTimestep = value["datasetTimestepSelected"];
             dataset_current_timestep.innerHTML = that.currentTimestep;
-            updateMesh(that.dataset_hash);
+            // updateMesh(that.dataset_hash);
         });
     }
 

@@ -129,6 +129,17 @@ class _DatasetPrototype:
         """
         return self.dataset_meta_dict
 
+    def hashes(self):
+        """
+        Returns a dictionary with the hashes for the field and the geometry of
+        the dataset.
+
+        Returns:
+         dict: The hashes in a dictionary.
+
+        """
+        return self._hash_dict
+
     def orientation(self, set_orientation=None):
         """
         Get (if set_orientation is None) or set (if set_orientation is not None)
@@ -226,6 +237,9 @@ class _DatasetPrototype:
 
             mp_data_mesh_hash = mp_data['hash_dict']['mesh']
             mp_data_field_hash = mp_data['hash_dict']['field']
+
+            self._hash_dict['mesh'] = mp_data_mesh_hash
+            self._hash_dict['field'] = mp_data_field_hash
 
             if mp_data_mesh_hash not in hash_dict['mesh']:
                 self._meshes['current'] = {
@@ -363,6 +377,9 @@ class _DatasetPrototype:
             if mp_data is not None:
                 mp_data_mesh_hash = mp_data['hash_dict']['mesh']
                 mp_data_field_hash = mp_data['hash_dict']['field']
+
+                self._hash_dict['mesh'] = mp_data_mesh_hash
+                self._hash_dict['field'] = mp_data_field_hash
 
                 if mp_data_mesh_hash not in hash_dict['mesh']:
                     self._meshes['current'] = {

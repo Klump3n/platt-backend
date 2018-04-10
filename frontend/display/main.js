@@ -101,17 +101,14 @@ var fragmentShaderTMax = 800.0;
 function websocketOps() {
     var wsProtocol = (protocol == 'http:') ? 'ws:' : 'wss:';
     var wsPath = wsProtocol + '//' + host + '/websocket/';
-    console.log(wsPath);
     var websock = new WebSocket(wsPath + scene_hash);
 
     window.addEventListener("beforeunload", function() {
-        console.log("Close web socket");
         websock.close();
     });
 
     websock.onopen = function() {
-        console.log('WebSocket connection opened');
-
+        // console.log('WebSocket connection opened');
     };
 
     websock.onclose = function() {
@@ -129,7 +126,10 @@ function websocketOps() {
         }
 
         if (update == 'mesh') {
-            updateMesh(datasetHash);
+            var newHashGeometry = msg['hashes']['mesh'];
+            var newHashField = msg['hashes']['field'];
+
+            updateMesh(datasetHash, newHashField, newHashGeometry);
         }
     };
 
@@ -137,8 +137,6 @@ function websocketOps() {
         console.log('WebSocket error: ' + value);
     };
 }
-
-websocketOps();
 
 /**
  * Try to find a HTML5 canvas element. If found, try to assign it a WebGL2
@@ -314,51 +312,83 @@ function glRoutine(gl) {
  * Gets the current hashes for the field and geometry. If a mismatch is found
  * the relevant routines are called.
  * @param {string} dataset_hash - The hash of the dataset we want to update.
+ * @param {string} newFieldHash - The hash of the field being served currently.
+ * @param {string} newMeshHash - The hash of the geometry being served currently.
  */
-function updateMesh(dataset_hash) {
+function updateMesh(dataset_hash, newFieldHash, newMeshHash) {
 
-    // Get the currently served hashes from the API
-    var hashes = connectToAPIPromise(
-        basePath = basePath,
-        APIEndpoint = "scenes/" + scene_hash + "/" + dataset_hash + "/mesh/hash",
-        HTTPMethod = "get",
-        payload = {}
-    );
-    hashes.then(function(value) {
+    var vertPromise;
+    var fragPromise;
 
-        var newFieldHash = value['datasetFieldHash'];
-        var newMeshHash = value['datasetMeshHash'];
+    var m = meshData[dataset_hash];
 
-        var vertPromise;
-        var fragPromise;
+    // If we find a mismatch between the data we have and the data the
+    // server currently serves we call for new data
+    if ((newFieldHash != m.currentFieldHash) && (newMeshHash == m.currentMeshHash)) {
+        fragPromise = updateFragmentShaderDataPromise(dataset_hash);
+        fragPromise.then(function(frag_value) {
+            m.fragmentDataHasChanged = true;
+        });
+    }
 
-        var m = meshData[dataset_hash];
+    if ((newFieldHash == m.currentFieldHash) && (newMeshHash != m.currentMeshHash)) {
+        vertPromise = updateVertexShaderDataPromise(dataset_hash);
+        vertPromise.then(function(vert_value) {
+            m.vertexDataHasChanged = true;
+        });
+    }
 
-        // If we find a mismatch between the data we have and the data the
-        // server currently serves we call for new data
-        if ((newFieldHash != m.currentFieldHash) && (newMeshHash == m.currentMeshHash)) {
-            fragPromise = updateFragmentShaderDataPromise(dataset_hash);
-            fragPromise.then(function(frag_value) {
-                m.fragmentDataHasChanged = true;
-            });
-        }
+    if ((newFieldHash != m.currentFieldHash) && (newMeshHash != m.currentMeshHash)) {
+        fragPromise = updateFragmentShaderDataPromise(dataset_hash);
+        vertPromise = updateVertexShaderDataPromise(dataset_hash);
+        Promise.all([fragPromise, vertPromise]).then(function(frag_vert_value){
+            m.fragmentDataHasChanged = true;
+            m.vertexDataHasChanged = true;
+        });
+    }
 
-        if ((newFieldHash == m.currentFieldHash) && (newMeshHash != m.currentMeshHash)) {
-            vertPromise = updateVertexShaderDataPromise(dataset_hash);
-            vertPromise.then(function(vert_value) {
-                m.vertexDataHasChanged = true;
-            });
-        }
+    // // Get the currently served hashes from the API
+    // var hashes = connectToAPIPromise(
+    //     basePath = basePath,
+    //     APIEndpoint = "scenes/" + scene_hash + "/" + dataset_hash + "/mesh/hash",
+    //     HTTPMethod = "get",
+    //     payload = {}
+    // );
+    // hashes.then(function(value) {
 
-        if ((newFieldHash != m.currentFieldHash) && (newMeshHash != m.currentMeshHash)) {
-            fragPromise = updateFragmentShaderDataPromise(dataset_hash);
-            vertPromise = updateVertexShaderDataPromise(dataset_hash);
-            Promise.all([fragPromise, vertPromise]).then(function(frag_vert_value){
-                m.fragmentDataHasChanged = true;
-                m.vertexDataHasChanged = true;
-            });
-        }
-    });
+    //     var newFieldHash = value['datasetFieldHash'];
+    //     var newMeshHash = value['datasetMeshHash'];
+
+    //     var vertPromise;
+    //     var fragPromise;
+
+    //     var m = meshData[dataset_hash];
+
+    //     // If we find a mismatch between the data we have and the data the
+    //     // server currently serves we call for new data
+    //     if ((newFieldHash != m.currentFieldHash) && (newMeshHash == m.currentMeshHash)) {
+    //         fragPromise = updateFragmentShaderDataPromise(dataset_hash);
+    //         fragPromise.then(function(frag_value) {
+    //             m.fragmentDataHasChanged = true;
+    //         });
+    //     }
+
+    //     if ((newFieldHash == m.currentFieldHash) && (newMeshHash != m.currentMeshHash)) {
+    //         vertPromise = updateVertexShaderDataPromise(dataset_hash);
+    //         vertPromise.then(function(vert_value) {
+    //             m.vertexDataHasChanged = true;
+    //         });
+    //     }
+
+    //     if ((newFieldHash != m.currentFieldHash) && (newMeshHash != m.currentMeshHash)) {
+    //         fragPromise = updateFragmentShaderDataPromise(dataset_hash);
+    //         vertPromise = updateVertexShaderDataPromise(dataset_hash);
+    //         Promise.all([fragPromise, vertPromise]).then(function(frag_vert_value){
+    //             m.fragmentDataHasChanged = true;
+    //             m.vertexDataHasChanged = true;
+    //         });
+    //     }
+    // });
 }
 
 /**
@@ -536,6 +566,9 @@ function rescaleFieldValues(originalField, minVal, maxVal) {
 function main() {
     // Init WebGL.
     gl = grabCanvas("webGlCanvas");
+
+    // Connect to the WebSocket
+    websocketOps();
 
     /**
      * Load vertexshader and fragmentshader.
