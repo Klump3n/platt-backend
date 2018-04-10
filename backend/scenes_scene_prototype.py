@@ -229,6 +229,10 @@ class _ScenePrototype:
         """
         Add a websocket to the scene.
 
+        Args:
+         new_websocket (ws4py.websocket.WebSocket): The WebSocket instance we
+          want to add to the scene.
+
         """
         self._websocket_list.append(new_websocket)
         return None
@@ -239,6 +243,10 @@ class _ScenePrototype:
 
         This happens when a (web) client disconnects or closes the window.
 
+        Args:
+         old_websocket (ws4py.websocket.WebSocket): The WebSocket instance we
+          want to remove from the scene.
+
         """
         self._websocket_list.remove(old_websocket)
         return None
@@ -246,6 +254,11 @@ class _ScenePrototype:
     def websocket_send(self, message):
         """
         Send a message to all connected websockets.
+
+        Args:
+         message (JSON parsable object): Something we want to transmit to all
+          the connected WebSocket instances. Must be parsable by json.dumps(),
+          so strings, dicts, arrays and so on.
 
         """
         msg = TextMessage(json.dumps(message))

@@ -139,6 +139,7 @@ class Web_Server:
             }
         )
 
+        # Add the SceneManagerPlugin to the server bus
         SceneManagerPlugin(cherrypy.engine).subscribe()
         cherrypy.tools.websocket = WebSocketTool()
 
