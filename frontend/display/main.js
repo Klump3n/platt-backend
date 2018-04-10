@@ -99,8 +99,9 @@ var fragmentShaderTMax = 800.0;
  * Specify operations for the WebSocket connection
  */
 function websocketOps() {
-    var wsProtocol = (protocol == 'http') ? 'ws' : 'wss';
+    var wsProtocol = (protocol == 'http:') ? 'ws:' : 'wss:';
     var wsPath = wsProtocol + '//' + host + '/websocket/';
+    console.log(wsPath);
     var websock = new WebSocket(wsPath + scene_hash);
 
     window.addEventListener("beforeunload", function() {
