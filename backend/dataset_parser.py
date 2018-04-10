@@ -299,20 +299,6 @@ class ParseDataset:
             'free_edges': {'data': None}
         }
 
-        # if not isinstance(timestep, str):
-        #     raise TypeError('timestep is {}, expected str'.format(
-        #         type(timestep).__name__))
-
-        # if not isinstance(field, dict):
-        #     raise TypeError('field is {}, expected dict'.format(
-        #         type(field).__name__))
-
-        # # FIXME: Must allow for hash_dict to be a bool too. ???
-        # if hash_dict is not None:
-        #     if not isinstance(hash_dict, dict):
-        #         raise TypeError('hash_dict is {}, expected dict'.format(
-        #             type(hash_dict).__name__))
-
         timestep_path = self.fo_dir / timestep
 
         try:

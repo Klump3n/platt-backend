@@ -12,6 +12,7 @@ from backend.scenes_dataset_prototype import _DatasetPrototype
 
 from ws4py.messaging import TextMessage
 
+
 class _ScenePrototype:
     """
     Contains a list of datasets and methods for manipulating the scene.
@@ -190,40 +191,6 @@ class _ScenePrototype:
             return self.list_datasets()
         except KeyError:
             raise ValueError('dataset_hash does not fit any dataset in scene')
-
-    # DELETING MULTIPLE DATASETS IS NOT NECESSARY BY DEFINITION OF THE API.
-    # def delete_datasets(self, dataset_hash_list):
-    #     """
-    #     Remove one or multiple dataset(s) from the scene.
-
-    #     Args:
-    #      dataset_hash (list (of str)): A list of dataset hashes that shall be
-    #       removed from the scene.
-
-    #     Raises:
-    #      TypeError: If ``type(dataset_hash)`` is neither `os.PathLike` nor
-    #       `list`.
-    #      TypeError: If ``type(object_path)`` is `list` but the type of one
-    #       list entry is not `os.PathLike`.
-
-    #     Todo:
-    #      See declutter todo in class.
-
-    #     """
-    #     if not isinstance(dataset_hash_list, list):
-    #         raise TypeError(
-    #             'dataset_hash_list is {}, expected list'.format(
-    #                 type(dataset_hash_list).__name__))
-
-
-    #     # TODO: If the scene is going to be empty we have to remove the scene?
-    #     # For this we would have to send a message......
-    #     # Also: rework this shit...
-
-    #     for dataset_hash in dataset_hash_list:
-    #         result = self._delete_one_dataset(dataset_hash)
-
-    #     return None
 
     def websocket_add(self, new_websocket):
         """

@@ -56,10 +56,6 @@ class SceneManager:
             raise ValueError(
                 '{} does not exist'.format(data_dir.absolute()))
 
-        # if not isinstance(data_dir, str):  # Yes, string.
-        #     raise TypeError('data_dir is {}, expected str'.format(
-        #         type(data_dir).__name__))
-
         # Set the data dir
         self._data_dir = data_dir.absolute()
 
@@ -91,7 +87,6 @@ class SceneManager:
          what?).
 
         """
-
         # Find all the folders in _data_dir
         dirs_in_data_dir = sorted(self._data_dir.glob('*/'))
 
@@ -626,19 +621,6 @@ class SceneManager:
          TypeError: If ``type(set_field)`` is not `NoneType` or `str`.
 
         """
-        # if not isinstance(scene_hash, str):
-        #     raise TypeError('scene_hash is {}, expected str'.format(
-        #             type(scene_hash).__name__))
-
-        # if not isinstance(dataset_hash, str):
-        #     raise TypeError('dataset_hash is {}, expected str'.format(
-        #             type(dataset_hash).__name__))
-
-        # if set_field is not None:
-        #     if not isinstance(set_field, str):
-        #         raise TypeError('set_field is {}, expected None or str'.
-        #                         format(type(set_field).__name__))
-
         target_dataset = self._target_dataset(scene_hash, dataset_hash)
 
         dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)

@@ -11,7 +11,8 @@ import cherrypy
 from ws4py.server.cherrypyserver import WebSocketTool
 
 from backend.web_server_api import ServerAPI
-from backend.web_server_websocket import WebSocketHandler, WebSocketAPI, SceneManagerPlugin
+from backend.web_server_websocket import (
+    WebSocketHandler, WebSocketAPI, SceneManagerPlugin)
 from backend.web_server_control import ServerRoot
 from backend.web_server_display import ServerScenesDispatcher
 import backend.global_settings as global_settings
@@ -40,7 +41,6 @@ class Web_Server:
      The global_settings module is initialized in __init__().
 
     """
-
     def __init__(self, frontend_directory, data_directory, port=8008):
         """
         Initialise the webserver.

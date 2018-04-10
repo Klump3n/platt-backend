@@ -5,7 +5,6 @@ A selection of globally available variables.
 So far it only contains the scene_manager.
 
 """
-import os
 from backend.scenes_manager import SceneManager
 
 
