@@ -99,7 +99,9 @@ var fragmentShaderTMax = 800.0;
  * Specify operations for the WebSocket connection
  */
 function websocketOps() {
-    var websock = new WebSocket('ws://localhost:8008/websocket/' + scene_hash);
+    var wsProtocol = (protocol == 'http') ? 'ws' : 'wss';
+    var wsPath = wsProtocol + '//' + host + '/websocket/';
+    var websock = new WebSocket(wsPath + scene_hash);
 
     window.addEventListener("beforeunload", function() {
         console.log("Close web socket");
@@ -108,6 +110,7 @@ function websocketOps() {
 
     websock.onopen = function() {
         console.log('WebSocket connection opened');
+
     };
 
     websock.onclose = function() {
@@ -118,7 +121,7 @@ function websocketOps() {
         var msg = JSON.parse(value.data);
 
         console.log(msg);
-        
+
         var datasetHash = msg['datasetHash'];
         var update = msg['update'];
 
