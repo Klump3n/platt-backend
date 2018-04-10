@@ -586,7 +586,6 @@ class SceneManager:
             'datasetTimestepSelected': selected_timestep,
         }
 
-        print(target_dataset.hashes())
         if set_timestep is not None:
             target_scene = gloset.scene_manager.scene(scene_hash)
             target_scene.websocket_send(

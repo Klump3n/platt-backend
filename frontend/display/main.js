@@ -24,6 +24,11 @@ var protocol = document.location.protocol;
 var host = document.location.host;
 var basePath = protocol + "//" + host + "/api";
 
+// If the websocket is not connected then the server is most likely down.
+// Calls to the API will not work then so we can stop this by checking this
+// variable. For the beginning set this to true...
+webSocketIsConnected = true;   // global variable
+
 // The hash for the scene we are looking at
 var scene_hash = document.getElementById("webGlCanvas").getAttribute("data-scene-hash");
 
@@ -96,46 +101,59 @@ var fragmentShaderTMin = 0.0;
 var fragmentShaderTMax = 800.0;
 
 /**
- * Specify operations for the WebSocket connection
+ * Tries to connect to the WebSocket for the scene. Returns a promise to do so.
  */
-function websocketOps() {
-    var wsProtocol = (protocol == 'http:') ? 'ws:' : 'wss:';
-    var wsPath = wsProtocol + '//' + host + '/websocket/';
-    var websock = new WebSocket(wsPath + scene_hash);
+function websocketPromise() {
 
-    window.addEventListener("beforeunload", function() {
-        websock.close();
+    return new Promise(function(resolve, reject) {
+
+        var wsProtocol = (protocol == 'http:') ? 'ws:' : 'wss:';
+        var wsPath = wsProtocol + '//' + host + '/websocket/';
+        var websock = new WebSocket(wsPath + scene_hash);
+
+        window.addEventListener("beforeunload", function() {
+            websock.close();
+        });
+
+        websock.onopen = function() {
+            // webSocketIsConnected = true;
+            console.log('WebSocket connection opened');
+
+            resolve();
+        };
+
+        websock.onclose = function() {
+            webSocketIsConnected = false;
+            console.log('WebSocket connection closed');
+            alert(
+                'WebSocket connection closed.\n\n' +
+                    'You will be able to move the existing mesh(es)\n' +
+                    'around but will receive no further updates.'
+            );
+        };
+
+        websock.onmessage = function(value) {
+            var msg = JSON.parse(value.data);
+
+            var datasetHash = msg['datasetHash'];
+            var update = msg['update'];
+
+            if (update == 'orientation') {
+                meshData[datasetHash].datasetView.getOrientation();
+            }
+
+            if (update == 'mesh') {
+                var newHashGeometry = msg['hashes']['mesh'];
+                var newHashField = msg['hashes']['field'];
+
+                updateMesh(datasetHash, newHashField, newHashGeometry);
+            }
+        };
+
+        websock.onerror = function(value) {
+            console.log('WebSocket error');
+        };
     });
-
-    websock.onopen = function() {
-        // console.log('WebSocket connection opened');
-    };
-
-    websock.onclose = function() {
-        console.log('WebSocket connection closed');
-    };
-
-    websock.onmessage = function(value) {
-        var msg = JSON.parse(value.data);
-
-        var datasetHash = msg['datasetHash'];
-        var update = msg['update'];
-
-        if (update == 'orientation') {
-            meshData[datasetHash].datasetView.getOrientation();
-        }
-
-        if (update == 'mesh') {
-            var newHashGeometry = msg['hashes']['mesh'];
-            var newHashField = msg['hashes']['field'];
-
-            updateMesh(datasetHash, newHashField, newHashGeometry);
-        }
-    };
-
-    websock.onerror = function(value) {
-        console.log('WebSocket error: ' + value);
-    };
 }
 
 /**
@@ -180,11 +198,6 @@ function glRoutine(gl) {
     // Prepare the viewport.
     var centerModel,
         datasetView;
-    // for (var dataset_index in meshData) {
-    //     centerModel = meshData[dataset_index].surfaceData['nodesCenter'];
-    //     datasetView = new DatasetView(gl, centerModel);
-    //     meshData[dataset_index].datasetView = datasetView;
-    // }
 
     var uniforms = {
         u_transform: twgl.m4.identity() // mat4
@@ -215,11 +228,6 @@ function glRoutine(gl) {
         m.bufferInfoColor = twgl.createBufferInfoFromArrays(gl, m.bufferDataArray);
         m.bufferInfoEdge = twgl.createBufferInfoFromArrays(gl, m.bufferFreeEdgesArray);
         m.bufferInfoWireframe = twgl.createBufferInfoFromArrays(gl, m.bufferWireframeArray);
-
-        // DO THIS WITH THE WEBSOCKET CONNECTION. LESS SPAMMING
-        // setInterval(function() {
-        //     updateMesh(dataset_index);
-        // }, 1000);
     }
 
 	  gl.enable(gl.CULL_FACE);
@@ -242,7 +250,6 @@ function glRoutine(gl) {
             gl.viewport(0, 0, gl.canvas.clientWidth, gl.canvas.clientHeight);
         }
 
-        // console.log(now % 1000);
         // update every dataset
         for (var dataset_index in meshData) {
             var m = meshData[dataset_index];
@@ -346,49 +353,6 @@ function updateMesh(dataset_hash, newFieldHash, newMeshHash) {
             m.vertexDataHasChanged = true;
         });
     }
-
-    // // Get the currently served hashes from the API
-    // var hashes = connectToAPIPromise(
-    //     basePath = basePath,
-    //     APIEndpoint = "scenes/" + scene_hash + "/" + dataset_hash + "/mesh/hash",
-    //     HTTPMethod = "get",
-    //     payload = {}
-    // );
-    // hashes.then(function(value) {
-
-    //     var newFieldHash = value['datasetFieldHash'];
-    //     var newMeshHash = value['datasetMeshHash'];
-
-    //     var vertPromise;
-    //     var fragPromise;
-
-    //     var m = meshData[dataset_hash];
-
-    //     // If we find a mismatch between the data we have and the data the
-    //     // server currently serves we call for new data
-    //     if ((newFieldHash != m.currentFieldHash) && (newMeshHash == m.currentMeshHash)) {
-    //         fragPromise = updateFragmentShaderDataPromise(dataset_hash);
-    //         fragPromise.then(function(frag_value) {
-    //             m.fragmentDataHasChanged = true;
-    //         });
-    //     }
-
-    //     if ((newFieldHash == m.currentFieldHash) && (newMeshHash != m.currentMeshHash)) {
-    //         vertPromise = updateVertexShaderDataPromise(dataset_hash);
-    //         vertPromise.then(function(vert_value) {
-    //             m.vertexDataHasChanged = true;
-    //         });
-    //     }
-
-    //     if ((newFieldHash != m.currentFieldHash) && (newMeshHash != m.currentMeshHash)) {
-    //         fragPromise = updateFragmentShaderDataPromise(dataset_hash);
-    //         vertPromise = updateVertexShaderDataPromise(dataset_hash);
-    //         Promise.all([fragPromise, vertPromise]).then(function(frag_vert_value){
-    //             m.fragmentDataHasChanged = true;
-    //             m.vertexDataHasChanged = true;
-    //         });
-    //     }
-    // });
 }
 
 /**
@@ -568,51 +532,53 @@ function main() {
     gl = grabCanvas("webGlCanvas");
 
     // Connect to the WebSocket
-    websocketOps();
+    var webSockIsOpen = websocketPromise();
 
-    /**
-     * Load vertexshader and fragmentshader.
-     */
-    var vert_ColorShaderPromise = getLocalDataPromise(
-        "shaders/vert_color_shader.glsl.c");
-    var frag_ColorShaderPromise = getLocalDataPromise(
-        "shaders/frag_color_shader.glsl.c");
-    var vert_EdgeShaderPromise = getLocalDataPromise(
-        "shaders/vertex_dataset_edge.glsl.c");
-    var frag_EdgeShaderPromise = getLocalDataPromise(
-        "shaders/fragment_dataset_edge.glsl.c");
-    var vert_WireframeShaderPromise = getLocalDataPromise(
-        "shaders/vertex_dataset_wireframe.glsl.c");
-    var frag_WireframeShaderPromise = getLocalDataPromise(
-        "shaders/fragment_dataset_wireframe.glsl.c");
+    webSockIsOpen.then(function() {
+        /**
+         * Load vertexshader and fragmentshader.
+         */
+        var vert_ColorShaderPromise = getLocalDataPromise(
+            "shaders/vert_color_shader.glsl.c");
+        var frag_ColorShaderPromise = getLocalDataPromise(
+            "shaders/frag_color_shader.glsl.c");
+        var vert_EdgeShaderPromise = getLocalDataPromise(
+            "shaders/vertex_dataset_edge.glsl.c");
+        var frag_EdgeShaderPromise = getLocalDataPromise(
+            "shaders/fragment_dataset_edge.glsl.c");
+        var vert_WireframeShaderPromise = getLocalDataPromise(
+            "shaders/vertex_dataset_wireframe.glsl.c");
+        var frag_WireframeShaderPromise = getLocalDataPromise(
+            "shaders/fragment_dataset_wireframe.glsl.c");
 
-    Promise.all([
-        vert_ColorShaderPromise,
-        frag_ColorShaderPromise,
-        vert_EdgeShaderPromise,
-        frag_EdgeShaderPromise,
-        vert_WireframeShaderPromise,
-        frag_WireframeShaderPromise
-    ]).then(
-        function(value) {
-            var vert_ColorShaderSource = value[0];
-            var frag_ColorShaderSource = value[1];
-            var vert_EdgeShaderSource = value[2];
-            var frag_EdgeShaderSource = value[3];
-            var vert_WireframeShaderSource = value[4];
-            var frag_WireframeShaderSource = value[5];
+        Promise.all([
+            vert_ColorShaderPromise,
+            frag_ColorShaderPromise,
+            vert_EdgeShaderPromise,
+            frag_EdgeShaderPromise,
+            vert_WireframeShaderPromise,
+            frag_WireframeShaderPromise
+        ]).then(
+            function(value) {
+                var vert_ColorShaderSource = value[0];
+                var frag_ColorShaderSource = value[1];
+                var vert_EdgeShaderSource = value[2];
+                var frag_EdgeShaderSource = value[3];
+                var vert_WireframeShaderSource = value[4];
+                var frag_WireframeShaderSource = value[5];
 
-            shaders = {
-                vert_colors: vert_ColorShaderSource,
-                frag_colors: frag_ColorShaderSource,
-                vert_edges: vert_EdgeShaderSource,
-                frag_edges: frag_EdgeShaderSource,
-                vert_wireframe: vert_WireframeShaderSource,
-                frag_wireframe: frag_WireframeShaderSource
-            };
+                shaders = {
+                    vert_colors: vert_ColorShaderSource,
+                    frag_colors: frag_ColorShaderSource,
+                    vert_edges: vert_EdgeShaderSource,
+                    frag_edges: frag_EdgeShaderSource,
+                    vert_wireframe: vert_WireframeShaderSource,
+                    frag_wireframe: frag_WireframeShaderSource
+                };
 
-            loadMeshData();
-        });
+                loadMeshData();
+            });
+    });
 
     function loadMeshData() {
         var active_scenes = connectToAPIPromise(

@@ -171,8 +171,8 @@ class WebSocketSession:
         The only method that gets exposed.
 
         Compares the scene_hash with the existing scenes on the server. If the
-        scene_hash is found we attach a WebSocketHandler and add the scene_hash to
-        the handler.
+        scene_hash is found we attach a WebSocketHandler and add the scene_hash
+        to the handler.
 
         Args:
          scene_hash (str): The hash of the scene we want to append.

@@ -19,7 +19,6 @@
 Contains the function for generating taylored ``index.html`` files.
 
 """
-
 # The main html body
 HTML = """
 <!DOCTYPE html>
@@ -46,7 +45,6 @@ HTML = """
   <!-- <script src="twgl-dist-3.x/twgl-full.min.js"></script> -->
   <script src="twgl-dist-3.x/twgl-full.js"></script>
   <script src="loadData.js"></script>
-  <script src="setView.js"></script>
   <script src="datasetView.js"></script>
   {html_script_colorbar}
   {html_script_menu}
