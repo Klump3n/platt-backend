@@ -120,8 +120,6 @@ function websocketOps() {
     websock.onmessage = function(value) {
         var msg = JSON.parse(value.data);
 
-        console.log(msg);
-
         var datasetHash = msg['datasetHash'];
         var update = msg['update'];
 
