@@ -28,7 +28,6 @@ class SceneManagerPlugin(WebSocketPlugin):
     The WebSocket plugin added to the servers bus.
 
     """
-
     def start(self):
         """
         Start the websocket plugin and add (subscribe) routines to add, remove
@@ -106,7 +105,6 @@ class WebSocketHandler(WebSocket):
     Takes care of adding and removing websocket instances to a scene.
 
     """
-
     def opened(self):
         """
         Add a WebSocket instance to a scene when a websocket is opened.
