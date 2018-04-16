@@ -283,10 +283,8 @@ class ParseDataset:
          TypeError: If ``type(field)`` is not `dict`.
          TypeError: If ``type(hash_dict)`` is not `bool`.
 
-        FIXME: hash dict bool OR dict, bool AND dict can not raise type error.
-
         """
-        return_dict =  {
+        return_dict = {
             'hash_dict': {
                 'mesh': None,
                 'field': None
