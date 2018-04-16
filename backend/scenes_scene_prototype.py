@@ -66,6 +66,13 @@ class _ScenePrototype:
         # an empty list for the websockets that connect to this scene
         self._websocket_list = []
 
+    def __del__(self):
+        """
+        I.e. close all WebSockets when the class is no longer needed.
+
+        """
+        self.websocket_delete_scene()
+
     def name(self):
         """
         Get the name for the scene.
@@ -220,8 +227,23 @@ class _ScenePrototype:
           want to remove from the scene.
 
         """
-        logger.info('Removing WebSocket from scene {}'.format(self._scene_hash))
+        logger.info(
+            'Removing WebSocket from scene {}'.format(self._scene_hash)
+        )
         self._websocket_list.remove(old_websocket)
+        return None
+
+    def websocket_delete_scene(self):
+        """
+        Closes every WebSocket connection for this scene.
+
+        """
+        logger.info(
+            'Closing every WebSocket for scene {}'.format(self._scene_hash)
+        )
+        for socket in self._websocket_list:
+            socket.close()
+
         return None
 
     def websocket_send(self, message):
