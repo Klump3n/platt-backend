@@ -205,6 +205,11 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
         }
     }
 
+    function reset_orientation() {
+        var dataset_hash = this.getAttribute('data-name');
+        meshData[dataset_hash].datasetView.resetOrientation(dataset_hash);
+    }
+
     /**
      * Adds the control menu for a dataset to the main menu dock.
      */
@@ -304,11 +309,18 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
         dataset_change_orientation_label.setAttribute('for', 'dataset_change_orientation_checkbox'+that.dataset_hash);
         dataset_change_orientation_label.innerHTML = 'Change orientation';
 
+        var dataset_reset_orientation_button = document.createElement('button');
+        dataset_reset_orientation_button.setAttribute('data-name', that.dataset_hash);
+        dataset_reset_orientation_button.setAttribute('class', 'dataset_reset_orientation_button');
+        dataset_reset_orientation_button.innerHTML = 'Reset orientation';
+        dataset_reset_orientation_button.addEventListener('click', reset_orientation);
+
         dataset_change_orientation_container.appendChild(dataset_change_orientation_checkbox);
         dataset_change_orientation_container.appendChild(dataset_change_orientation_label);
 
         dataset_functions.appendChild(dataset_timestep_container);
         dataset_functions.appendChild(dataset_change_orientation_container);
+        dataset_functions.appendChild(dataset_reset_orientation_button);
 
         // attach heading and display to dataset
         dataset.appendChild(dataset_heading);

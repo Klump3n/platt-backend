@@ -78,7 +78,7 @@ function connectToAPIPromise(basePath, apiEndpoint, HTTPMethod, payload) {
         // global variable set in main.js
         if (window.webSocketIsConnected == false) {
 
-            reject(Error('WebSocket connection is closed'));
+            reject(Error('No WebSocket connection'));
 
         } else {
 

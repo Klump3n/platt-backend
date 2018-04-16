@@ -46,6 +46,7 @@ HTML = """
   <script src="twgl-dist-3.x/twgl-full.js"></script>
   <script src="loadData.js"></script>
   <script src="datasetView.js"></script>
+  <script src="websocket.js"></script>
   {html_script_colorbar}
   {html_script_menu}
   <script src="main.js" onload="main()"></script>
@@ -67,12 +68,6 @@ CSS_COLORBAR = """
 BODY_OVERLAY = """
     <div class="overlay">{message}</div>
 """
-# <div class="add_objects_button_container">
-#   <div class="add_objects_button" id="add_objects_button">+</div>
-#   <div class="add_objects_menu_container" id="add_objects_menu_container">
-#       <div class="add_objects_menu" id="add_objects_menu"></div>
-#   </div>
-# </div>
 
 BODY_MENU = """
     <div class="main_container">
@@ -110,24 +105,17 @@ def make_index(
     or not we want to display the browser menu to add and remove simulation
     data to it as well as the color bar on the right side of the window.
 
-
     Args:
-
-     scene_hash (str, optional, defaults to ``''``): The scene hash that will be
-      encoded into the index.html
-
+     scene_hash (str, optional, defaults to ``''``): The scene hash that will
+      be encoded into the index.html
      with_menu (bool, optional, defaults to `True`): True means we want to
       display a menu, False means we don't want to display a menu.
-
      with_colorbar (bool, optional, defaults to `True`): True means we want to
       display a colorbar, False means we don't want to display a colorbar.
-
      overlay_message (str or None, optional, defaults to `None`): If set, this
       message will be displayed in a centered overlay on the screen.
 
-
     Returns:
-
      str: The ``index.html`` string.
 
     """

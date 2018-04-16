@@ -74,10 +74,6 @@ function DatasetView(gl, sceneHash, datasetHash) {
     // setup/place camera and stuff
     setupWorld().then(function() {
 
-        // DO THIS WITH THE WEBSOCKET CONNECTION. LESS SPAMMING
-        // // check the server for updates on the orientation every second or send it there
-        // setInterval(orientationCheck, 1000);
-
         // a vector pointing from the camera to the datasets center
         cameraToTargetVector = twgl.v3.subtract(datasetTranslation, viewerPosition);
 
@@ -119,6 +115,73 @@ function DatasetView(gl, sceneHash, datasetHash) {
         x_center = datasetScreenCenter[0];
         y_center = datasetScreenCenter[1];
 
+    };
+
+    this.getOrientation = function() {
+
+        var updateTimestep;
+
+        if (!m.changeThisOrientation) {
+
+            updateTimestep = connectToAPIPromise(
+                basePath = basePath,
+                APIEndpoint = "scenes/" + sceneHash + "/" + datasetHash + "/orientation",
+                HTTPMethod = "get",
+                payload = {}
+            );
+            updateTimestep.then(function(value) {
+
+                datasetTranslationMatrix = new Float32Array(value['datasetOrientation']['datasetTranslation']);
+                datasetRotationMatrix = new Float32Array(value['datasetOrientation']['datasetRotation']);
+
+                // extract the translation from it
+                datasetTranslation = twgl.m4.getTranslation(datasetTranslationMatrix);
+
+                // update the dataset matrix
+                datasetMatrix = twgl.m4.multiply(datasetRotationMatrix, centerDatasetMatrix);
+                datasetMatrix = twgl.m4.multiply(datasetTranslationMatrix, datasetMatrix);
+            });
+        }
+    };
+
+    this.resetOrientation = function() {
+
+        centerDatasetMatrix = twgl.m4.identity(); // just a centered and upscaled dataset
+        datasetMatrix = twgl.m4.identity(); // the centered, upscaled, BUT ALSO moved dataset
+
+        datasetTranslation = twgl.v3.create(0, 0, 0);
+        datasetTranslationMatrix = twgl.m4.identity();
+        datasetRotationMatrix = twgl.m4.identity();
+
+        // scale the dataset a bit so the handling is easier
+        centerDatasetMatrix = twgl.m4.scale(
+            centerDatasetMatrix,
+            twgl.v3.create(
+                datasetScalingFactor,
+                datasetScalingFactor,
+                datasetScalingFactor
+            )
+        );
+
+        // translate the model so its centered
+        centerDatasetMatrix = twgl.m4.translate(centerDatasetMatrix, twgl.v3.negate(datasetCenter));
+
+        // update the dataset matrix on init
+        datasetMatrix = twgl.m4.multiply(datasetRotationMatrix, centerDatasetMatrix);
+        datasetMatrix = twgl.m4.multiply(datasetTranslationMatrix, datasetMatrix);
+
+        // upload the initial translation and rotation to the server (will be unity)
+        var payload = {
+            'datasetTranslation': Array.from(datasetTranslationMatrix),
+            'datasetRotation': Array.from(datasetRotationMatrix)
+        };
+
+        updateTimestep = connectToAPIPromise(
+            basePath = basePath,
+            APIEndpoint = "scenes/" + sceneHash + "/" + datasetHash + "/orientation",
+            HTTPMethod = "patch",
+            payload = {'datasetOrientation': payload} // upload basically nothing... its unity anyway
+        );
     };
 
     /**
@@ -200,62 +263,6 @@ function DatasetView(gl, sceneHash, datasetHash) {
             });
         });
     }
-
-
-    function orientationCheck() {
-
-        var updateTimestep;
-
-        if (!m.changeThisOrientation) {
-
-            updateTimestep = connectToAPIPromise(
-                basePath = basePath,
-                APIEndpoint = "scenes/" + sceneHash + "/" + datasetHash + "/orientation",
-                HTTPMethod = "get",
-                payload = {}
-            );
-            updateTimestep.then(function(value) {
-
-                datasetTranslationMatrix = new Float32Array(value['datasetOrientation']['datasetTranslation']);
-                datasetRotationMatrix = new Float32Array(value['datasetOrientation']['datasetRotation']);
-
-                // extract the translation from it
-                datasetTranslation = twgl.m4.getTranslation(datasetTranslationMatrix);
-
-                // update the dataset matrix
-                datasetMatrix = twgl.m4.multiply(datasetRotationMatrix, centerDatasetMatrix);
-                datasetMatrix = twgl.m4.multiply(datasetTranslationMatrix, datasetMatrix);
-            });
-        }
-    }
-
-    // THIS IS THE SAME AS orientationCheck() !!!!
-    this.getOrientation = function() {
-
-        var updateTimestep;
-
-        if (!m.changeThisOrientation) {
-
-            updateTimestep = connectToAPIPromise(
-                basePath = basePath,
-                APIEndpoint = "scenes/" + sceneHash + "/" + datasetHash + "/orientation",
-                HTTPMethod = "get",
-                payload = {}
-            );
-            updateTimestep.then(function(value) {
-
-                datasetTranslationMatrix = new Float32Array(value['datasetOrientation']['datasetTranslation']);
-                datasetRotationMatrix = new Float32Array(value['datasetOrientation']['datasetRotation']);
-
-                // extract the translation from it
-                datasetTranslation = twgl.m4.getTranslation(datasetTranslationMatrix);
-
-                // update the dataset matrix
-                datasetMatrix = twgl.m4.multiply(datasetRotationMatrix, centerDatasetMatrix);
-                datasetMatrix = twgl.m4.multiply(datasetTranslationMatrix, datasetMatrix);
-            });
-        }
-    };
 
     /**
      * Create the frustum of our view.

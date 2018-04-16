@@ -101,61 +101,6 @@ var fragmentShaderTMin = 0.0;
 var fragmentShaderTMax = 800.0;
 
 /**
- * Tries to connect to the WebSocket for the scene. Returns a promise to do so.
- */
-function websocketPromise() {
-
-    return new Promise(function(resolve, reject) {
-
-        var wsProtocol = (protocol == 'http:') ? 'ws:' : 'wss:';
-        var wsPath = wsProtocol + '//' + host + '/websocket/';
-        var websock = new WebSocket(wsPath + scene_hash);
-
-        window.addEventListener("beforeunload", function() {
-            websock.close();
-        });
-
-        websock.onopen = function() {
-            console.log('WebSocket connection opened');
-
-            resolve();
-        };
-
-        websock.onclose = function() {
-            webSocketIsConnected = false;
-            console.log('WebSocket connection closed');
-            alert(
-                'WebSocket connection closed.\n\n' +
-                    'You will be able to move the existing mesh(es)\n' +
-                    'around but not receive further changes/updates.'
-            );
-        };
-
-        websock.onmessage = function(value) {
-            var msg = JSON.parse(value.data);
-
-            var datasetHash = msg['datasetHash'];
-            var update = msg['update'];
-
-            if (update == 'orientation') {
-                meshData[datasetHash].datasetView.getOrientation();
-            }
-
-            if (update == 'mesh') {
-                var newHashGeometry = msg['hashes']['mesh'];
-                var newHashField = msg['hashes']['field'];
-
-                updateMesh(datasetHash, newHashField, newHashGeometry);
-            }
-        };
-
-        websock.onerror = function(value) {
-            console.log('WebSocket error');
-        };
-    });
-}
-
-/**
  * Try to find a HTML5 canvas element. If found, try to assign it a WebGL2
  * context. If this fails throw an error, else return the context.
  * @param {string} canvasElementName The HTML5 canvas element.
@@ -239,6 +184,7 @@ function glRoutine(gl) {
     // The main drawing loop
     function drawScene(now) {
 
+        // resize the viewport AND update the camera if the canvas has changed
         if ((gl_width != gl.canvas.clientWidth) || (gl_height != gl.canvas.clientHeight)) {
             gl_view_changed = true;
         }
@@ -530,54 +476,51 @@ function main() {
     // Init WebGL.
     gl = grabCanvas("webGlCanvas");
 
-    // Connect to the WebSocket
-    var webSockIsOpen = websocketPromise();
+    connectToWebSocket();
 
-    webSockIsOpen.then(function() {
-        /**
-         * Load vertexshader and fragmentshader.
-         */
-        var vert_ColorShaderPromise = getLocalDataPromise(
-            "shaders/vert_color_shader.glsl.c");
-        var frag_ColorShaderPromise = getLocalDataPromise(
-            "shaders/frag_color_shader.glsl.c");
-        var vert_EdgeShaderPromise = getLocalDataPromise(
-            "shaders/vertex_dataset_edge.glsl.c");
-        var frag_EdgeShaderPromise = getLocalDataPromise(
-            "shaders/fragment_dataset_edge.glsl.c");
-        var vert_WireframeShaderPromise = getLocalDataPromise(
-            "shaders/vertex_dataset_wireframe.glsl.c");
-        var frag_WireframeShaderPromise = getLocalDataPromise(
-            "shaders/fragment_dataset_wireframe.glsl.c");
+    /**
+     * Load vertexshader and fragmentshader.
+     */
+    var vert_ColorShaderPromise = getLocalDataPromise(
+        "shaders/vert_color_shader.glsl.c");
+    var frag_ColorShaderPromise = getLocalDataPromise(
+        "shaders/frag_color_shader.glsl.c");
+    var vert_EdgeShaderPromise = getLocalDataPromise(
+        "shaders/vertex_dataset_edge.glsl.c");
+    var frag_EdgeShaderPromise = getLocalDataPromise(
+        "shaders/fragment_dataset_edge.glsl.c");
+    var vert_WireframeShaderPromise = getLocalDataPromise(
+        "shaders/vertex_dataset_wireframe.glsl.c");
+    var frag_WireframeShaderPromise = getLocalDataPromise(
+        "shaders/fragment_dataset_wireframe.glsl.c");
 
-        Promise.all([
-            vert_ColorShaderPromise,
-            frag_ColorShaderPromise,
-            vert_EdgeShaderPromise,
-            frag_EdgeShaderPromise,
-            vert_WireframeShaderPromise,
-            frag_WireframeShaderPromise
-        ]).then(
-            function(value) {
-                var vert_ColorShaderSource = value[0];
-                var frag_ColorShaderSource = value[1];
-                var vert_EdgeShaderSource = value[2];
-                var frag_EdgeShaderSource = value[3];
-                var vert_WireframeShaderSource = value[4];
-                var frag_WireframeShaderSource = value[5];
+    Promise.all([
+        vert_ColorShaderPromise,
+        frag_ColorShaderPromise,
+        vert_EdgeShaderPromise,
+        frag_EdgeShaderPromise,
+        vert_WireframeShaderPromise,
+        frag_WireframeShaderPromise
+    ]).then(
+        function(value) {
+            var vert_ColorShaderSource = value[0];
+            var frag_ColorShaderSource = value[1];
+            var vert_EdgeShaderSource = value[2];
+            var frag_EdgeShaderSource = value[3];
+            var vert_WireframeShaderSource = value[4];
+            var frag_WireframeShaderSource = value[5];
 
-                shaders = {
-                    vert_colors: vert_ColorShaderSource,
-                    frag_colors: frag_ColorShaderSource,
-                    vert_edges: vert_EdgeShaderSource,
-                    frag_edges: frag_EdgeShaderSource,
-                    vert_wireframe: vert_WireframeShaderSource,
-                    frag_wireframe: frag_WireframeShaderSource
-                };
+            shaders = {
+                vert_colors: vert_ColorShaderSource,
+                frag_colors: frag_ColorShaderSource,
+                vert_edges: vert_EdgeShaderSource,
+                frag_edges: frag_EdgeShaderSource,
+                vert_wireframe: vert_WireframeShaderSource,
+                frag_wireframe: frag_WireframeShaderSource
+            };
 
-                loadMeshData();
-            });
-    });
+            loadMeshData();
+        });
 
     function loadMeshData() {
         var active_scenes = connectToAPIPromise(

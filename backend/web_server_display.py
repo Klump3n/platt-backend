@@ -26,7 +26,6 @@ class ServerScenesDispatcher:
 
         """
         pass
-        # self.ServerDisplayScene = ServerDisplayScene()
 
     @cherrypy.expose
     def index(self):
@@ -76,7 +75,6 @@ class ServerScenesDispatcher:
             cherrypy.request.params['scene_hash'] = vpath.pop(0)
 
             # and return the visualization class (with that calling parameter),
-            # return self.ServerDisplayScene
             return ServerDisplayScene()
 
         # otherwise ...
