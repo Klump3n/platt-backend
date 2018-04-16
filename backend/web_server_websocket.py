@@ -68,6 +68,11 @@ class SceneManagerPlugin(WebSocketPlugin):
 
         """
         target_scene = gloset.scene_manager.scene(scene_hash)
+
+        # scene does not exist
+        if target_scene is None:
+            return None
+
         target_scene.websocket_add(websocket)
 
     def websocket_remove(self, scene_hash, websocket):
@@ -82,6 +87,11 @@ class SceneManagerPlugin(WebSocketPlugin):
 
         """
         target_scene = gloset.scene_manager.scene(scene_hash)
+
+        # scene does not exist
+        if target_scene is None:
+            return None
+
         target_scene.websocket_remove(websocket)
 
     def websocket_send(self, scene_hash, message):
@@ -98,6 +108,11 @@ class SceneManagerPlugin(WebSocketPlugin):
 
         """
         target_scene = gloset.scene_manager.scene(scene_hash)
+
+        # scene does not exist
+        if target_scene is None:
+            return None
+
         target_scene.websocket_send(message)
 
 
