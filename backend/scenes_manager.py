@@ -324,7 +324,8 @@ class SceneManager:
           loaded datasets.
 
         Returns:
-         dict: A dictionary containing all the loaded datasets meta information.
+         dict: A dictionary containing all the loaded datasets meta
+         information.
 
         """
         if not isinstance(scene_hash, str):
@@ -498,6 +499,10 @@ class SceneManager:
 
         target_dataset = self._target_dataset(scene_hash, dataset_hash)
 
+        # dataset or scene do not exist
+        if target_dataset is None:
+            return None
+
         dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
         dataset_orientation = target_dataset.orientation(set_orientation)
 
@@ -551,6 +556,10 @@ class SceneManager:
                                 format(type(set_timestep).__name__))
 
         target_dataset = self._target_dataset(scene_hash, dataset_hash)
+
+        # dataset or scene do not exist
+        if target_dataset is None:
+            return None
 
         dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
         timestep_list = target_dataset.timestep_list()
@@ -622,6 +631,10 @@ class SceneManager:
         """
         target_dataset = self._target_dataset(scene_hash, dataset_hash)
 
+        # dataset or scene do not exist
+        if target_dataset is None:
+            return None
+
         dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
 
         field_dict = target_dataset.field_dict()
@@ -672,6 +685,10 @@ class SceneManager:
 
         target_dataset = self._target_dataset(scene_hash, dataset_hash)
 
+        # dataset or scene do not exist
+        if target_dataset is None:
+            return None
+
         dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
 
         surface_mesh = target_dataset.surface_mesh()
@@ -705,6 +722,10 @@ class SceneManager:
     def dataset_mesh_hash(self, scene_hash, dataset_hash):
 
         target_dataset = self._target_dataset(scene_hash, dataset_hash)
+
+        # dataset or scene do not exist
+        if target_dataset is None:
+            return None
 
         dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
 
@@ -750,6 +771,10 @@ class SceneManager:
         #             type(dataset_hash).__name__))
 
         target_dataset = self._target_dataset(scene_hash, dataset_hash)
+
+        # dataset or scene do not exist
+        if target_dataset is None:
+            return None
 
         dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
 
@@ -800,6 +825,10 @@ class SceneManager:
                     type(dataset_hash).__name__))
 
         target_dataset = self._target_dataset(scene_hash, dataset_hash)
+
+        # dataset or scene do not exist
+        if target_dataset is None:
+            return None
 
         dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
 
