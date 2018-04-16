@@ -7,9 +7,6 @@ import os
 import pathlib
 from backend.scenes_scene_prototype import _ScenePrototype
 
-# import global variables (scene_manager)
-from backend import global_settings as gloset
-
 
 class SceneManager:
     """
@@ -510,7 +507,7 @@ class SceneManager:
         return_dict['datasetMeta'] = dataset_meta
 
         if set_orientation is not None:
-            target_scene = gloset.scene_manager.scene(scene_hash)
+            target_scene = self.scene(scene_hash)
             target_scene.websocket_send(
                 {
                     'datasetHash': dataset_hash,
@@ -596,7 +593,7 @@ class SceneManager:
         }
 
         if set_timestep is not None:
-            target_scene = gloset.scene_manager.scene(scene_hash)
+            target_scene = self.scene(scene_hash)
             target_scene.websocket_send(
                 {
                     'datasetHash': dataset_hash,
@@ -647,7 +644,7 @@ class SceneManager:
         }
 
         if set_field is not None:
-            target_scene = gloset.scene_manager.scene(scene_hash)
+            target_scene = self.scene(scene_hash)
             target_scene.websocket_send(
                 {
                     'datasetHash': dataset_hash,
