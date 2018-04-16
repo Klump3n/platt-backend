@@ -116,7 +116,6 @@ function websocketPromise() {
         });
 
         websock.onopen = function() {
-            // webSocketIsConnected = true;
             console.log('WebSocket connection opened');
 
             resolve();
@@ -128,7 +127,7 @@ function websocketPromise() {
             alert(
                 'WebSocket connection closed.\n\n' +
                     'You will be able to move the existing mesh(es)\n' +
-                    'around but will receive no further updates.'
+                    'around but not receive further changes/updates.'
             );
         };
 
@@ -598,7 +597,6 @@ function main() {
             // append a dataset to the meshes of the scene
             for (dataset_index in datasets) {
                 var dataset_hash = datasets[dataset_index]["datasetHash"];
-
 
                 // What piece-of-shit language does not have an easy way to
                 // deep-clone objects????
