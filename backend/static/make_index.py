@@ -33,15 +33,13 @@ HTML = """
     <meta name="theme-color" content="#ffffff">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>FemGL alpha</title>
+      <title>platt postprocessor</title>
       <link rel="stylesheet" href="main.css" />
       {html_css_overlay}
       {html_css_menu}
       {html_css_colorbar}
   </head>
   <body>
-    <!-- The canvas element for displaying something via WebGL. Never
-	       tried anything else, maybe it also works in a <p>? -->
     <canvas id="webGlCanvas" data-scene-hash="{scene_hash}"></canvas>
     {html_body_overlay}
     {html_body_menu}

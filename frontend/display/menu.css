@@ -1,4 +1,5 @@
-.main_container {
+.main_container
+{
     position: fixed;
     top: 10px;
     left: 10px;
@@ -8,139 +9,231 @@
     font-family: monospace;
 }
 
-.dataset_container {
+.dataset_container
+{
     display: table-column;
     position: absolute;
-    top: 5px;
-    /* top: calc(100% + 2px); */ /* later */
-    left: 0px;
-    /* width: auto; */
     height: auto;
-    background-color: pink;
+    color: #d3d3d3;
 }
 
-.dataset {
+.dataset
+{
     cursor: auto;
     display: inline-block;      /*div not wider than it must*/
-    background-color: red;
+    background-color: #8c2328;
+    border: 2px solid #dc2328;
 }
 
-.dataset_functions {
-    position: relative;
-    background-color: green;
-    padding-left: 2px;
-    padding-right: 2px;
-    margin-bottom: 2px;
-    left: 10px;
-    width: 100%;
-    height: auto;
-}
-
-.dataset_heading {
+.dataset_heading
+{
     cursor: pointer;
     white-space: nowrap;
-    padding: 3px;
+    margin: 2px;
 }
 
-.dataset_timestep_container {
-    position: relative;
-    padding-top: 2px;
-    padding-bottom: 2px;
-    height: auto;
-    min-width: 80px;            /*edit this if we need more space for the timesteps*/
-    max-width: 120px;
+.dataset_heading_hash
+{
+    font-size: small;
     width: 100%;
-    background-color: yellow;
+    padding-left: 5px;
+    text-align: left;
+    color: #a9a9a9;
+    cursor: pointer;
+    white-space: nowrap;
 }
 
-.dataset_timestep_heading {
+.dataset_function_heading
+{
     cursor: auto;
     text-align: center;
     margin-left: 2px;
     margin-right: 2px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
-.dataset_timestep_controls {
+.dataset_function_container
+{
+    position: relative;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    height: auto;
+    min-width: 80px;
+    width: 100%;
+    background-color: #009fe1;
+}
+
+.dataset_functions {
+    position: relative;
+    background-color: #001e32;
+    padding: 2px;
+    margin-bottom: 2px;
+    left: 10px;
+    width: auto;
+    max-width: 150px;
+    height: auto;
+}
+
+.dataset_function_separator
+{
+    margin-bottom: 2px;
+}
+
+.dataset_timestep_controls_container {
     position: relative;
     display: flex;              /*reduce space between controls*/
     margin-left: 2px;
     margin-right: 2px;
 }
 
-.dataset_timestep_previous {
+.dataset_timestep_control
+{
     cursor: pointer;
     position: relative;
     display: inline-block;
-    width: 15px;
     text-align: center;
-
-    background-color: pink;
+    background-color: #00556e;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    padding: 2px;
 }
 
-.dataset_timestep_current {
-    cursor: pointer;
-    position: relative;
-    display: inline-block;
+.dataset_timestep_control_previous_next
+{
+    width: 15px;
+}
+
+.dataset_timestep_control_current
+{
     width: calc(100% - 30px);
-    text-align: center;
-
-    background-color: pink;
-}
-
-.dataset_timestep_next {
-    cursor: pointer;
-    position: relative;
-    display: inline-block;
-    width: 15px;
-    text-align: center;
-
-    background-color: pink;
 }
 
 /* Absolute to .dataset_timestep_current */
-.dataset_timestep_menu_padding_container {
+.dataset_timestep_menu_padding_container
+{
+    cursor: pointer;
+    background-color: #00556e;
+    border: 1px solid #001e32;
+
     visibility: hidden;
+
     position: absolute;
-    top: -25px;
-    left: calc(100% + 3px);
+    top: 0px;
+    left: calc(100% + 5px);
+    width: auto;
     z-index: 1;
+
+    overflow-y: auto;
+
     padding-left: 3px;
     padding-right: 3px;
+
+    min-width: 50px;
+    max-width: 100px;
     max-height: 80px;
-    width: auto;
-    height: auto;
-    overflow-y: auto;
 }
 
 .dataset_timestep_menu {
-    background-color: green;
-
+    cursor: pointer;
     height: auto;
-    width: 40px;
 }
 
-.dataset_timestep_item {
+.dataset_timestep_menu_item {
     cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.dataset_property_container {
-    padding-top: 2px;
-    padding-bottom: 2px;
-    background-color: yellow;
+.dataset_field_current {
+    cursor: pointer;
     position: relative;
-}
-
-.dataset_property {
-    cursor: pointer;
+    display: inline-block;
+    width: calc(100% - 8px);
     margin-left: 2px;
     margin-right: 2px;
+    padding: 2px;
+    text-align: center;
+    background-color: #00556e;
 }
 
-.dataset_controls_container
+.dataset_change_orientation_container
 {
-    padding-top: 2px;
-    padding-bottom: 2px;
+    cursor: auto;
     position: relative;
+    display: inline-block;
+    width: calc(100% - 8px);
+    padding: 2px;
     margin-left: 2px;
     margin-right: 2px;
+    text-align: center;
+    background-color: #00556e;
+}
+
+/* Absolute to .dataset_field_current */
+.dataset_field_menu_padding_container
+{
+    cursor: pointer;
+    background-color: #00556e;
+    border: 1px solid #001e32;
+
+    visibility: hidden;
+
+    position: absolute;
+    top: 20px;
+    left: calc(100% + 5px);
+    width: auto;
+    z-index: 1;
+
+    overflow-y: auto;
+
+    padding-left: 3px;
+    padding-right: 3px;
+
+    min-width: 120px;
+    max-width: 200px;
+    max-height: 80px;
+}
+
+.dataset_field_menu {
+    cursor: pointer;
+    height: auto;
+}
+
+.dataset_field_menu_item {
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dataset_change_orientation_checkbox
+{
+    cursor: pointer;
+    width: 13px;
+    height: 13px;
+    padding: 0;
+    margin: 0;
+    vertical-align: bottom;
+    position: relative;
+}
+
+.dataset_change_orientation_label
+{
+    cursor: pointer;
+    text-align: center;
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+.dataset_reset_orientation_button
+{
+    cursor: pointer;
+    background-color: #00556e;
+    width: calc(100% - 8px);
+    text-align: center;
+    margin-left: 2px;
+    margin-right: 2px;
+    padding: 2px;
 }

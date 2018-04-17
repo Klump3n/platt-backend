@@ -12,7 +12,7 @@ from warnings import warn
 # Version template. The programs name is defined here. version will be
 # overwritten by the functions in this module.
 VERSION_DICT = {
-    'programName': 'norderney',
+    'programName': 'platt',
     'programVersion': ''
 }
 
