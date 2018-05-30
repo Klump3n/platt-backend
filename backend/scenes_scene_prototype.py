@@ -63,12 +63,19 @@ class _ScenePrototype:
 
         self._dataset_list = {}
 
+        self._colorbar_settings = {
+            # selected can be either a hash, 'current' or 'values'
+            'selected': None,
+            'current': {'min': 0, 'max': 0},
+            'values': {'min': 0, 'max': 0}
+        }
+
         # an empty list for the websockets that connect to this scene
         self._websocket_list = []
 
     def __del__(self):
         """
-        I.e. close all WebSockets when the class is no longer needed.
+        Close all WebSockets when the class is no longer needed.
 
         """
         self.websocket_delete_scene()
@@ -202,6 +209,16 @@ class _ScenePrototype:
             return self.list_datasets()
         except KeyError:
             raise ValueError('dataset_hash does not fit any dataset in scene')
+
+    def colorbar_settings(self, colorbar_information=None):
+        """
+        Store colorbar information for the scene.
+
+        """
+        if colorbar_information:
+            self._colorbar_settings = colorbar_information
+
+        return self._colorbar_settings
 
     def websocket_add(self, new_websocket):
         """

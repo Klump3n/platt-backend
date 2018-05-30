@@ -460,6 +460,22 @@ class SceneManager:
 
         return dataset_handle
 
+    def scene_colorbar_settings(self, scene_hash, colorbar_information=None):
+        """
+        GET or PATCH the colorbar settings for a scene.
+
+        """
+        # If the scene does not exist
+        if scene_hash not in self._scene_list:
+            return None
+
+        target_scene = self.scene(scene_hash)
+
+        new_colorbar_information = target_scene.colorbar_settings(
+            colorbar_information)
+
+        return new_colorbar_information
+
     def dataset_orientation(
             self, scene_hash, dataset_hash, set_orientation=None):
         """
@@ -594,13 +610,8 @@ class SceneManager:
 
         if set_timestep is not None:
             target_scene = self.scene(scene_hash)
-            target_scene.websocket_send(
-                {
-                    'datasetHash': dataset_hash,
-                    'update': 'mesh',
-                    'hashes': target_dataset.hashes()
-                }
-            )
+            websocket_payload = target_dataset.websocket_payload()
+            target_scene.websocket_send(websocket_payload)
 
         return return_dict
 
@@ -644,14 +655,10 @@ class SceneManager:
         }
 
         if set_field is not None:
+            # broadcast the changed field
             target_scene = self.scene(scene_hash)
-            target_scene.websocket_send(
-                {
-                    'datasetHash': dataset_hash,
-                    'update': 'mesh',
-                    'hashes': target_dataset.hashes()
-                }
-            )
+            websocket_payload = target_dataset.websocket_payload()
+            target_scene.websocket_send(websocket_payload)
 
         return return_dict
 
@@ -697,7 +704,11 @@ class SceneManager:
         surface_wireframe = surface_mesh['wireframe']
         surface_free_edges = surface_mesh['free_edges']
 
+        selected_field = target_dataset.field()
+
         surface_field = target_dataset.surface_field()
+
+        surface_field_min_max = target_dataset.surface_field_min_max()
 
         surface_field_hash = surface_field['field_hash']
         surface_field_values = surface_field['field']
@@ -711,7 +722,9 @@ class SceneManager:
             'datasetSurfaceWireframe': surface_wireframe,
             'datasetSurfaceFreeEdges': surface_free_edges,
             'datasetFieldHash': surface_field_hash,
-            'datasetSurfaceField': surface_field_values
+            'datasetFieldSelected': selected_field,
+            'datasetSurfaceField': surface_field_values,
+            'datasetSurfaceFieldExtrema': surface_field_min_max
         }
 
         return return_dict
@@ -829,15 +842,21 @@ class SceneManager:
 
         dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
 
+        selected_field = target_dataset.field()
+
         surface_field = target_dataset.surface_field()
 
         surface_field_hash = surface_field['field_hash']
         surface_field_values = surface_field['field']
 
+        surface_field_min_max = target_dataset.surface_field_min_max()
+
         return_dict = {
             'datasetMeta': dataset_meta,
             'datasetFieldHash': surface_field_hash,
-            'datasetSurfaceField': surface_field_values
+            'datasetFieldSelected': selected_field,
+            'datasetSurfaceField': surface_field_values,
+            'datasetSurfaceFieldExtrema': surface_field_min_max
         }
 
         return return_dict

@@ -46,6 +46,7 @@ var datasetPrototype = {
     // the hashes of the currently displayed geometry and field
     currentMeshHash: '',
     currentFieldHash: '',
+    currentFieldType: '',
 
     // whether or not we want to change the orientation of THIS dataset
     changeThisOrientation: false,
@@ -97,9 +98,6 @@ var datasetPrototype = {
     }
 };
 
-var fragmentShaderTMin = 0.0;
-var fragmentShaderTMax = 800.0;
-
 /**
  * Try to find a HTML5 canvas element. If found, try to assign it a WebGL2
  * context. If this fails throw an error, else return the context.
@@ -124,10 +122,10 @@ function grabCanvas(canvasElementName) {
         Error("No WebGL2");
     }
 
-    // Check if we have loaded the colorbar. If loaded, add one.
-    if (typeof addColorbar === "function") {
-        addColorbar(fragmentShaderTMin, fragmentShaderTMax);
-    }
+    // // Check if we have loaded the colorbar. If loaded, add one.
+    // if (typeof addColorbar === "function") {
+    //     addColorbar(fragmentShaderTMin, fragmentShaderTMax);
+    // }
 
     return gl;
 }
@@ -300,6 +298,40 @@ function updateMesh(dataset_hash, newFieldHash, newMeshHash) {
     }
 }
 
+// rescale the data for every dataset (we should check which one is already reset...)
+function updateFragmentShaderColorbar() {
+
+    for (var dataset_hash in meshData) {
+
+        var m = meshData[dataset_hash];
+
+        var expandedSurfaceField;
+        if ('elemental'.localeCompare(m.currentFieldType) == 0) {
+            // expand the data
+            expandedSurfaceField = m.surfaceData['field'];
+        } else {
+            expandedSurfaceField = expandDataWithIndices(
+                m.surfaceData['tets'], m.surfaceData['field'], chunksize=1);
+        }
+
+        var fragmentShaderTMin = colorbar.getCbarMin();
+        var fragmentShaderTMax = colorbar.getCbarMax();
+
+        // rescale the field values to a value between 0 and 1 (for the
+        // general purpose shader)
+        var rescaledField = rescaleFieldValues(
+            expandedSurfaceField,
+            fragmentShaderTMin,
+            fragmentShaderTMax
+        );
+
+        // update the data in the buffer
+        m.bufferDataArray['a_field']['data'] = new Float32Array(rescaledField);
+
+        m.fragmentDataHasChanged = true;
+    }
+}
+
 /**
  * Update the field data of the mesh.
  * @param {string} dataset_hash - Hash of the dataset.
@@ -322,11 +354,31 @@ function updateFragmentShaderDataPromise(dataset_hash) {
 
             var m = meshData[dataset_hash];
 
+            var fieldMin = value['datasetSurfaceFieldExtrema']['fieldMin'];
+            var fieldMax = value['datasetSurfaceFieldExtrema']['fieldMax'];
+            colorbar.setFieldValues(dataset_hash, fieldMin, fieldMax);
+
             m.surfaceData['field'] = value['datasetSurfaceField'];
 
-            // expand the data
-            var expandedSurfaceField = expandDataWithIndices(
-                m.surfaceData['tets'], m.surfaceData['field'], chunksize=1);
+            var datasetFieldSelected = value['datasetFieldSelected'];
+            m.currentFieldType = datasetFieldSelected['type'];
+
+            // interpret __no_type__ as nodal
+            if ('__no_type__'.localeCompare(m.currentFieldType) == 0) {
+                m.currentFieldType = 'nodal';
+            }
+
+            var expandedSurfaceField;
+            if ('elemental'.localeCompare(m.currentFieldType) == 0) {
+                // expand the data
+                expandedSurfaceField = m.surfaceData['field'];
+            } else {
+                expandedSurfaceField = expandDataWithIndices(
+                    m.surfaceData['tets'], m.surfaceData['field'], chunksize=1);
+            }
+
+            var fragmentShaderTMin = colorbar.getCbarMin();
+            var fragmentShaderTMax = colorbar.getCbarMax();
 
             // rescale the field values to a value between 0 and 1 (for the
             // general purpose shader)
@@ -532,9 +584,16 @@ function main() {
         active_scenes.then(function(scenes_value) {
             var datasets = scenes_value["loadedDatasets"];
 
+            // Check if we have loaded the colorbar. If loaded, add one.
+            if (typeof Colorbar === "function") {
+                // this is intended as a global function
+                colorbar = new Colorbar(scene_hash, datasets);
+            }
+
             var dataset_index;
 
             // array for all the promises waiting to be resolved
+            var mesh_hash_promise_array = [];
             var mesh_data_promise_array = [];
 
             // append a dataset to the meshes of the scene
@@ -545,33 +604,29 @@ function main() {
                 // deep-clone objects????
                 meshData[dataset_hash] = JSON.parse(JSON.stringify(datasetPrototype));
 
-                var mesh_data_promise = connectToAPIPromise(
+                var mesh_hash_promise = connectToAPIPromise(
                     basePath = basePath,
-                    APIEndpoint = "scenes/" + scene_hash + "/" + dataset_hash + "/mesh",
+                    APIEndpoint = "scenes/" + scene_hash + "/" + dataset_hash + "/mesh/hash",
                     HTTPMethod = "get",
                     payload = {}
                 );
-                mesh_data_promise_array.push(mesh_data_promise);
+                mesh_hash_promise_array.push(mesh_hash_promise);
             }
 
-            Promise.all(mesh_data_promise_array).then(function(mesh_data_values) {
-                for (dataset_index in mesh_data_values) {
+            Promise.all(mesh_hash_promise_array).then(function(mesh_hash_values) {
+                for (dataset_index in mesh_hash_values) {
 
-                    var d = mesh_data_values[dataset_index];
-                    var dataset_hash = mesh_data_values[dataset_index].datasetMeta.datasetHash;
-                    var m = meshData[dataset_hash];
+                    var dataset_hash = mesh_hash_values[dataset_index].datasetMeta.datasetHash;
 
-                    m.currentMeshHash = d['datasetMeshHash'];
-                    m.currentFieldHash = d['datasetFieldHash'];
-                    m.surfaceData['nodes'] = d['datasetSurfaceNodes'];
-                    m.surfaceData['nodesCenter'] = d['datasetSurfaceNodesCenter'];
-                    m.surfaceData['tets'] = d['datasetSurfaceTets'];
-                    m.surfaceData['wireframe'] = d['datasetSurfaceWireframe'];
-                    m.surfaceData['freeEdges'] = d['datasetSurfaceFreeEdges'];
-                    m.surfaceData['field'] = d['datasetSurfaceField'];
+                    var datasetFieldPromise = updateFragmentShaderDataPromise(dataset_hash);
+                    var datasetGeometryPromise = updateVertexShaderDataPromise(dataset_hash);
+                    mesh_data_promise_array.push(datasetFieldPromise);
+                    mesh_data_promise_array.push(datasetGeometryPromise);
+
                 }
-
-                beginRendering();
+                Promise.all(mesh_data_promise_array).then(function() {
+                    beginRendering();
+                });
             });
         });
     }
@@ -610,8 +665,17 @@ function main() {
             var expandedSurfaceTets = expandDataWithIndices(
                 m.surfaceData['tets'], m.surfaceData['nodes'], chunksize=3);
 
-            var expandedSurfaceField = expandDataWithIndices(
-                m.surfaceData['tets'], m.surfaceData['field'], chunksize=1);
+            var expandedSurfaceField;
+            if ('elemental'.localeCompare(m.currentFieldType) == 0) {
+                // expand the data
+                expandedSurfaceField = m.surfaceData['field'];
+            } else {
+                expandedSurfaceField = expandDataWithIndices(
+                    m.surfaceData['tets'], m.surfaceData['field'], chunksize=1);
+            }
+
+            var fragmentShaderTMin = colorbar.getCbarMin();
+            var fragmentShaderTMax = colorbar.getCbarMax();
 
             var rescaledField = rescaleFieldValues(
                 expandedSurfaceField,

@@ -182,7 +182,7 @@ def print_version():
 
 if __name__ == '__main__':
     """
-    This is called when (e.g. always) we start this file as a standalone
+    This is called when (i.e. always) we start this file as a standalone
     version.
 
     """

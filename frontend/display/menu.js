@@ -26,7 +26,7 @@ function main() {
 
         var amountDatasets = 0;
         var datasets = value["loadedDatasets"];
-        var hashes = '[ ';
+        // var hashes = '[ ';
 
         // for every dataset spawn a menu entry
         for (var dataset_index in datasets) {
@@ -37,12 +37,14 @@ function main() {
 
             amountDatasets = amountDatasets + 1;
             var new_dataset = datasets[dataset_index];
-            hashes = hashes.concat(new_dataset['datasetHash'].substr(0, 7));
+            // hashes = hashes.concat(new_dataset['datasetHash'].substr(0, 7));
             new DatasetMenu(basePath, scene_hash, new_dataset);
         }
 
-        hashes = hashes.concat(' ]');
+        // hashes = hashes.concat(' ]');
         document.title = '(' + amountDatasets + ') platt postprocessor';
+
+        // colorbarSettings(datasets);
     });
 }
 
@@ -392,7 +394,7 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
         var dataset_heading_hash = document.createElement('div');
         dataset_heading_hash.setAttribute('class', 'dataset_heading_hash');
         dataset_heading_hash.setAttribute('title', that.dataset_hash);
-        dataset_heading_hash.innerHTML = that.dataset_hash.substr(0, 7);
+        dataset_heading_hash.innerHTML = '(' + that.dataset_hash.substr(0, 7) + ')';
 
         var dataset_heading = document.createElement('summary');
         dataset_heading.innerHTML = that.dataset_name;

@@ -5,26 +5,36 @@ intended as a module for the dataset parser.
 
 """
 import numpy as np
+# import backend.binary_formats as binary_formats
 
 
 def model_surface(elements, nodes):
 
     # for every element get the faces and the edges of the element
-    bulk_faces_and_edges_dict = _dataset_sort_elements_by_faces(elements)
+    bulk_faces_and_edges = _dataset_sort_elements_by_faces(elements)
 
     # from the faces for every element find those faces that define the
     # boundary (surface) of the dataset
-    bulk_faces = bulk_faces_and_edges_dict['bulk_faces']
-    bulk_edges = bulk_faces_and_edges_dict['bulk_edges']
+    bulk_faces = bulk_faces_and_edges['faces']
+    bulk_elements_to_faces = bulk_faces_and_edges['elements_to_faces']
+    bulk_edges = bulk_faces_and_edges['edges']
 
     # from the bulk data get the faces on the surface and the unique set of
     # elements for those faces
-    surface_faces_dict = _dataset_surface_faces_and_elements(bulk_faces)
-    surface_faces = surface_faces_dict['surface_faces']
+    surface_faces_and_elements = _dataset_surface_faces_and_elements(
+        bulk_faces, bulk_elements_to_faces)
+
+    surface_faces = surface_faces_and_elements['surface_faces']
+    surface_face_types = surface_faces_and_elements['surface_face_types']
+    surface_face_element_idxs = surface_faces_and_elements['surface_face_element_idxs']
+    surface_elements = surface_faces_and_elements['surface_elements']
 
     # create tets (rather triangles) for the surface
-    surface_triangulation_dict = _dataset_triangulate_surface(surface_faces)
-    surface_triangulation = surface_triangulation_dict['surface_triangulation']
+    surface_triangulation_data = _dataset_triangulate_surface(surface_faces, surface_face_types, surface_face_element_idxs)
+
+    surface_triangulation = surface_triangulation_data['triangulation']
+    surface_triangulation_type = surface_triangulation_data['element_types']
+    surface_triangulation_idx = surface_triangulation_data['element_idxs']
 
     # From the edges of every element find the wireframe for the surface of the
     # dataset and the free edges of the dataset, that is edges that give a
@@ -37,105 +47,163 @@ def model_surface(elements, nodes):
     # "compress" the data. only keep the nodes from the surface and remove
     # redundant information. create a map for the field data so we can also
     # compress that
-    surface_nodes_and_map = _surface_nodes_and_map(nodes, surface_triangulation)
+    nodal_surface_nodes_and_map = _surface_nodes_and_map_nodal(
+        nodes, surface_triangulation)
 
-    surface_node_map = surface_nodes_and_map['surface_node_map']
-    surface_nodes = surface_nodes_and_map['surface_nodes']
-    nodal_field_map = surface_nodes_and_map['nodal_field_map']
+    nodal_surface_node_map = nodal_surface_nodes_and_map['surface_node_map']
+    nodal_remapped_nodes = nodal_surface_nodes_and_map['remapped_nodes']
+    nodal_field_map = nodal_surface_nodes_and_map['field_map']
 
-    # remap the triangulation dataset
-    remapped_surface_triangulation_dict = _remap_surface_triangulation(surface_node_map, surface_triangulation)
-    remapped_surface_triangulation = remapped_surface_triangulation_dict['remapped_surface_triangulation']
+    # "compress" the tetraeders on the surface
+    # does not have to be separated by type
+    nodal_remapped_tris_data = _remap_element_data(nodal_surface_node_map, surface_triangulation)
 
-    remapped_surface_triangles_data = _flatten_nested_lists(remapped_surface_triangulation['surface_triangles'])
-    remapped_free_edges_data = _remap_element_data(surface_node_map, surface_edge_lines)
-    remapped_wireframe_data = _remap_element_data(surface_node_map, surface_wireframe_lines)
+    nodal_remapped_tris = {
+        'type': 'tris',
+        'points_per_unit': 3,
+        'data': nodal_remapped_tris_data
+    }
+
+    # "compress" the free edges of the dataset
+    nodal_remapped_free_edges_data = _remap_element_data(
+        nodal_surface_node_map, surface_edge_lines)
+
+    nodal_remapped_free_edges = {
+        'type': 'free_edges',
+        'points_per_unit': 2,
+        'data': nodal_remapped_free_edges_data
+    }
+
+    # compress the wireframe of the dataset
+    nodal_remapped_wireframe_data = _remap_element_data(
+        nodal_surface_node_map, surface_wireframe_lines)
+
+    nodal_remapped_wireframe = {
+        'type': 'wireframe',
+        'points_per_unit': 2,
+        'data': nodal_remapped_wireframe_data
+    }
+
+    # elemental stuff
+    elemental_surface_nodes_and_map = _surface_nodes_and_map_elemental(
+        nodes, surface_triangulation, surface_triangulation_type, surface_triangulation_idx)
+
+    elemental_surface_node_map = elemental_surface_nodes_and_map['surface_node_map']
+    elemental_remapped_nodes = elemental_surface_nodes_and_map['remapped_nodes']
+    elemental_field_map = elemental_surface_nodes_and_map['field_map']
+    elemental_triangle_types = elemental_surface_nodes_and_map['triangle_types']
+    elemental_triangle_idxs = elemental_surface_nodes_and_map['triangle_idxs']
+    elemental_field_map_combined = elemental_surface_nodes_and_map['field_map_combined']
+
+    # "compress" the tetraeders on the surface
+    elemental_remapped_tris_data = _remap_element_data(elemental_surface_node_map, surface_triangulation)
+
+    elemental_remapped_tris = {
+        'type': 'tris',
+        'points_per_unit': 3,
+        'data': elemental_remapped_tris_data
+    }
+
+    # "compress" the free edges of the dataset
+    elemental_remapped_free_edges_data = _remap_element_data(
+        elemental_surface_node_map, surface_edge_lines)
+
+    elemental_remapped_free_edges = {
+        'type': 'free_edges',
+        'points_per_unit': 2,
+        'data': elemental_remapped_free_edges_data
+    }
+
+    # compress the wireframe of the dataset
+    elemental_remapped_wireframe_data = _remap_element_data(
+        elemental_surface_node_map, surface_wireframe_lines)
+
+    elemental_remapped_wireframe = {
+        'type': 'wireframe',
+        'points_per_unit': 2,
+        'data': elemental_remapped_wireframe_data
+    }
 
     # generic stuff
     #
     # calculate the center of the dataset
-    nodes_center = _nodes_center(surface_nodes)
+    nodes_center = _nodes_center(nodal_remapped_nodes)
 
-    remapped_surface_triangles = {
-        'type': 'tris',
-        'points_per_unit': 3,
-        'data': remapped_surface_triangles_data
+    print('nodal triangles {}'.format(len(nodal_remapped_tris['data'])))
+    print('elemental triangles {}'.format(len(elemental_remapped_tris['data'])))
+
+    print(len(nodal_remapped_nodes['data']), len(elemental_remapped_nodes['data']))
+
+    return {
+        'nodal': {
+            'nodes': nodal_remapped_nodes,              # the compressed nodes
+            'node_count': len(nodal_surface_node_map),  # how many nodes on the surface
+            'nodes_center': nodes_center,      # center of dataset
+
+            'tris': nodal_remapped_tris,   # the compressed surface tris
+
+            'free_edges': nodal_remapped_free_edges,  # compressed free edges
+            'wireframe': nodal_remapped_wireframe,     # compressed wireframe
+
+            'field_map': nodal_field_map  # the compression map for the fields
+        },
+        'elemental': {
+            'nodes': elemental_remapped_nodes,              # the compressed nodes
+            'node_count': len(elemental_surface_node_map),  # how many nodes on the surface
+            'nodes_center': nodes_center,      # center of dataset
+
+            'tris': elemental_remapped_tris,   # the compressed surface tris
+
+            'free_edges': elemental_remapped_free_edges,  # compressed free edges
+            'wireframe': elemental_remapped_wireframe,     # compressed wireframe
+
+            'surface_elements': surface_elements,  # the unique elements on the surface
+            'field_map': elemental_field_map,  # the compression map for the fields
+            'field_map_combined': elemental_field_map_combined,  # the compression map for the fields
+            'surface_triangle_element_types': elemental_triangle_types,
+            'surface_triangle_element_idxs': elemental_triangle_idxs
+        }
     }
 
-    remapped_wireframe = {
-        'type': 'wireframe',
-        'points_per_unit': 2,
-        'data': remapped_wireframe_data
-    }
-
-    remapped_free_edges = {
-        'type': 'free_edges',
-        'points_per_unit': 2,
-        'data': remapped_free_edges_data
-    }
-
-    return_dict = {
-        'nodes': surface_nodes,
-        'nodes_center': nodes_center,      # center of dataset
-        'old_max_node_index': len(surface_node_map),  # safe upper bound for creation of blank field elements
-
-        'triangles': remapped_surface_triangles,
-        'wireframe': remapped_wireframe,
-        'free_edges': remapped_free_edges,
-
-        # for the creation of the fiels
-        'nodal_field_map': nodal_field_map,
-        'surface_triangulation': remapped_surface_triangulation  # for getting the elemental fields
-    }
-
-    return return_dict
 
 
-def expand_elemental_fields(elemental_fields, elements, surface_triangulation):
+def expand_elemental_fields(elemental_fields, elements, surface_elements):
 
     if elemental_fields is None:
         return None
 
-    surface_triangles = surface_triangulation['surface_triangles']
-    surface_element_corners_for_triangle = surface_triangulation['surface_element_corners_for_triangle']
-    surface_element_types_for_triangle = surface_triangulation['surface_element_types_for_triangle']
-    surface_element_idxs_for_triangle = surface_triangulation['surface_element_idxs_for_triangle']
-
-    fmt_dict = {}
-    reshaped_field_data = {}
-    res = []
+    extrapolated_fields = {}
 
     for element in elements:
         fmt = elements[element]['fmt']
+        integration_points = fmt['integration_points']
+        node_count = fmt['points_per_unit']
 
-        fmt_dict[element] = {}
-
-        fmt_dict[element]['integration_points'] = fmt['integration_points']
-        fmt_dict[element]['node_count'] = fmt['points_per_unit']
-        fmt_dict[element]['extrapolation_matrix'] = np.asarray(fmt['int_to_node_matrix'])
+        extrapolation_matrix = np.asarray(fmt['int_to_node_matrix'])
 
         # reshape integration point field data
         field_data = elemental_fields[element]
         len_data_points = len(field_data)
-        element_count = int(len_data_points/fmt['integration_points'])
+        element_count = int(len_data_points/integration_points)
+        reshaped_field_data = field_data.reshape(
+            element_count, integration_points)
 
-        reshaped_field_data[element] = field_data.reshape(
-            element_count, fmt['integration_points'])
+        surface_element_indices = surface_elements[element]['element_idxs']
+        print(len(surface_element_indices), min(surface_element_indices), max(surface_element_indices))
 
-    for it, triangle in enumerate(surface_triangles):
-        elem_type = surface_element_types_for_triangle[it]
-        elem_id = surface_element_idxs_for_triangle[it]
-        elem_corners = surface_element_corners_for_triangle[it]
+        extrapolated_field = [None]*(element_count*node_count + 1)
+        for element_id in surface_element_indices:
 
-        extrapolation_matrix = fmt_dict[elem_type]['extrapolation_matrix']
+            integration_field = reshaped_field_data[element_id]
+            nodal_field = np.dot(extrapolation_matrix, integration_field)
 
-        integration_field_data = reshaped_field_data[elem_type][elem_id]
-        nodal_field = np.dot(extrapolation_matrix, integration_field_data)
+            array_indices = elements[element]['data'][element_id]
+            for it, index in enumerate(array_indices):
+                extrapolated_field[index] = nodal_field[it]
 
-        for jt, corner in enumerate(triangle):
-            res.append(nodal_field[elem_corners[jt]])
+        extrapolated_fields[element] = extrapolated_field
 
-    return res
+    return extrapolated_fields
 
 
 def model_surface_fields_nodal(field_map, field_values):
@@ -161,8 +229,7 @@ def model_surface_fields_nodal(field_map, field_values):
     return remapped_field
 
 
-# def model_surface_fields_elemental(field_map, field_values):
-def model_surface_fields_elemental(field_values):
+def model_surface_fields_elemental(field_map, field_values):
     """
     Extract the surface field values from the bulk.
 
@@ -174,10 +241,19 @@ def model_surface_fields_elemental(field_values):
      dict: The field values for the surface of the dataset.
 
     """
+    # for elem_type in field_values:
+    #     print('map {} {}'.format(elem_type, len(field_map[elem_type])))
+    #     print('values {} {}'.format(elem_type, len(field_values[elem_type])))
+    print('pre remap')
+    remapped_field_data = []
+    for elem_type in field_values:
+        remapped_field_data = remapped_field_data + _remap_index_data(field_map[elem_type], field_values[elem_type])
+    print('post remap')
+
     remapped_field = {
         'type': 'field',
         'points_per_unit': 1,
-        'data': field_values
+        'data': remapped_field_data
     }
 
     return remapped_field
@@ -202,7 +278,7 @@ def _dataset_sort_elements_by_faces(elements):
         # iteration over individual elements in the dataset
         for element_idx, element in enumerate(element_data):
 
-            # element_hash = hash(tuple(sorted(element)))
+            element_hash = hash(tuple(sorted(element)))
 
             # for each face in the element append a hash of the sorted
             # element and the element
@@ -215,8 +291,9 @@ def _dataset_sort_elements_by_faces(elements):
                     [
                         hash(tuple(sorted(element_face))),
                         element_face,
-                        face,
+                        element_hash,
                         element_type,
+                        element,
                         element_idx
                     ]
                 )
@@ -236,16 +313,18 @@ def _dataset_sort_elements_by_faces(elements):
 
     element_face_hashes = []
     element_faces = []
-    element_corners = []
+    element_hashes = []
     element_types = []
+    elements = []
     element_idxs = []
 
     for face in sorted_faces_array:
         element_face_hashes.append(face[0])
         element_faces.append(face[1])
-        element_corners.append(face[2])
+        element_hashes.append(face[2])
         element_types.append(face[3])
-        element_idxs.append(face[4])
+        elements.append(face[4])
+        element_idxs.append(face[5])
 
     element_edge_hashes = []
     element_edges = []
@@ -255,21 +334,24 @@ def _dataset_sort_elements_by_faces(elements):
         element_edges.append(edge[1])
 
     return {
-        'bulk_faces': {
+        'faces': {
             'element_face_hashes': element_face_hashes,
-            'element_faces': element_faces,
-            'element_corners_for_face': element_corners,
-            'element_types_for_face': element_types,
-            'element_idxs_for_face': element_idxs
+            'element_faces': element_faces
         },
-        'bulk_edges': {
+        'elements_to_faces': {  # this is intended as additional information for the faces
+            'element_hashes': element_hashes,
+            'element_types': element_types,
+            'elements': elements,
+            'element_idxs': element_idxs
+        },
+        'edges': {
             'element_edge_hashes': element_edge_hashes,
             'element_edges': element_edges
         }
     }
 
 
-def _dataset_surface_faces_and_elements(bulk_faces):
+def _dataset_surface_faces_and_elements(faces, elements_to_faces):
     """
     From all faces in the bulk select those who are on the surface.
 
@@ -283,11 +365,13 @@ def _dataset_surface_faces_and_elements(bulk_faces):
      dict: The free (surface) faces of the dataset.
 
     """
-    element_face_hashes = bulk_faces['element_face_hashes']
-    element_faces = bulk_faces['element_faces']
-    element_corners_for_face = bulk_faces['element_corners_for_face']
-    element_types_for_face = bulk_faces['element_types_for_face']
-    element_idxs_for_face = bulk_faces['element_idxs_for_face']
+    element_face_hashes = faces['element_face_hashes']
+    element_faces = faces['element_faces']
+
+    element_hashes = elements_to_faces['element_hashes']
+    element_types = elements_to_faces['element_types']
+    elements = elements_to_faces['elements']
+    element_idxs = elements_to_faces['element_idxs']
 
     # find out, which face occurs how often
     _, unique_face_indices, faces_hash_counts = np.unique(
@@ -299,28 +383,74 @@ def _dataset_surface_faces_and_elements(bulk_faces):
     # for the hashes that occur once we append the corresponding faces to
     # a list with all free faces. those faces are pointing outward
     surface_faces = [None]*len(surface_hash_indices)
-    surface_element_corners_for_face = [None]*len(surface_hash_indices)
-    surface_element_types_for_face = [None]*len(surface_hash_indices)
-    surface_element_idxs_for_face = [None]*len(surface_hash_indices)
+    surface_face_types = [None]*len(surface_hash_indices)
+    surface_face_element_idxs = [None]*len(surface_hash_indices)
 
+    surface_elements = []
+    surface_element_types = []
+    surface_element_hashes = []
+    surface_element_idxs = []
     for it, index in enumerate(surface_hash_indices):  # PARALLELIZE ME
-
         surface_faces[it] = element_faces[unique_face_indices[index]]
-        surface_element_corners_for_face[it] = element_corners_for_face[unique_face_indices[index]]
-        surface_element_types_for_face[it] = element_types_for_face[unique_face_indices[index]]
-        surface_element_idxs_for_face[it] = element_idxs_for_face[unique_face_indices[index]]
+        surface_face_types[it] = element_types[unique_face_indices[index]]
+        surface_face_element_idxs[it] = element_idxs[unique_face_indices[index]]
+
+        # for the faces that define the surface also save the corresponding
+        # elements and their hashes
+        surface_elements.append(
+            elements[unique_face_indices[index]])
+        surface_element_types.append(
+            element_types[unique_face_indices[index]])
+        surface_element_hashes.append(
+            element_hashes[unique_face_indices[index]])
+        surface_element_idxs.append(
+            element_idxs[unique_face_indices[index]])
+
+    # find out, which element occurs how often
+    _, unique_element_indices = np.unique(
+        surface_element_hashes, return_index=True)
+
+    # get the unique elements
+    free_elements_unique = []
+    free_element_types = []
+    free_element_idxs = []
+    for index in unique_element_indices:
+        free_elements_unique.append(surface_elements[index])
+        free_element_types.append(surface_element_types[index])
+        free_element_idxs.append(surface_element_idxs[index])
+
+        # sort by element types
+    element_types = np.unique(surface_element_types)
+
+    surface_elements = {}
+
+    # sort the elements by type
+    for element_type in element_types:
+
+        free_elem = []
+        free_idx = []
+
+        element_locations = np.where(
+            np.asarray(free_element_types) == element_type)[0]
+
+        for loc in element_locations:
+            free_elem.append(free_elements_unique[loc])
+            free_idx.append(free_element_idxs[loc])
+
+        surface_elements[element_type] = {
+            'elements': np.asarray(free_elem),
+            'element_idxs': np.asarray(free_idx),
+        }
 
     return {
-        'surface_faces': {
-            'surface_faces': surface_faces,
-            'element_corners_for_face': surface_element_corners_for_face,
-            'element_types_for_face': surface_element_types_for_face,
-            'element_idxs_for_face': surface_element_idxs_for_face
-        }
+        'surface_faces': surface_faces,  # array
+        'surface_face_types': surface_face_types,  # array
+        'surface_face_element_idxs': surface_face_element_idxs,  # array
+        'surface_elements': surface_elements  # dict with arrays, sorted by type
     }
 
 
-def _dataset_triangulate_surface(surface_faces):
+def _dataset_triangulate_surface(surface_faces, element_types, element_idxs):
     """
     Generate tetraeders for the free faces.
 
@@ -332,56 +462,32 @@ def _dataset_triangulate_surface(surface_faces):
      tets (array): The outward facing tetraeders.
 
     """
-    surface_faces_array = surface_faces['surface_faces']
-    surface_element_corners_for_face = surface_faces['element_corners_for_face']
-    surface_element_types_for_face = surface_faces['element_types_for_face']
-    surface_element_idxs_for_face = surface_faces['element_idxs_for_face']
+    triangles = []
+    types = []
+    idxs = []
 
-    surface_triangles = []
-    surface_element_corners_for_triangle = []
-    surface_element_types_for_triangle = []
-    surface_element_idxs_for_triangle = []
-
-    for it, face in enumerate(surface_faces_array):
-        # just append the face (which is already a triangle)
+    for it, face in enumerate(surface_faces):
+        # just append a triangle
         if len(face) == 3:
-            surface_triangles.append(face)
-            surface_element_corners_for_triangle.append(
-                surface_element_corners_for_face[it])
-            surface_element_types_for_triangle.append(
-                surface_element_types_for_face[it])
-            surface_element_idxs_for_triangle.append(
-                surface_element_idxs_for_face[it])
+            triangles.append(face)
+            types.append(element_types[it])
+            idxs.append(element_idxs[it])
 
         # a quad has to be split up into two triangles
         if len(face) == 4:
-            # triangle one (0, 1, 2)
-            surface_triangles.append([face[0], face[1], face[2]])
-            corner = surface_element_corners_for_face[it]
-            surface_element_corners_for_triangle.append(
-                [corner[0], corner[1], corner[2]])
-            surface_element_types_for_triangle.append(
-                surface_element_types_for_face[it])
-            surface_element_idxs_for_triangle.append(
-                surface_element_idxs_for_face[it])
 
-            # triangle two (0, 2, 3)
-            surface_triangles.append([face[0], face[2], face[3]])
-            corner = surface_element_corners_for_face[it]
-            surface_element_corners_for_triangle.append(
-                [corner[0], corner[2], corner[3]])
-            surface_element_types_for_triangle.append(
-                surface_element_types_for_face[it])
-            surface_element_idxs_for_triangle.append(
-                surface_element_idxs_for_face[it])
+            # add two triangles and two ids and types
+            triangles.append([face[0], face[1], face[2]])
+            types.append(element_types[it])
+            idxs.append(element_idxs[it])
+            triangles.append([face[0], face[2], face[3]])
+            types.append(element_types[it])
+            idxs.append(element_idxs[it])
 
     return {
-        'surface_triangulation': {
-            'surface_triangles': surface_triangles,
-            'surface_element_corners_for_triangle': surface_element_corners_for_triangle,
-            'surface_element_types_for_triangle': surface_element_types_for_triangle,
-            'surface_element_idxs_for_triangle': surface_element_idxs_for_triangle
-        }
+        'triangulation': triangles,
+        'element_types': types,
+        'element_idxs': idxs
     }
 
 
@@ -427,83 +533,6 @@ def _dataset_edges(bulk_edges):
     return {
         'edge_lines': free_edges_lines,
         'wireframe_lines': wireframe_edges
-    }
-
-
-def _surface_nodes_and_map(nodes, surface_triangulation):
-    """
-    Return a map that points from the indices for the surface to new
-    consecutive indices.
-
-    Args:
-     nodes (dict): The nodes of the bulk of the dataset.
-     free_faces (dict): The surface faces of the dataset.
-
-    Returns:
-     dict: The compressed nodes on the surface, a map to construct the surface
-      from the bulk and a map to construct a compressed surface field.
-
-    """
-    surface_triangles = surface_triangulation['surface_triangles']
-
-    # find a unique set of indices
-    flat_surface_triangles = _flatten_nested_lists(surface_triangles)
-
-    max_element_num = max(flat_surface_triangles)
-
-    unique_surface_nodes = np.unique(flat_surface_triangles)
-
-    nodes_data = nodes['data']
-
-    # create a map between the old indices and the new indices
-    surface_nodes = []
-    surface_node_map = [None]*(max_element_num + 1)
-
-    # a index map for the field values
-    nodal_field_map = []
-
-    for index, value in enumerate(unique_surface_nodes):
-        surface_node_map[value] = index
-
-        # also create a list with only the nodes we need for the surface
-        surface_nodes.append(nodes_data[value])
-        nodal_field_map.append(value)
-
-    flat_remapped_nodes = _flatten_nested_lists(surface_nodes)
-
-    remapped_nodes = {
-        'type': 'surface_nodes',
-        'points_per_unit': 3,
-        'data': flat_remapped_nodes
-    }
-
-    return {
-        'surface_node_map': surface_node_map,
-        'surface_nodes': remapped_nodes,
-        'nodal_field_map': nodal_field_map
-    }
-
-
-def _remap_surface_triangulation(surface_node_map, surface_triangulation):
-    """
-    Remap the surface triangles.
-
-    """
-    surface_triangles = surface_triangulation['surface_triangles']
-
-    remapped_surface_triangles = []
-
-    for triangle in surface_triangles:
-        new_triangle = []
-        for corner_idx in triangle:
-            new_triangle.append(surface_node_map[corner_idx])
-        remapped_surface_triangles.append(new_triangle)
-
-    surface_triangulation['surface_triangles'] = remapped_surface_triangles
-    remapped_surface_triangulation = surface_triangulation
-
-    return {
-        'remapped_surface_triangulation': remapped_surface_triangulation
     }
 
 
@@ -727,3 +756,11 @@ def _nodes_center(nodes_dict):
     z = nodes[2::3]
 
     return [np.mean(x), np.mean(y), np.mean(z)]
+
+
+def expand_integration_points_to_nodes(elemental_data, mesh_data):
+    """
+    Expand the data for the integration points to the nodes of an element.
+
+    """
+    pass

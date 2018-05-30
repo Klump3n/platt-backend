@@ -7,6 +7,7 @@ all the data points, its orientation in R3 and so on.
 
 """
 import os
+import numpy as np
 
 from backend.util.timestamp_to_sha1 import timestamp_to_sha1
 import backend.dataset_parser as dp
@@ -119,6 +120,19 @@ class _DatasetPrototype:
 
         """
         return self._hash_dict
+
+    def websocket_payload(self):
+        """
+        Return a dictionary with relevant data about the new state of the
+        dataset.
+
+        """
+        return {
+            'datasetHash': self.dataset_sha1,
+            'update': 'mesh',
+            'hashes': self.hashes(),
+            'field_type': self._selected_field['type']
+        }
 
     def orientation(self, set_orientation=None):
         """
@@ -263,13 +277,24 @@ class _DatasetPrototype:
         elemental_field_dir = timestep_dir / 'eo'
         elemental_field_paths = sorted(elemental_field_dir.glob('*.bin'))
         for field in elemental_field_paths:
-            elemental_fields.append(field.stem)
+            elemental_fields.append(field.stem)  # just append the file name
+
+        # cut the element type from the field name
+        try:
+            elemental_fields = [
+                field.rsplit('.', 1) for field in elemental_fields
+            ]
+            elemental_fields = sorted(
+                np.unique(np.asarray(elemental_fields)[:, 0])
+            )
+        except IndexError:
+            pass
 
         nodal_fields = []
         nodal_field_dir = timestep_dir / 'no'
         nodal_field_paths = sorted(nodal_field_dir.glob('*.bin'))
         for field in nodal_field_paths:
-            nodal_fields.append(field.stem)
+            nodal_fields.append(field.stem)  # just append the file name
 
         return_dict = {
             'elemental': elemental_fields,
@@ -404,3 +429,20 @@ class _DatasetPrototype:
                 'field_hash': None,
                 'field': []
             }
+
+    def surface_field_min_max(self):
+        """
+        Returns the min and max values of the currently set field.
+
+        """
+        current_field = self._fields['current']['field']
+        current_min = np.floor(np.min(current_field)) - 1
+        current_max = np.ceil(np.max(current_field)) + 1
+        # if current_max == current_min:
+        #     current_min = current_min - 1
+        #     current_max = current_max + 1
+
+        return {
+            'fieldMin': current_min,
+            'fieldMax': current_max
+        }

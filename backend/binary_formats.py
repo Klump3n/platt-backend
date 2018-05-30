@@ -40,12 +40,34 @@ def nodal_fields():
     data_point_type = 'd'     # ... doubles
     points_per_unit = 1  # 1 data point per unit.
 
-    nodal_field_dict['nodal_dir'] = nodal_dir
+    nodal_field_dict['data_dir'] = nodal_dir
     nodal_field_dict['data_point_size'] = data_point_size
     nodal_field_dict['data_point_type'] = data_point_type
     nodal_field_dict['points_per_unit'] = points_per_unit
 
     return nodal_field_dict
+
+
+def elemental_fields():
+    """
+    The binary format for elemental fields.
+
+    """
+
+    elemental_field_dict = {}
+
+    elemental_dir = 'eo'
+
+    data_point_size = 8    # 8 bytes of ...
+    data_point_type = 'd'     # ... doubles
+    points_per_unit = 1  # 1 data point per unit.
+
+    elemental_field_dict['data_dir'] = elemental_dir
+    elemental_field_dict['data_point_size'] = data_point_size
+    elemental_field_dict['data_point_type'] = data_point_type
+    elemental_field_dict['points_per_unit'] = points_per_unit
+
+    return elemental_field_dict
 
 
 def c3d8():
@@ -63,6 +85,20 @@ def c3d8():
     data_point_size = 4    # 4 bytes of ...
     data_point_type = 'i'     # ... integers
     points_per_unit = 8  # 8 points per element
+
+    # for extrapolation of fields from integration points to nodes
+    integration_points = 8
+
+    extrapolation_matrix = [
+        [ 2.54903811, -0.6830127 ,  0.1830127 , -0.6830127 , -0.6830127 ,  0.1830127 , -0.04903811,  0.1830127 ],
+        [-0.6830127 ,  2.54903811, -0.6830127 ,  0.1830127 ,  0.1830127 , -0.6830127 ,  0.1830127 , -0.04903811],
+        [ 0.1830127 , -0.6830127 ,  2.54903811, -0.6830127 , -0.04903811,  0.1830127 , -0.6830127 ,  0.1830127 ],
+        [-0.6830127 ,  0.1830127 , -0.6830127 ,  2.54903811,  0.1830127 , -0.04903811,  0.1830127 , -0.6830127 ],
+        [-0.6830127 ,  0.1830127 , -0.04903811,  0.1830127 ,  2.54903811, -0.6830127 ,  0.1830127 , -0.6830127 ],
+        [ 0.1830127 , -0.6830127 ,  0.1830127 , -0.04903811, -0.6830127 ,  2.54903811, -0.6830127 ,  0.1830127 ],
+        [-0.04903811,  0.1830127 , -0.6830127 ,  0.1830127 ,  0.1830127 , -0.6830127 ,  2.54903811, -0.6830127 ],
+        [ 0.1830127 , -0.04903811,  0.1830127 , -0.6830127 , -0.6830127 ,  0.1830127 , -0.6830127 ,  2.54903811]
+    ]
 
     # For each element these are the indices in a pack of 8 nodes, that make
     # up the faces.
@@ -114,6 +150,9 @@ def c3d8():
     c3d8_dict['data_point_type'] = data_point_type
     c3d8_dict['points_per_unit'] = points_per_unit
 
+    c3d8_dict['integration_points'] = integration_points
+    c3d8_dict['int_to_node_matrix'] = extrapolation_matrix
+
     c3d8_dict['faces'] = faces
     c3d8_dict['face_triangles'] = face_triangles
     c3d8_dict['edges'] = edges
@@ -136,6 +175,18 @@ def c3d6():
     data_point_size = 4    # 4 bytes of ...
     data_point_type = 'i'     # ... integers
     points_per_unit = 6  # 8 points per element
+
+    # for extrapolation of fields from integration points to nodes
+    integration_points = 9
+
+    extrapolation_matrix = [
+        [ 1.63138426, -0.32627685, -0.32627685,  0.55555556, -0.11111111, -0.11111111, -0.52027315,  0.10405463,  0.10405463],
+        [-0.32627685,  1.63138426, -0.32627685, -0.11111111,  0.55555556, -0.11111111,  0.10405463, -0.52027315,  0.10405463],
+        [-0.32627685, -0.32627685,  1.63138426, -0.11111111, -0.11111111,  0.55555556,  0.10405463,  0.10405463, -0.52027315],
+        [-0.52027315,  0.10405463,  0.10405463,  0.55555556, -0.11111111, -0.11111111,  1.63138426, -0.32627685, -0.32627685],
+        [ 0.10405463, -0.52027315,  0.10405463, -0.11111111,  0.55555556, -0.11111111, -0.32627685,  1.63138426, -0.32627685],
+        [ 0.10405463,  0.10405463, -0.52027315, -0.11111111, -0.11111111,  0.55555556, -0.32627685, -0.32627685,  1.63138426]
+    ]
 
     # For each element these are the indices in a pack of 6 nodes, that make
     # up the faces.
@@ -189,6 +240,9 @@ def c3d6():
     c3d6_dict['data_point_size'] = data_point_size
     c3d6_dict['data_point_type'] = data_point_type
     c3d6_dict['points_per_unit'] = points_per_unit
+
+    c3d6_dict['integration_points'] = integration_points
+    c3d6_dict['int_to_node_matrix'] = extrapolation_matrix
 
     c3d6_dict['faces'] = faces
     c3d6_dict['face_triangles'] = face_triangles

@@ -14,7 +14,7 @@
     display: table-column;
     position: absolute;
     height: auto;
-    color: #d3d3d3;
+    color: #eeeeee;
 }
 
 .dataset
@@ -36,7 +36,7 @@
 {
     font-size: small;
     width: 100%;
-    padding-left: 5px;
+    padding-left: 3px;
     text-align: left;
     color: #a9a9a9;
     cursor: pointer;
@@ -237,3 +237,170 @@
     margin-right: 2px;
     padding: 2px;
 }
+
+.colorbar_padding
+{
+    padding-top: 5px;
+}
+
+.colorbar_heading
+{
+    cursor: pointer;
+    white-space: nowrap;
+    margin: 2px;
+}
+
+.colorbar_sub_heading
+{
+    font-size: small;
+    width: 100%;
+    padding-left: 5px;
+    text-align: left;
+    color: #a9a9a9;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.colorbar_container {
+    position: relative;
+    /* background-color: #001e32; */
+    /* padding: 2px; */
+    margin-bottom: 2px;
+    left: 10px;
+    width: auto;
+    max-width: 150px;
+    height: auto;
+}
+
+.colorbar_selection_form
+{
+    position: relative;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    height: auto;
+    min-width: 80px;
+    width: 100%;
+    background-color: #001e32;
+}
+
+.colorbar_form_container
+{
+    cursor: auto;
+    position: relative;
+    width: calc(100% - 8px);
+    padding: 2px;
+    margin-left: 2px;
+    margin-right: 2px;
+    background-color: #009fe1;
+}
+
+.colorbar_form_main_entry
+{
+    display: flex;
+    white-space: nowrap;
+}
+
+.colorbar_form_sub_entry_form
+{
+    display: flex;
+    padding-top: 2px;
+    align-content: center;
+}
+
+.colorbar_form_sub_entry_track
+{
+    padding: 2px;
+    align-content: center;
+    background: #00556e;
+}
+
+.colorbar_form_sub_entry_track_name
+{
+    padding-left: 2px;
+    align-content: center;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.colorbar_form_sub_entry_track_hash
+{
+    /* padding-top: 2px; */
+    align-content: center;
+    font-size: small;
+    width: 100%;
+    padding-left: 4px;
+    text-align: left;
+    color: #a9a9a9;
+}
+
+.colorbar_form_sub_start
+{
+    width: calc(50% - 12px);
+    border: 0;
+    height: 15px;
+    background: #00556e;
+}
+
+.colorbar_form_sub_separator
+{
+    margin-left: 3px;
+    margin-right: 3px;
+    text-align: center;
+}
+
+.colorbar_form_sub_end
+{
+    width: calc(50% - 12px);
+    border: 0;
+    height: 15px;
+    background: #00556e;
+}
+
+.colorbar_form_container_separator
+{
+    margin-bottom: 2px;
+    background: #001e32;
+}
+
+.colorbar_input_bullet_container
+{
+    width: 15px;
+    height: 15px;
+    padding: 0;
+    margin: 0;
+    vertical-align: bottom;
+    position: relative;
+}
+
+.colorbar_input_bullet
+{
+    width: 15px;
+    height: 15px;
+    padding: 0;
+    margin: 0;
+    vertical-align: bottom;
+    position: relative;
+}
+
+.colorbar_input_name
+{
+    width: calc(100% - 16px);
+    height: 15px;
+    padding-left: 2px;
+    padding-right: 2px;
+    margin: 0;
+    vertical-align: bottom;
+    position: relative;
+}
+
+.colorbar_input_between_container
+{
+    width: 100%;
+    height: 15px;
+    padding-left: 2px;
+    padding-right: 2px;
+    margin: 0;
+    vertical-align: bottom;
+    position: relative;
+}
+

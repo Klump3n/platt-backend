@@ -7,6 +7,7 @@ import json
 
 # conda install cherrypy
 import cherrypy
+import re
 
 import util.version
 
@@ -193,15 +194,34 @@ class ServerAPI:
                 dataset_operation is None and
                 mesh_operation is None
         ):
-            # GET
-            if http_method == 'GET':
-                output = self.get_dataset_scenes_scenehash_datasethash(
-                    scene_hash, dataset_hash)
 
-            # DELETE
-            if http_method == 'DELETE':
-                output = self.delete_dataset_scenes_scenehash_datasethash(
-                    scene_hash, dataset_hash)
+            if dataset_hash == 'colorbar':
+                # GET
+                if http_method == 'GET':
+                    output = self.get_dataset_scenes_scenehash_colorbar(
+                        scene_hash)
+
+                # PATCH
+                if http_method == 'PATCH':
+                    try:
+                        colorbar_information = cherrypy.request.json
+                        output = self.patch_dataset_scenes_scenehash_colorbar(
+                            scene_hash, colorbar_information)
+
+                    except (KeyError, TypeError) as e:
+                        print('{}'.format(e))
+                        output = None
+
+            else:
+                # GET
+                if http_method == 'GET':
+                    output = self.get_dataset_scenes_scenehash_datasethash(
+                        scene_hash, dataset_hash)
+
+                # DELETE
+                if http_method == 'DELETE':
+                    output = self.delete_dataset_scenes_scenehash_datasethash(
+                        scene_hash, dataset_hash)
 
         ##################################################
 
@@ -413,6 +433,25 @@ class ServerAPI:
         deleted_dataset = gloset.scene_manager.delete_loaded_dataset(
             scene_hash, dataset_hash)
         return deleted_dataset
+
+    def get_dataset_scenes_scenehash_colorbar(self, scene_hash):
+        """
+        Get the colorbar information for a scene.
+
+        """
+        colorbar_information = gloset.scene_manager.scene_colorbar_settings(
+            scene_hash)
+        return colorbar_information
+
+    def patch_dataset_scenes_scenehash_colorbar(
+            self, scene_hash, colorbar_information):
+        """
+        Get the colorbar information for a scene.
+
+        """
+        colorbar_information = gloset.scene_manager.scene_colorbar_settings(
+            scene_hash, colorbar_information=colorbar_information)
+        return colorbar_information
 
     def get_scenes_scenehash_datasethash_orientation(
             self, scene_hash, dataset_hash):

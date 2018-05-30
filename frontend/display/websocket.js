@@ -4,7 +4,7 @@
 function connectToWebSocket() {
 
     // if scene_hash == 'None' -> results in 0
-    if ((scene_hash.localeCompare('None')) != 0){
+    if (('None'.localeCompare(scene_hash)) != 0){
 
         var wsProtocol = (protocol == 'http:') ? 'ws:' : 'wss:';
         var wsPath = wsProtocol + '//' + host + '/websocket/';

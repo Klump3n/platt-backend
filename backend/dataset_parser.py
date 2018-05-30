@@ -12,7 +12,6 @@ import numpy as np
 import backend.binary_formats as binary_formats
 import backend.dataset_mangler as dm
 
-
 class ParseDataset:
     """
     Unpack and store data for a dataset.
@@ -37,15 +36,29 @@ class ParseDataset:
         self.dataset_dir = dataset_dir
         self.fo_dir = self.dataset_dir / 'fo'
 
-        self.field_map = None
-        self._surface_node_count = None
+        self._nodal_field_map = None
+        self._blank_field_node_count = None
+        self._elemental_field_map = None
+        self._elemental_field_map_combined = None
+        self._elemental_surface_node_count = None
 
-    def _file_hash(self, file_path):
+        self._field_dict = None
+
+        self._mesh_elements = None
+
+        # elemental or nodal
+        self._set_field_type = None
+
+        # store the surface mesh for both elemental and nodal
+        self._compressed_model_surface = None
+
+    def _file_hash(self, file_path, update=None):
         """
         Return a SHA1 hash for a file.
 
         Args:
          file_path (os.PathLike): Path to file we want to have a hash for.
+         update (str): An existing hash we want to update.
 
         Returns:
          str: The hash of the file.
@@ -62,6 +75,32 @@ class ParseDataset:
             while file_contents:
                 checksum.update(file_contents)
                 file_contents = open_file.read(65536)  # read 64kB
+
+        if update is not None:
+            add_to_checksum = str.encode(update)  # convert to bytes
+            checksum.update(add_to_checksum)
+
+        return checksum.hexdigest()
+
+    def _string_hash(self, string, update=None):
+        """
+        Return a SHA1 hash for a string.
+
+        Args:
+         string (str): String we want to have a hash for.
+         update (str): An existing hash we want to update.
+
+        Returns:
+         str: The hash of the inputs.
+
+        """
+        string_in_bytes = string.encode()
+
+        checksum = hashlib.sha1(string_in_bytes)
+
+        if update is not None:
+            add_to_checksum = str.encode(update)  # convert to bytes
+            checksum.update(add_to_checksum)
 
         return checksum.hexdigest()
 
@@ -142,7 +181,7 @@ class ParseDataset:
         # parse elements
         elements = {}
         elements_paths = sorted(directory.glob('elements.*.bin'))
-        for elements_path in elements_paths:
+        for elements_path in elements_paths:  # PARALLELIZE ME
             elements_type = re.search(
                 r'elements\.(.*)\.bin', str(elements_path)).groups(0)[0]
             elements_hash = self._file_hash(elements_path)
@@ -153,13 +192,13 @@ class ParseDataset:
             elements[elements_type]['hash'] = elements_hash
             elements[elements_type]['fmt'] = elements_format
 
-        # generate hash for all mesh files
-        mesh_checksum = hashlib.sha1()
-        mesh_checksum.update(nodes_hash.encode())
+        mesh_checksum = nodes_hash
         for element in elements:
-            mesh_checksum.update(elements[element]['hash'].encode())
+            mesh_checksum = self._string_hash(
+                elements[element]['hash'],
+                update=mesh_checksum
+            )
 
-        mesh_checksum = mesh_checksum.hexdigest()
         return_dict = {'hash': mesh_checksum}
 
         if current_hash is None or mesh_checksum not in current_hash:
@@ -168,7 +207,7 @@ class ParseDataset:
                 nodes_path, nodes_format)
             return_dict['nodes']['fmt'] = nodes_format
             return_dict['elements'] = {}
-            for element in elements:
+            for element in elements:  # PARALLELIZE ME
                 element_path = elements[element]['path']
                 element_format = elements[element]['fmt']
                 return_dict['elements'][element] = {}
@@ -206,45 +245,65 @@ class ParseDataset:
         req_field_name = field['name']
 
         if req_field_type == 'nodal':
-            sub_dir = 'no'
             field_format = binary_formats.nodal_fields()
         elif req_field_type == 'elemental':
-            sub_dir = 'eo'
             field_format = binary_formats.elemental_fields()
         else:
             return None
 
         # get every binary path in the subfolders of directory
-        field_paths = sorted(directory.glob('{}/*.bin'.format(sub_dir)))
+        sub_dir = field_format['data_dir']
 
-        # just go through every bin in the dir until we find the right one
-        for index, field_path in enumerate(field_paths):
+        if req_field_type == 'nodal':
 
-            field_name = re.search(
-                r'(.*)\.bin', str(field_path.name)).groups(0)[0]
+            bin_paths = sorted(directory.glob('{}/{}*.bin'.format(sub_dir, req_field_name)))
 
-            # found the right bin
-            if field_name == req_field_name:
-                bin_path = field_path
-
+            if bin_paths != []:
+                bin_path = bin_paths[0]
                 field_hash = self._file_hash(bin_path)
+            else:
+                return None
 
-                break
+            if current_hash is None or field_hash not in current_hash:
+                data = {
+                    'nodal': self._read_binary_data(bin_path, field_format)
+                }
+            else:
+                data = {'nodal': None}
 
-        # this gets called if no break occured
-        else:
-            # field was not found
-            return None
+        if req_field_type == 'elemental':
 
-        if current_hash is None or field_hash not in current_hash:# (current_hash == field_hash):
-            data = self._read_binary_data(bin_path, field_format)
-        else:
-            data = None
+            bin_paths = sorted(directory.glob('{}/{}.*.bin'.format(sub_dir, req_field_name)))
+
+            elements_to_load = {}
+
+            if bin_paths != []:
+
+                field_hash = ''  # init
+
+                for path in bin_paths:
+                    element_type = re.search(r'{}\.(.*)\.bin'.format(req_field_name), str(path)).groups(0)[0]
+                    elements_to_load[element_type] = path
+                    field_hash = self._file_hash(path, update=field_hash)
+
+            else:
+                return None
+
+            if current_hash is None or field_hash not in current_hash:
+                data = {
+                    'elemental': {}
+                }
+                for element_key in elements_to_load:
+                    element_path = elements_to_load[element_key]
+                    data['elemental'][element_key] = self._read_binary_data(element_path, field_format)
+            else:
+                data = {'elemental': None}
 
         return {
             'hash': field_hash,
             'fmt': field_format,
-            'field': data
+            'type': req_field_type,
+            'data': data
         }
 
     def _blank_field(self):
@@ -258,7 +317,7 @@ class ParseDataset:
         ret_dict = {
             'hash': None,
             'fmt': binary_formats.nodal_fields(),
-            'field': [0.0]*self._surface_node_count
+            'data': {'nodal': [0.0]*self._blank_field_node_count}
         }
         return ret_dict
 
@@ -277,11 +336,6 @@ class ParseDataset:
         Returns:
          dict or None: The data for the timestep or None, if the field could
          not be found.
-
-        Raises:
-         TypeError: If ``type(timestep)`` is not `str`.
-         TypeError: If ``type(field)`` is not `dict`.
-         TypeError: If ``type(hash_dict)`` is not `bool`.
 
         """
         return_dict = {
@@ -318,35 +372,58 @@ class ParseDataset:
             # Corner case for unsetting the fields once they were set
             field_dict = None
 
+        # no field_dict means we are showing a blank field
+        if field_dict is None:
+            field_type = 'nodal'
+        else:
+            field_type = field_dict['type']
+
+        # modify the mesh hash based on nodal or elemental fields
         return_dict['hash_dict']['mesh'] = mesh_dict['hash']
 
         mesh_nodes = mesh_dict['nodes']
         mesh_elements = mesh_dict['elements']
 
-        # if we actually have to extract the surface again
+        if mesh_elements is not None:
+            self._mesh_elements = mesh_elements
+
         if mesh_nodes is not None:
-            surface = dm.model_surface(mesh_nodes, mesh_elements)
 
-            self.field_map = surface['field_map']
+            self._compressed_model_surface = dm.model_surface(mesh_elements, mesh_nodes)
 
-            return_dict['nodes'] = surface['nodes']
-            self._surface_node_count = surface['node_count']
-            return_dict['tets'] = surface['tets']
-            return_dict['nodes_center'] = surface['nodes_center']
-            return_dict['free_edges'] = surface['free_edges']
-            return_dict['wireframe'] = surface['wireframe']
+            self._nodal_field_map = self._compressed_model_surface['nodal_field_map']
+            self._blank_field_node_count = self._compressed_model_surface['old_max_node_index']
+            self._surface_triangulation = self._compressed_model_surface['surface_triangulation']
+
+            # store the field type we are using
+            self._set_field_type = field_type
+            return_dict['nodes'] = self._compressed_model_surface['nodes']
+            return_dict['nodes_center'] = self._compressed_model_surface['nodes_center']
+            return_dict['tets'] = self._compressed_model_surface['triangles']
+            return_dict['wireframe'] = self._compressed_model_surface['wireframe']
+            return_dict['free_edges'] = self._compressed_model_surface['free_edges']
 
         # field does not exist
         if field_dict is None:
-            field_values = self._blank_field()['field']
+            field_values = self._blank_field()['data']['nodal']
 
         else:
-            field_values = field_dict['field']
+
+            if field_type == 'nodal':
+                field_values = field_dict['data']['nodal']
+
+            if field_type == 'elemental':
+                elemental_field_dict = field_dict['data']['elemental']
+                field_values = dm.expand_elemental_fields(elemental_field_dict, self._mesh_elements, self._surface_triangulation)
+
             return_dict['hash_dict']['field'] = field_dict['hash']
 
         if field_values is not None:
-            # Expand field
-            return_dict['field'] = dm.model_surface_fields(
-                self.field_map, field_values)
+            if field_type == 'nodal':
+                return_dict['field'] = dm.model_surface_fields_nodal(
+                    self._nodal_field_map, field_values)
+
+            if field_type == 'elemental':
+                return_dict['field'] = dm.model_surface_fields_elemental(field_values)
 
         return return_dict
