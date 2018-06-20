@@ -289,11 +289,17 @@ function updateMesh(dataset_hash, newFieldHash, newMeshHash) {
     }
 
     if ((newFieldHash != m.currentFieldHash) && (newMeshHash != m.currentMeshHash)) {
-        fragPromise = updateFragmentShaderDataPromise(dataset_hash);
         vertPromise = updateVertexShaderDataPromise(dataset_hash);
-        Promise.all([fragPromise, vertPromise]).then(function(frag_vert_value){
-            m.fragmentDataHasChanged = true;
-            m.vertexDataHasChanged = true;
+        vertPromise.then(function(vert_value) {
+            // order must be maintained
+            // else we have a race condition. for field expansion we need the
+            // tets. if there are many this is a problem.
+            fragPromise = updateFragmentShaderDataPromise(dataset_hash);
+            fragPromise.then(function(frag_value) {
+                m.vertexDataHasChanged = true;
+                m.fragmentDataHasChanged = true;
+            });
+
         });
     }
 }
@@ -354,6 +360,8 @@ function updateFragmentShaderDataPromise(dataset_hash) {
 
             var m = meshData[dataset_hash];
 
+            // update the colorbar, this will also patch the new values to the
+            // server
             var fieldMin = value['datasetSurfaceFieldExtrema']['fieldMin'];
             var fieldMax = value['datasetSurfaceFieldExtrema']['fieldMax'];
             colorbar.setFieldValues(dataset_hash, fieldMin, fieldMax);
@@ -594,7 +602,9 @@ function main() {
 
             // array for all the promises waiting to be resolved
             var mesh_hash_promise_array = [];
-            var mesh_data_promise_array = [];
+            var mesh_hash_values_array = [];
+            var mesh_geometry_promise_array = [];
+            var mesh_field_promise_array = [];
 
             // append a dataset to the meshes of the scene
             for (dataset_index in datasets) {
@@ -617,77 +627,34 @@ function main() {
                 for (dataset_index in mesh_hash_values) {
 
                     var dataset_hash = mesh_hash_values[dataset_index].datasetMeta.datasetHash;
+                    mesh_hash_values_array.push(dataset_hash);
 
-                    var datasetFieldPromise = updateFragmentShaderDataPromise(dataset_hash);
                     var datasetGeometryPromise = updateVertexShaderDataPromise(dataset_hash);
-                    mesh_data_promise_array.push(datasetFieldPromise);
-                    mesh_data_promise_array.push(datasetGeometryPromise);
+                    mesh_geometry_promise_array.push(datasetGeometryPromise);
 
                 }
-                Promise.all(mesh_data_promise_array).then(function() {
-                    beginRendering();
+                Promise.all(mesh_geometry_promise_array).then(function() {
+                    for (dataset_index in mesh_hash_values_array) {
+                        var dataset_hash = mesh_hash_values_array[dataset_index];
+
+                        var datasetFieldPromise = updateFragmentShaderDataPromise(dataset_hash);
+                        mesh_field_promise_array.push(datasetFieldPromise);
+
+                    }
+                    Promise.all(mesh_field_promise_array).then(function() {
+                        beginRendering();
+                    });
+
                 });
             });
         });
     }
-
-    // // Load the dummy data.
-    // var dodec_promise = getDataSourcePromise("data/dodecahedron.json");
-    // dodec_promise.then(function(value) {
-    //     var parsed_json = JSON.parse(value);
-    //     node_file = parsed_json['vertices'];
-    //     index_file = parsed_json['indices'];
-    //     timestep_data = parsed_json['colours'];
-    //     console.log(node_file);
-    //     console.log(index_file);
-    //     console.log(timestep_data);
-    //     meta_file = [0.0, 0.0, 0.0];
-
-    //     loadShaders();
-    // });
-
 
     /**
      * Once we have the dodecahedron and the shaders loaded we begin the
      * rendering.
      */
     function beginRendering() {
-
-        for (var dataset_index in meshData) {
-            var m = meshData[dataset_index];
-
-            var expandedSurfaceWireframe = expandDataWithIndices(
-                m.surfaceData['wireframe'], m.surfaceData['nodes'], chunksize=3);
-
-            var expandedSurfaceFreeEdges = expandDataWithIndices(
-                m.surfaceData['freeEdges'], m.surfaceData['nodes'], chunksize=3);
-
-            var expandedSurfaceTets = expandDataWithIndices(
-                m.surfaceData['tets'], m.surfaceData['nodes'], chunksize=3);
-
-            var expandedSurfaceField;
-            if ('elemental'.localeCompare(m.currentFieldType) == 0) {
-                // expand the data
-                expandedSurfaceField = m.surfaceData['field'];
-            } else {
-                expandedSurfaceField = expandDataWithIndices(
-                    m.surfaceData['tets'], m.surfaceData['field'], chunksize=1);
-            }
-
-            var fragmentShaderTMin = colorbar.getCbarMin();
-            var fragmentShaderTMax = colorbar.getCbarMax();
-
-            var rescaledField = rescaleFieldValues(
-                expandedSurfaceField,
-                fragmentShaderTMin,
-                fragmentShaderTMax
-            );
-
-            m.bufferDataArray.a_position.data = expandedSurfaceTets;
-            m.bufferDataArray.a_field.data = new Float32Array(rescaledField);
-            m.bufferWireframeArray.a_line_data.data = expandedSurfaceWireframe;
-            m.bufferFreeEdgesArray.a_line_data.data = expandedSurfaceFreeEdges;
-        }
 
         // ... call the GL routine (i.e. do the graphics stuff)
         glRoutine(gl);

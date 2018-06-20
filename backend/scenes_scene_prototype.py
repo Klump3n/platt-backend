@@ -67,7 +67,7 @@ class _ScenePrototype:
             # selected can be either a hash, 'current' or 'values'
             'selected': None,
             'current': {'min': 0, 'max': 0},
-            'values': {'min': 0, 'max': 0}
+            'values': {'min': -100, 'max': 100}
         }
 
         # an empty list for the websockets that connect to this scene
@@ -217,6 +217,11 @@ class _ScenePrototype:
         """
         if colorbar_information:
             self._colorbar_settings = colorbar_information
+            self.websocket_send(
+                {
+                    'update': 'colorbar'
+                }
+            )
 
         return self._colorbar_settings
 

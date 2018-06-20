@@ -1,4 +1,5 @@
 function Colorbar(sceneHash, datasets) {
+
     var cbarMin = 0;
     var cbarMax = 800;
 
@@ -15,6 +16,13 @@ function Colorbar(sceneHash, datasets) {
 
     initColorbar();
 
+    // sometimes we dont want to patch information to the server, e.g. when we
+    // just received an update
+    var patchServer = false;
+
+    // When we patch the server we will get a message via websocket which tells
+    // us to update. We dont want to do that.
+    var pollServer = true;
 
     // public functions
     //
@@ -22,19 +30,80 @@ function Colorbar(sceneHash, datasets) {
     this.getCbarMin = function() {
         return cbarMin;
     };
+
     this.getCbarMax = function() {
         return cbarMax;
     };
+
     this.setFieldValues = function(dataset_hash, fieldMin, fieldMax) {
+
         // update the field values in either case
         fieldValues[dataset_hash] = {'min': fieldMin, 'max': fieldMax};
 
         // if the updated field is being tracked
         if (defaultBullet.localeCompare(dataset_hash) == 0) {
-            cbarMin = fieldMin;
-            cbarMax = fieldMax;
 
-            updateShader();
+            if ((fieldMin != cbarMin) || (fieldMax != cbarMax)) {
+
+                cbarMin = fieldMin;
+                cbarMax = fieldMax;
+
+                // patch information to the server and ignore the websocket
+                // update instruction
+                patchServer = true;
+                pollServer = false;
+
+                updateShader();
+
+            }
+        }
+    };
+
+    this.updateColorbarMenu = function() {
+
+        if (!(pollServer)) {
+
+            // catch the next polling
+            pollServer = true;
+
+        } else {
+
+            var serverColorbar = getServerColorbarPromise();
+            serverColorbar.then(function(value) {
+
+                var colorbar_selected = value.selected;
+
+                defaultBullet = colorbar_selected;
+                defaultBulletId = ('colorbar_select_' + defaultBullet);
+
+                var newDefaultBulletElement = document.getElementById(defaultBulletId);
+                newDefaultBulletElement.setAttribute('checked', 'checked');
+
+                currentMin = value.current.min;
+                currentMax = value.current.max;
+                valuesMin = value.values.min;
+                valuesMax = value.values.max;
+
+                var cbar_sub_start = document.getElementById('colorbar_form_sub_start');
+                cbar_sub_start.value = valuesMin;
+                var cbar_sub_end = document.getElementById('colorbar_form_sub_end');
+                cbar_sub_end.value = valuesMax;
+
+                if ("values".localeCompare(colorbar_selected) == 0) {
+                    cbarMin = valuesMin;
+                    cbarMax = valuesMax;
+                } else if ("current".localeCompare(colorbar_selected) == 0) {
+                    cbarMin = currentMin;
+                    cbarMax = currentMax;
+                } else {
+                    cbarMin = fieldValues[defaultBullet]['min'];
+                    cbarMax = fieldValues[defaultBullet]['max'];
+                }
+
+                addColorbar(update=true);
+                updateFragmentShaderColorbar();
+
+            });
         }
     };
 
@@ -42,40 +111,40 @@ function Colorbar(sceneHash, datasets) {
     //
     // init the class
     function initColorbar() {
-        var serverColorbar = connectToAPIPromise(
-            basePath = basePath,
-            APIEndpoint = "scenes/" + sceneHash + "/colorbar",
-            HTTPMethod = "get",
-            payload = {}
-        );
+
+        var serverColorbar = getServerColorbarPromise();
         serverColorbar.then(function(value) {
 
             var colorbar_selected = value.selected;
 
             if (colorbar_selected == null) {
 
-                // set first dataset bullet as default
-                // call the function without argument
-                selectColorbar();
+                defaultBullet = datasets[0]['datasetHash'];
 
             } else {
 
-                selectColorbar(colorbar_selected);
-                currentMin = value.current.min;
-                currentMax = value.current.max;
-                valuesMin = value.values.min;
-                valuesMax = value.values.max;
+                defaultBullet = colorbar_selected;
 
-                if ("values".localeCompare(colorbar_selected) == 0) {
-                    cbarMin = valuesMin;
-                    cbarMax = valuesMax;
-                }
+                // if we dont init the server we dont have to patch it
+                patchServer = false;
 
-                if ("current".localeCompare(colorbar_selected) == 0) {
-                    cbarMin = currentMin;
-                    cbarMax = currentMax;
-                }
+            }
 
+            defaultBulletId = ('colorbar_select_' + defaultBullet);
+
+            currentMin = value.current.min;
+            currentMax = value.current.max;
+            valuesMin = value.values.min;
+            valuesMax = value.values.max;
+
+            if ("values".localeCompare(colorbar_selected) == 0) {
+                cbarMin = valuesMin;
+                cbarMax = valuesMax;
+            }
+
+            if ("current".localeCompare(colorbar_selected) == 0) {
+                cbarMin = currentMin;
+                cbarMax = currentMax;
             }
 
             addColorbar();
@@ -92,23 +161,59 @@ function Colorbar(sceneHash, datasets) {
             'values': {'min': valuesMin, 'max': valuesMax}
         };
 
-        var serverColorbar = connectToAPIPromise(
+        // patching will initiate a websocket message to everyone (also US!).
+        // we dont need to respond to this message, so dont poll data from the
+        // server for once
+        if (patchServer) {
+            patchServerColorbarPromise(colorbar_settings);
+            patchServer = false;
+        }
+    }
+
+    // call a function in the main code...
+    function updateShader() {
+
+        if ("values".localeCompare(defaultBullet) == 0) {
+            cbarMin = valuesMin;
+            cbarMax = valuesMax;
+        } else if ("current".localeCompare(defaultBullet) == 0) {
+            cbarMin = currentMin;
+            cbarMax = currentMax;
+        } else {
+            cbarMin = fieldValues[defaultBullet]['min'];
+            cbarMax = fieldValues[defaultBullet]['max'];
+        }
+
+        updateServerColorbar();
+        addColorbar(update=true);
+        updateFragmentShaderColorbar();
+
+    }
+
+    function getServerColorbarPromise() {
+
+        var serverColorbarPromise = connectToAPIPromise(
+            basePath = basePath,
+            APIEndpoint = "scenes/" + sceneHash + "/colorbar",
+            HTTPMethod = "get",
+            payload = {}
+        );
+
+        return serverColorbarPromise;
+
+    }
+
+    function patchServerColorbarPromise(colorbar_settings) {
+
+        var serverColorbarPromise = connectToAPIPromise(
             basePath = basePath,
             APIEndpoint = "scenes/" + sceneHash + "/colorbar",
             HTTPMethod = "patch",
             payload = colorbar_settings
         );
-    }
 
-    function selectColorbar(select) {
+        return serverColorbarPromise;
 
-        // if called without arguments
-        if (!select) {
-            defaultBullet = datasets[0]['datasetHash'];
-        } else {
-            defaultBullet = select;
-        }
-        defaultBulletId = ('colorbar_select_' + defaultBullet);
     }
 
     // transmit which bullet is selected
@@ -136,6 +241,11 @@ function Colorbar(sceneHash, datasets) {
                 currentMax = cbarMax;
             }
 
+            // patch information to the server and ignore the websocket
+            // update instruction
+            patchServer = true;
+            pollServer = false;
+
             updateShader();
         }
     }
@@ -151,37 +261,25 @@ function Colorbar(sceneHash, datasets) {
 
         } else {
             if ("valuesMin".localeCompare(minOrMax) == 0) {
-                valuesMin = value;
+                valuesMin = Number(value);
                 if ("values".localeCompare(defaultBullet) == 0) {
                     cbarMin = valuesMin;
                 }
             }
             if ("valuesMax".localeCompare(minOrMax) == 0) {
-                valuesMax = value;
+                valuesMax = Number(value);
                 if ("values".localeCompare(defaultBullet) == 0) {
-                    cbarMax = valuesMin;
+                    cbarMax = valuesMax;
                 }
             }
 
+            // patch information to the server and ignore the websocket
+            // update instruction
+            patchServer = true;
+            pollServer = false;
+
             updateShader();
         }
-    }
-
-    // call a function in the main code...
-    function updateShader() {
-        if ("values".localeCompare(defaultBullet) == 0) {
-            cbarMin = valuesMin;
-            cbarMax = valuesMax;
-        } else if ("current".localeCompare(defaultBullet) == 0) {
-            cbarMin = currentMin;
-            cbarMax = currentMax;
-        } else {
-            cbarMin = fieldValues[defaultBullet]['min'];
-            cbarMax = fieldValues[defaultBullet]['max'];
-        }
-        updateServerColorbar();
-        addColorbar(update=true);
-        updateFragmentShaderColorbar();
     }
 
     function addColorbar(update=false) {
@@ -224,9 +322,23 @@ function Colorbar(sceneHash, datasets) {
 
         // Based upon our given Tmin and Tmax we assign temperatures to the
         // intervals
+
+        // this is for the decimal points, so we dont end up having a certain
+        // number in the colorbar more than once
+        var log10Dist = Math.floor(Math.log10(Math.abs(cbarMax - cbarMin) / 21));
+        var n = 0;
+        if (log10Dist < 0) {
+            n = -log10Dist;
+        }
+
+        function roundTo(value, decimals) {
+            return Math.round(cbarValue * 10**decimals) / 10**decimals;
+        };
+
         var colorbarText = [];
         for (var index in intervals) {
-            colorbarText.push(intervals[index]*(cbarMax - cbarMin) + cbarMin);
+            var cbarValue = (intervals[index]*(cbarMax - cbarMin) + cbarMin);
+            colorbarText.push(roundTo(cbarValue, n));
         }
 
         var colors = [
@@ -259,7 +371,11 @@ function Colorbar(sceneHash, datasets) {
         div.setAttribute('style', 'background-color: #FFFFFF');
         var divText = document.createElement('div');
         divText.setAttribute('class', 'colorbar_text');
-        divText.innerHTML = '> '+ cbarMax;
+        if (cbarMin < cbarMax) {
+            divText.innerHTML = '> '+ cbarMax;
+        } else {
+            divText.innerHTML = '< '+ cbarMax;
+        }
         div.appendChild(divText);
         cbar.appendChild(div);
 
@@ -270,7 +386,8 @@ function Colorbar(sceneHash, datasets) {
             div.setAttribute('style', 'background-color: '+colors[index]);
             divText = document.createElement('div');
             divText.setAttribute('class', 'colorbar_text');
-            divText.innerHTML = Math.round(colorbarText[index], -1);
+            // divText.innerHTML = Math.round(colorbarText[index], -1);
+            divText.innerHTML = colorbarText[index];
             div.appendChild(divText);
             cbar.appendChild(div);
         }
@@ -291,7 +408,11 @@ function Colorbar(sceneHash, datasets) {
         div.setAttribute('style', 'height: 0px;');
         divText = document.createElement('div');
         divText.setAttribute('class', 'colorbar_text');
-        divText.innerHTML = '< ' + cbarMin;
+        if (cbarMin < cbarMax) {
+            divText.innerHTML = '< '+ cbarMin;
+        } else {
+            divText.innerHTML = '> '+ cbarMin;
+        }
         div.appendChild(divText);
 
         // create a new colorbar
@@ -472,6 +593,7 @@ function Colorbar(sceneHash, datasets) {
 
         var colorbar_lock_to_values_sub_start_form = document.createElement('input');
         colorbar_lock_to_values_sub_start_form.setAttribute('class', 'colorbar_form_sub_start');
+        colorbar_lock_to_values_sub_start_form.setAttribute('id', 'colorbar_form_sub_start');
         colorbar_lock_to_values_sub_start_form.setAttribute('data-valuesMinmax', 'valuesMin');
         colorbar_lock_to_values_sub_start_form.addEventListener('focusout', valueSelector);
         colorbar_lock_to_values_sub_start_form.value = valuesMin;
@@ -484,6 +606,7 @@ function Colorbar(sceneHash, datasets) {
 
         var colorbar_lock_to_values_sub_end_form = document.createElement('input');
         colorbar_lock_to_values_sub_end_form.setAttribute('class', 'colorbar_form_sub_end');
+        colorbar_lock_to_values_sub_end_form.setAttribute('id', 'colorbar_form_sub_end');
         colorbar_lock_to_values_sub_end_form.setAttribute('data-valuesMinMax', 'valuesMax');
         colorbar_lock_to_values_sub_end_form.addEventListener('focusout', valueSelector);
         colorbar_lock_to_values_sub_end_form.value = valuesMax;

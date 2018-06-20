@@ -49,6 +49,52 @@ function main() {
 }
 
 /**
+ * Set the displayed initial timestep and field for the dataset.
+ */
+function updateDatasetMenu(dataset_hash) {
+
+    var dataset_current_timestep = document.getElementById('dataset_timestep_current_'+dataset_hash);
+    var dataset_current_field = document.getElementById('dataset_field_current_'+dataset_hash);
+
+    var set_timestep = connectToAPIPromise(
+        basePath,
+        APIEndpoint = 'scenes/' + scene_hash + '/' + dataset_hash + '/timesteps',
+        'get'
+    );
+    set_timestep.then(function(value) {
+        var currentTimestep = value["datasetTimestepSelected"];
+        dataset_current_timestep.innerHTML = currentTimestep;
+        dataset_current_timestep.setAttribute('title', currentTimestep);
+    });
+
+    var set_field = connectToAPIPromise(
+        basePath,
+        APIEndpoint = 'scenes/' + scene_hash + '/' + dataset_hash + '/fields',
+        'get'
+    );
+    set_field.then(function(value) {
+        var currentFieldType = value["datasetFieldSelected"]['type'];
+        var currentFieldName = value["datasetFieldSelected"]['name'];
+
+        var htmlString = '';
+
+        if (currentFieldType.localeCompare('nodal') == 0) {
+            htmlString = htmlString.concat('nod: ');
+        }
+        if (currentFieldType.localeCompare('elemental') == 0) {
+            htmlString = htmlString.concat('elem: ');
+        }
+        if (currentFieldType.localeCompare('__no_type__') == 0) {
+            htmlString = htmlString.concat('none: ');
+        }
+
+        htmlString = htmlString.concat(currentFieldName);
+        dataset_current_field.innerHTML = htmlString;
+        dataset_current_field.setAttribute('title', htmlString);
+    });
+}
+
+/**
  * Append a new menu item for a dataset to the datasets menu
  * @param {string} basePath - The base path to the API.
  * @param {string} scene_hash - The hash of the scene.
@@ -59,6 +105,7 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
     this.currentTimestep = '';
     this.currentFieldType = '';
     this.currentFieldName = '';
+    this.currentElementset = '';
 
     this.dataset_name = new_dataset['datasetName'];
     this.dataset_hash = new_dataset['datasetHash'];
@@ -79,6 +126,7 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
 
         var dataset_current_timestep = document.getElementById('dataset_timestep_current_'+that.dataset_hash);
         var dataset_current_field = document.getElementById('dataset_field_current_'+that.dataset_hash);
+        var dataset_current_elset = document.getElementById('dataset_elset_current_'+that.dataset_hash);
 
         var set_timestep = connectToAPIPromise(
             basePath,
@@ -116,6 +164,18 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
             dataset_current_field.innerHTML = htmlString;
             dataset_current_field.setAttribute('title', htmlString);
         });
+
+        var set_elset = connectToAPIPromise(
+            basePath,
+            APIEndpoint = 'scenes/' + scene_hash + '/' + that.dataset_hash + '/elementsets',
+            'get'
+        );
+        set_elset.then(function(value) {
+            that.currentElementset = value['datasetElementsetSelected'];
+            dataset_current_elset.innerHTML = that.currentElementset;
+            dataset_current_elset.setAttribute('title', that.currentElementset);
+        });
+
     }
 
     /**
@@ -356,6 +416,97 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
         });
     }
 
+
+
+
+
+
+
+    function open_elset_menu() {
+        // get the dataset hash and the timestep menu and -padding container
+        var dataset_hash = this.getAttribute('data-name');
+        var dataset_elset_menu = document.getElementById(
+            'dataset_elset_menu_padding_container_'+that.dataset_hash);
+        var dataset_elset_menu_padding_container = document.getElementById(
+            'dataset_elset_menu_padding_container_'+that.dataset_hash);
+
+        // remove all the timesteps currently in the menu
+        while ( dataset_elset_menu.firstChild ) dataset_elset_menu.removeChild( dataset_elset_menu.firstChild );
+
+        var get_elsets = connectToAPIPromise(
+            basePath = basePath,
+            APIEndpoint = 'scenes/' + scene_hash + '/' + that.dataset_hash + '/elementsets',
+            HTTPMethod = 'get',
+            // payload = {}
+        );
+        get_elsets.then(function(value) {
+
+            var elementsetList = value['datasetElementsetList'];
+
+            for (var it in elementsetList) {
+                var elset_menu_item = document.createElement("div");
+                elset_menu_item.innerHTML = elementsetList[it];
+                elset_menu_item.setAttribute("id", 'elset_menu_item_'+that.dataset_hash+'_'+elementsetList[it]);
+                elset_menu_item.setAttribute("data-elset-name", elementsetList[it]);
+                elset_menu_item.setAttribute("title", elementsetList[it]);
+                elset_menu_item.setAttribute("data-name", that.dataset_hash);
+                elset_menu_item.setAttribute("class", "dataset_elset_menu_item");
+                elset_menu_item.addEventListener('click', select_elset);
+                dataset_elset_menu_padding_container.appendChild(elset_menu_item);
+            }
+        });
+
+        dataset_elset_menu.style.visibility = 'visible';
+        this.removeEventListener('click', open_elset_menu);
+        this.addEventListener('click', close_elset_menu);
+    }
+
+    /**
+     * Close the elset selection menu.
+     */
+    function close_elset_menu() {
+        var dataset_hash = this.getAttribute('data-name');
+        var dataset_elset_menu_padding_container = document.getElementById('dataset_elset_menu_padding_container_'+that.dataset_hash);
+
+        dataset_elset_menu_padding_container.style.visibility = 'hidden';
+        this.removeEventListener('click', close_elset_menu);
+        this.addEventListener('click', open_elset_menu);
+    }
+
+    /**
+     * Select a elset by directly selecting it from the elset menu.
+     */
+    function select_elset() {
+        var dataset_hash = this.getAttribute('data-name');
+        var elsetName = this.getAttribute('data-elset-name');
+        var dataset_current_elset = document.getElementById('dataset_elset_current_'+that.dataset_hash);
+
+        var set_elset = connectToAPIPromise(
+            basePath,
+            APIEndpoint = 'scenes/' + scene_hash + '/' + that.dataset_hash + '/elementsets',
+            'patch',
+            {"datasetElementsetSelected":
+             elsetName
+            }
+        );
+        set_elset.then(function(value) {
+            that.currentElementset = value['datasetElementsetSelected'];
+            dataset_current_elset.innerHTML = that.currentElementset;
+            dataset_current_elset.setAttribute('title', that.currentElementset);
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
     /**
      * Based on a checkbox turn on/off the control of the orientation of a dataset.
      */
@@ -492,6 +643,39 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
         dataset_field_container.appendChild(dataset_field_heading);
         dataset_field_container.appendChild(dataset_field_controls_container);
 
+        var dataset_elset_container = document.createElement('div');
+        dataset_elset_container.setAttribute('class', 'dataset_function_container dataset_function_separator');
+
+        // heading for elset, just says 'Elset'
+        var dataset_elset_heading = document.createElement('div');
+        dataset_elset_heading.setAttribute('class', 'dataset_function_heading');
+        dataset_elset_heading.innerHTML = 'Elset';
+
+        var dataset_elset_controls_container = document.createElement('div');
+
+        var dataset_elset_current = document.createElement('div');
+        dataset_elset_current.setAttribute('class', 'dataset_elset_current');
+        dataset_elset_current.setAttribute('id', 'dataset_elset_current_'+that.dataset_hash);
+        dataset_elset_current.addEventListener('click', open_elset_menu);
+        dataset_elset_current.setAttribute('data-name', that.dataset_hash);
+        dataset_elset_current.innerHTML = 'PLACEHOLDER';
+
+        var dataset_elset_menu_padding_container = document.createElement('div');
+        dataset_elset_menu_padding_container.setAttribute('class', 'dataset_field_menu_padding_container');
+        dataset_elset_menu_padding_container.setAttribute('id', 'dataset_elset_menu_padding_container_'+that.dataset_hash);
+
+        var dataset_elset_menu = document.createElement('div');
+        dataset_elset_menu.setAttribute('class', 'dataset_elset_menu');
+        dataset_elset_menu.setAttribute('id', 'dataset_elset_menu_'+that.dataset_hash);
+
+        dataset_elset_controls_container.appendChild(dataset_elset_current);
+
+        dataset_elset_menu_padding_container.appendChild(dataset_elset_menu);
+        dataset_elset_controls_container.appendChild(dataset_elset_menu_padding_container);
+
+        dataset_elset_container.appendChild(dataset_elset_heading);
+        dataset_elset_container.appendChild(dataset_elset_controls_container);
+
         var dataset_orientation_container = document.createElement('div');
         dataset_orientation_container.setAttribute('class', 'dataset_function_container');
 
@@ -537,6 +721,7 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
 
         dataset_functions.appendChild(dataset_timestep_container);
         dataset_functions.appendChild(dataset_field_container);
+        dataset_functions.appendChild(dataset_elset_container);
         dataset_functions.appendChild(dataset_orientation_container);
 
         // attach heading and display to dataset

@@ -12,6 +12,7 @@ import numpy as np
 import backend.binary_formats as binary_formats
 import backend.dataset_mangler as dm
 
+
 class ParseDataset:
     """
     Unpack and store data for a dataset.
@@ -36,21 +37,25 @@ class ParseDataset:
         self.dataset_dir = dataset_dir
         self.fo_dir = self.dataset_dir / 'fo'
 
-        self._nodal_field_map = None
-        self._blank_field_node_count = None
-        self._elemental_field_map = None
-        self._elemental_field_map_combined = None
-        self._elemental_surface_node_count = None
+        # self._nodal_field_map = None
+        self._nodal_field_map_dict = {}
+        # self._blank_field_node_count = None
+        self._blank_field_node_count_dict = {}
+
+        self._surface_triangulation_dict = {}
+
+        # self._elemental_field_map = None
+        # self._elemental_field_map_combined = None
+        # self._elemental_surface_node_count = None
 
         self._field_dict = None
 
         self._mesh_elements = None
-
-        # elemental or nodal
-        self._set_field_type = None
+        # self._mesh_elements_dict = {}
 
         # store the surface mesh for both elemental and nodal
         self._compressed_model_surface = None
+        # self._compressed_model_surface_dict = {}
 
     def _file_hash(self, file_path, update=None):
         """
@@ -154,23 +159,9 @@ class ParseDataset:
 
         return data
 
-    def _mesh_data(self, directory, current_hash=None):
+    def _geometry_data(self, directory, elementset, current_hash=None):
         """
-        Return the mesh data (nodes, elements) for the dataset.
-
-        current_hash should contain all the hashes of the geometries that we
-        have in memory. If the geometry we are about to parse has a hash that
-        is already in current_hash, the parsing is skipped and lots of work
-        (and time) is saved.
-
-        Args:
-         directory (os.PathLike): Directory containing the geometry data.
-         current_hash (array, optional): The hashes for the geometry we already
-          have.
-
-        Returns:
-         dict: The geometry data for the dataset, if parsing was not required
-          it contains 'None'.
+        Get the geometry data for the dataset.
 
         """
         # parse nodes
@@ -192,20 +183,30 @@ class ParseDataset:
             elements[elements_type]['hash'] = elements_hash
             elements[elements_type]['fmt'] = elements_format
 
-        mesh_checksum = nodes_hash
-        for element in elements:
+        # calculate hash
+        mesh_checksum = nodes_hash  # init with nodes
+        for element in elements:    # add every element
             mesh_checksum = self._string_hash(
                 elements[element]['hash'],
+                update=mesh_checksum
+            )
+        # update the mesh hash with the selected elementset
+        for element_type in elementset:  # add every elementset
+            elementset_path = elementset[element_type]
+            mesh_checksum = self._file_hash(
+                elementset_path,
                 update=mesh_checksum
             )
 
         return_dict = {'hash': mesh_checksum}
 
         if current_hash is None or mesh_checksum not in current_hash:
+
             return_dict['nodes'] = {}
             return_dict['nodes']['data'] = self._read_binary_data(
                 nodes_path, nodes_format)
             return_dict['nodes']['fmt'] = nodes_format
+
             return_dict['elements'] = {}
             for element in elements:  # PARALLELIZE ME
                 element_path = elements[element]['path']
@@ -222,7 +223,27 @@ class ParseDataset:
 
         return return_dict
 
-    def _field_data(self, directory, field, current_hash=None):
+    def _elementset_data(self, elementset):
+        """
+        Parse the elementset binary data.
+
+        """
+        if elementset == {}:
+            return None
+
+        return_dict = {}
+        for element_type in elementset:
+
+            # get the elementset
+            elementset_path = elementset[element_type]
+            elementset_fmt = binary_formats.elementset()
+            elementset_data = self._read_binary_data(elementset_path, elementset_fmt)
+
+            return_dict[element_type] = elementset_data
+
+        return return_dict
+
+    def _field_data(self, directory, field, elementset, current_hash=None):
         """
         Return the field data for the dataset.
 
@@ -264,6 +285,14 @@ class ParseDataset:
             else:
                 return None
 
+            # update the field hash with the selected elementset
+            for element_type in elementset:  # add every elementset
+                elementset_path = elementset[element_type]
+                field_hash = self._file_hash(
+                    elementset_path,
+                    update=field_hash
+                )
+
             if current_hash is None or field_hash not in current_hash:
                 data = {
                     'nodal': self._read_binary_data(bin_path, field_format)
@@ -289,6 +318,14 @@ class ParseDataset:
             else:
                 return None
 
+            # update the field hash with the selected elementset
+            for element_type in elementset:  # add every elementset
+                elementset_path = elementset[element_type]
+                field_hash = self._file_hash(
+                    elementset_path,
+                    update=field_hash
+                )
+
             if current_hash is None or field_hash not in current_hash:
                 data = {
                     'elemental': {}
@@ -306,7 +343,7 @@ class ParseDataset:
             'data': data
         }
 
-    def _blank_field(self):
+    def _blank_field(self, node_count):
         """
         Create an empty field.
 
@@ -317,11 +354,11 @@ class ParseDataset:
         ret_dict = {
             'hash': None,
             'fmt': binary_formats.nodal_fields(),
-            'data': {'nodal': [0.0]*self._blank_field_node_count}
+            'data': {'nodal': [0.0]*node_count}
         }
         return ret_dict
 
-    def timestep_data(self, timestep, field, hash_dict=None):
+    def timestep_data(self, timestep, field, elementset, hash_dict=None):
         """
         Return the data for a given timestep and field and save it.
 
@@ -329,6 +366,8 @@ class ParseDataset:
          timestep (str): The timestep from which we want to get data.
          field (dict): The field from which we want to get data. Structure is
           {'type': TYPE (str), 'name': NAME (str)}.
+         elementset (dict): The elementset we want to parse. Can be empty. If
+          empty we just parse everything.
          hash_dict (bool, optional, defaults to False): Read the data again,
           even if we already have data corresponding to the selected timestep
           and field. Has fields 'mesh' and 'field'.
@@ -354,19 +393,21 @@ class ParseDataset:
         timestep_path = self.fo_dir / timestep
 
         try:
-            mesh_dict = self._mesh_data(
-                timestep_path, current_hash=hash_dict['mesh'])
+            mesh_dict = self._geometry_data(
+                timestep_path, elementset, current_hash=hash_dict['mesh'])
+
         except (TypeError, KeyError):
-            mesh_dict = self._mesh_data(
-                timestep_path, current_hash=None)
+            mesh_dict = self._geometry_data(
+                timestep_path, elementset, current_hash=None)
 
         if field is not None:
             try:
                 field_dict = self._field_data(
-                    timestep_path, field, current_hash=hash_dict['field'])
+                    timestep_path, field, elementset, current_hash=hash_dict['field'])
+
             except (TypeError, KeyError):
                 field_dict = self._field_data(
-                    timestep_path, field, current_hash=None)
+                    timestep_path, field, elementset, current_hash=None)
 
         else:
             # Corner case for unsetting the fields once they were set
@@ -378,7 +419,6 @@ class ParseDataset:
         else:
             field_type = field_dict['type']
 
-        # modify the mesh hash based on nodal or elemental fields
         return_dict['hash_dict']['mesh'] = mesh_dict['hash']
 
         mesh_nodes = mesh_dict['nodes']
@@ -389,14 +429,14 @@ class ParseDataset:
 
         if mesh_nodes is not None:
 
-            self._compressed_model_surface = dm.model_surface(mesh_elements, mesh_nodes)
+            elementset_data = self._elementset_data(elementset)
 
-            self._nodal_field_map = self._compressed_model_surface['nodal_field_map']
-            self._blank_field_node_count = self._compressed_model_surface['old_max_node_index']
-            self._surface_triangulation = self._compressed_model_surface['surface_triangulation']
+            self._compressed_model_surface = dm.model_surface(mesh_elements, mesh_nodes, elementset_data)
 
-            # store the field type we are using
-            self._set_field_type = field_type
+            self._nodal_field_map_dict[mesh_dict['hash']] = self._compressed_model_surface['nodal_field_map']
+            self._blank_field_node_count_dict[mesh_dict['hash']] = self._compressed_model_surface['old_max_node_index']
+            self._surface_triangulation_dict[mesh_dict['hash']] = self._compressed_model_surface['surface_triangulation']
+
             return_dict['nodes'] = self._compressed_model_surface['nodes']
             return_dict['nodes_center'] = self._compressed_model_surface['nodes_center']
             return_dict['tets'] = self._compressed_model_surface['triangles']
@@ -405,7 +445,20 @@ class ParseDataset:
 
         # field does not exist
         if field_dict is None:
-            field_values = self._blank_field()['data']['nodal']
+
+            node_count = self._blank_field_node_count_dict[mesh_dict['hash']]
+            field_values = self._blank_field(node_count)['data']['nodal']
+
+            # this is necessary so we parse a new field when we need it
+            field_hash = None
+            # update the mesh hash with the selected elementset
+            for element_type in elementset:  # add every elementset
+                elementset_path = elementset[element_type]
+                field_hash = self._file_hash(
+                    elementset_path,
+                    update=field_hash
+                )
+            return_dict['hash_dict']['field'] = field_hash
 
         else:
 
@@ -413,15 +466,17 @@ class ParseDataset:
                 field_values = field_dict['data']['nodal']
 
             if field_type == 'elemental':
+
                 elemental_field_dict = field_dict['data']['elemental']
-                field_values = dm.expand_elemental_fields(elemental_field_dict, self._mesh_elements, self._surface_triangulation)
+                field_values = dm.expand_elemental_fields(elemental_field_dict, self._mesh_elements, self._surface_triangulation_dict[mesh_dict['hash']])
 
             return_dict['hash_dict']['field'] = field_dict['hash']
 
         if field_values is not None:
+
             if field_type == 'nodal':
                 return_dict['field'] = dm.model_surface_fields_nodal(
-                    self._nodal_field_map, field_values)
+                    self._nodal_field_map_dict[mesh_dict['hash']], field_values)
 
             if field_type == 'elemental':
                 return_dict['field'] = dm.model_surface_fields_elemental(field_values)

@@ -7,10 +7,10 @@ intended as a module for the dataset parser.
 import numpy as np
 
 
-def model_surface(elements, nodes):
+def model_surface(elements, nodes, elementset):
 
     # for every element get the faces and the edges of the element
-    bulk_faces_and_edges_dict = _dataset_sort_elements_by_faces(elements)
+    bulk_faces_and_edges_dict = _dataset_sort_elements_by_faces(elements, elementset)
 
     # from the faces for every element find those faces that define the
     # boundary (surface) of the dataset
@@ -183,7 +183,7 @@ def model_surface_fields_elemental(field_values):
     return remapped_field
 
 
-def _dataset_sort_elements_by_faces(elements):
+def _dataset_sort_elements_by_faces(elements, elementset):
     """
     Sort the elements by the faces the element has.
 
@@ -191,8 +191,23 @@ def _dataset_sort_elements_by_faces(elements):
     faces_array = []
     edges_array = []
 
+    # quick lookup table of sorts
+    if elementset:
+        lookup_dict = {}
+        for element_type in elementset:
+            cnt = np.max(elements[element_type]['data'])
+            lookup_dict[element_type] = [None]*(cnt + 1)
+
+            elset_data = elementset[element_type]
+            for element in elset_data:
+                lookup_dict[element_type][element] = element
+
+    # depending on whether or not we select an elementset we pick an iterator
+    # set
+    iterator_set = elements if (not elementset) else elementset
+
     # Iterate over all element types (c3d6, c3d8, ...) we find in elements
-    for element_type in elements:
+    for element_type in iterator_set:
 
         # organization of faces for an element type
         element_data = elements[element_type]['data']  # data
@@ -202,34 +217,38 @@ def _dataset_sort_elements_by_faces(elements):
         # iteration over individual elements in the dataset
         for element_idx, element in enumerate(element_data):
 
-            # element_hash = hash(tuple(sorted(element)))
+            # dont add what is not in the elementset
+            if elementset and lookup_dict[element_type][element_idx] is None:
+                continue
+            else:
+                # element_hash = hash(tuple(sorted(element)))
 
-            # for each face in the element append a hash of the sorted
-            # element and the element
-            for face in face_indices:
-                element_face = []
-                for corner in face:
-                    element_face.append(element[corner])
+                # for each face in the element append a hash of the sorted
+                # element and the element
+                for face in face_indices:
+                    element_face = []
+                    for corner in face:
+                        element_face.append(element[corner])
 
-                faces_array.append(
-                    [
-                        hash(tuple(sorted(element_face))),
-                        element_face,
-                        face,
-                        element_type,
-                        element_idx
-                    ]
-                )
+                    faces_array.append(
+                        [
+                            hash(tuple(sorted(element_face))),
+                            element_face,
+                            face,
+                            element_type,
+                            element_idx
+                        ]
+                    )
 
-            for edge in edge_indices:
-                line = sorted([element[edge[0]], element[edge[1]]])
+                for edge in edge_indices:
+                    line = sorted([element[edge[0]], element[edge[1]]])
 
-                edges_array.append(
-                    [
-                        hash(tuple(line)),
-                        line
-                    ]
-                )
+                    edges_array.append(
+                        [
+                            hash(tuple(line)),
+                            line
+                        ]
+                    )
 
     sorted_faces_array = sorted(faces_array, key=lambda x: x[0])  # sort by first column
     sorted_edges_array = sorted(edges_array, key=lambda x: x[0])

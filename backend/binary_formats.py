@@ -26,6 +26,27 @@ def nodes():
     return nodes_dict
 
 
+def elementset():
+    """
+    The elementset binary format.
+
+    """
+    elementset_dict = {}
+
+    file_name = 'NAME.elset.ELEMENT_TYPE.bin'
+
+    data_point_size = 4    # 4 bytes of ...
+    data_point_type = 'i'     # ... integers
+    points_per_unit = 1  # 1 coord per element
+
+    elementset_dict['file_name'] = file_name
+    elementset_dict['data_point_size'] = data_point_size
+    elementset_dict['data_point_type'] = data_point_type
+    elementset_dict['points_per_unit'] = points_per_unit
+
+    return elementset_dict
+
+
 def nodal_fields():
     """
     The binary format for nodal fields.

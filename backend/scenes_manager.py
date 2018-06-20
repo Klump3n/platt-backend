@@ -594,7 +594,7 @@ class SceneManager:
 
             if set_timestep == '_next_timestep':
                 new_timestep_index = current_timestep_index + 1
-                if new_timestep_index > len(timestep_list):
+                if new_timestep_index > len(timestep_list) - 1:
                     set_timestep = None
                 else:
                     set_timestep = timestep_list[new_timestep_index]
@@ -662,31 +662,29 @@ class SceneManager:
 
         return return_dict
 
-    def dataset_mesh(self, scene_hash, dataset_hash):
+    def dataset_elementsets(self, scene_hash, dataset_hash,
+                            set_elementset=None):
         """
-        GET the currently displayable mesh of a dataset.
+        GET or PATCH (set) the elementset(s) of a dataset.
+
+        If data is None we assume we just want to GET some data, otherwise we
+        want to update (PATCH) it.
 
         Args:
          scene_hash (str): The hash of the scene.
          dataset_hash (str): The hash of the dataset.
+         set_elementset (None or str): None or a elementset (that refers to
+          the list we can GET).
 
         Returns:
-         dict: The dataset mesh with surface_nodes, wireframe_indices,
-         surface_indices and orientation.
+         dict: The dataset elementset(s).
 
         Raises:
          TypeError: If ``type(scene_hash)`` is not `str`.
          TypeError: If ``type(dataset_hash)`` is not `str`.
+         TypeError: If ``type(set_elementset)`` is not `NoneType` or `str`.
 
         """
-        if not isinstance(scene_hash, str):
-            raise TypeError('scene_hash is {}, expected str'.format(
-                    type(scene_hash).__name__))
-
-        if not isinstance(dataset_hash, str):
-            raise TypeError('dataset_hash is {}, expected str'.format(
-                    type(dataset_hash).__name__))
-
         target_dataset = self._target_dataset(scene_hash, dataset_hash)
 
         # dataset or scene do not exist
@@ -695,37 +693,23 @@ class SceneManager:
 
         dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
 
-        surface_mesh = target_dataset.surface_mesh()
+        elementset_dict = target_dataset.elementset_dict()
+        selected_elementset = target_dataset.elementset(set_elementset)
 
-        surface_mesh_hash = surface_mesh['mesh_hash']
-        surface_nodes = surface_mesh['nodes']
-        surface_tets = surface_mesh['tets']
-        surface_nodes_center = surface_mesh['nodes_center']
-        surface_wireframe = surface_mesh['wireframe']
-        surface_free_edges = surface_mesh['free_edges']
-
-        selected_field = target_dataset.field()
-
-        surface_field = target_dataset.surface_field()
-
-        surface_field_min_max = target_dataset.surface_field_min_max()
-
-        surface_field_hash = surface_field['field_hash']
-        surface_field_values = surface_field['field']
+        if selected_elementset == {}:
+            selected_elementset = '__all__'
 
         return_dict = {
             'datasetMeta': dataset_meta,
-            'datasetMeshHash': surface_mesh_hash,
-            'datasetSurfaceNodes': surface_nodes,
-            'datasetSurfaceTets': surface_tets,
-            'datasetSurfaceNodesCenter': surface_nodes_center,
-            'datasetSurfaceWireframe': surface_wireframe,
-            'datasetSurfaceFreeEdges': surface_free_edges,
-            'datasetFieldHash': surface_field_hash,
-            'datasetFieldSelected': selected_field,
-            'datasetSurfaceField': surface_field_values,
-            'datasetSurfaceFieldExtrema': surface_field_min_max
+            'datasetElementsetList': elementset_dict['elementsets'],
+            'datasetElementsetSelected': selected_elementset
         }
+
+        if set_elementset is not None:
+            # broadcast the changed elementset
+            target_scene = self.scene(scene_hash)
+            websocket_payload = target_dataset.websocket_payload()
+            target_scene.websocket_send(websocket_payload)
 
         return return_dict
 

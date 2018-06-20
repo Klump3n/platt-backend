@@ -37,18 +37,25 @@ function connectToWebSocket() {
         websock.onmessage = function(value) {
             var msg = JSON.parse(value.data);
 
-            var datasetHash = msg['datasetHash'];
             var update = msg['update'];
+            var datasetHash;
 
             if (update == 'orientation') {
+                datasetHash = msg['datasetHash'];
                 meshData[datasetHash].datasetView.getOrientation();
             }
 
             if (update == 'mesh') {
+                datasetHash = msg['datasetHash'];
                 var newHashGeometry = msg['hashes']['mesh'];
                 var newHashField = msg['hashes']['field'];
 
                 updateMesh(datasetHash, newHashField, newHashGeometry);
+                updateDatasetMenu(datasetHash);
+            }
+
+            if (update == 'colorbar') {
+                colorbar.updateColorbarMenu();
             }
         };
 

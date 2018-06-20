@@ -253,6 +253,12 @@ class ServerAPI:
 
                 ##################################################
 
+                if dataset_operation == 'elementsets':
+                    output = self.get_scenes_scenehash_datasethash_elementsets(
+                        scene_hash, dataset_hash)
+
+                ##################################################
+
                 if dataset_operation == 'mesh':
                     output = self.get_scenes_scenehash_datasethash_mesh(
                         scene_hash, dataset_hash)
@@ -307,6 +313,24 @@ class ServerAPI:
                             self.patch_scenes_scenehash_datasethash_fields(
                                 scene_hash, dataset_hash,
                                 new_field=field)
+                        )
+
+                    except (KeyError, TypeError) as e:
+                        print('{}'.format(e))
+                        output = None
+
+                ##################################################
+
+                if dataset_operation == 'elementsets':
+
+                                        # Parse datasetsToAdd from JSON
+                    try:
+                        json_input = cherrypy.request.json
+                        elementset = json_input['datasetElementsetSelected']
+                        output = (
+                            self.patch_scenes_scenehash_datasethash_elementsets(
+                                scene_hash, dataset_hash,
+                                new_elementset=elementset)
                         )
 
                     except (KeyError, TypeError) as e:
@@ -512,6 +536,26 @@ class ServerAPI:
         dataset_fields = gloset.scene_manager.dataset_fields(
             scene_hash, dataset_hash, set_field=new_field)
         return dataset_fields
+
+    def get_scenes_scenehash_datasethash_elementsets(
+            self, scene_hash, dataset_hash):
+        """
+        Get the elementsets of a dataset.
+
+        """
+        dataset_elementsets = gloset.scene_manager.dataset_elementsets(
+            scene_hash, dataset_hash)
+        return dataset_elementsets
+
+    def patch_scenes_scenehash_datasethash_elementsets(
+            self, scene_hash, dataset_hash, new_elementset):
+        """
+        Set the field of a dataset.
+
+        """
+        dataset_elementsets = gloset.scene_manager.dataset_elementsets(
+            scene_hash, dataset_hash, set_elementset=new_elementset)
+        return dataset_elementsets
 
     def get_scenes_scenehash_datasethash_mesh(
             self, scene_hash, dataset_hash):
