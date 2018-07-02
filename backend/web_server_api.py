@@ -132,6 +132,23 @@ class ServerAPI:
         # Init the output
         output = None
 
+        # server busy stuff
+        ##################################################
+        if scene_hash is not None:
+
+            # if POSTing or PATCHing we have to check if we block or not
+            if (http_method == 'POST' or http_method == 'PATCH'):
+
+                try:
+                    if self.is_scene_locked(scene_hash):
+                        raise cherrypy.HTTPError(503, 'scene is locked, try again later')
+
+                except KeyError:
+                    pass
+
+                self.lock_scene_if_unlocked(scene_hash)
+
+
         ##################################################
 
         if (
@@ -365,10 +382,49 @@ class ServerAPI:
 
         ##################################################
 
-        # Return valid JSON
-        # json.dumps(None) = null
-        # return json.dumps(output)
+        # server busy stuff
+        ##################################################
+        if scene_hash is not None:
+
+            # maybe we need to unblock the server
+            if (http_method == 'POST' or http_method == 'PATCH'):
+                self.unlock_scene_if_locked(scene_hash)
+
         return output
+
+    def is_scene_locked(self, scene_hash):
+        """
+        Returns if a scene is locked.
+
+        """
+        target_scene = gloset.scene_manager.scene(scene_hash)
+        return target_scene.is_scene_locked()
+
+    def lock_scene_if_unlocked(self, scene_hash):
+        """
+        Lock a scene if it is unlocked.
+
+        """
+        target_scene = gloset.scene_manager.scene(scene_hash)
+        locked = target_scene.is_scene_locked()
+
+        if not locked:
+            target_scene.lock_scene()
+
+        return None
+
+    def unlock_scene_if_locked(self, scene_hash):
+        """
+        Unlock a scene if it was locked.
+
+        """
+        target_scene = gloset.scene_manager.scene(scene_hash)
+        locked = target_scene.is_scene_locked()
+
+        if locked:
+            target_scene.unlock_scene()
+
+        return None
 
     def get_scenes(self):
         """

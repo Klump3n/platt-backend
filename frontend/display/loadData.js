@@ -103,10 +103,14 @@ function connectToAPIPromise(basePath, apiEndpoint, HTTPMethod, payload) {
             }
 
             xhr.onload = function() {
+                var result;
                 if (xhr.status === 200) {
 		                // Tries to get the shader source
-                    var result = xhr.responseText;
+                    result = xhr.responseText;
 		                resolve(JSON.parse(result));
+                } else if (xhr.status === 503) {
+                    result = xhr.responseText;
+                    reject(Error('Server busy right now. Try again later. '+HTTPMethod.toUpperCase()+' '+apiEndpoint));
 	              } else {
 		                // If unsuccessful return an error
 		                reject(Error('connectToAPIPromise() - ERROR with '+HTTPMethod.toUpperCase()+' '+apiEndpoint));

@@ -73,6 +73,10 @@ class _ScenePrototype:
         # an empty list for the websockets that connect to this scene
         self._websocket_list = []
 
+        # keep track if we can patch stuff to the scene or not
+        # if the scene is locked, we can't
+        self._scene_locked = False
+
     def __del__(self):
         """
         Close all WebSockets when the class is no longer needed.
@@ -224,6 +228,27 @@ class _ScenePrototype:
             )
 
         return self._colorbar_settings
+
+    def is_scene_locked(self):
+        """
+        Returns True or False depending on the self._scene_locked var.
+
+        """
+        return self._scene_locked
+
+    def lock_scene(self):
+        """
+        Sets self._scene_locked to True.
+
+        """
+        self._scene_locked = True
+
+    def unlock_scene(self):
+        """
+        Sets self._scene_locked to False.
+
+        """
+        self._scene_locked = False
 
     def websocket_add(self, new_websocket):
         """
