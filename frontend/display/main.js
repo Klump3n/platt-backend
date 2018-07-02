@@ -222,14 +222,6 @@ function glRoutine(gl) {
             m.currentOrientation = m.datasetView.updateView();
             uniforms.u_transform = m.currentOrientation;
 
-            // colors
-
-            gl.useProgram(programInfoColor.program);
-            twgl.setBuffersAndAttributes(gl, programInfoColor, m.bufferInfoColor);
-            twgl.setUniforms(programInfoColor, uniforms);
-
-            twgl.drawBufferInfo(gl, m.bufferInfoColor);
-
             // edges
 
             gl.useProgram(programInfoEdge.program);
@@ -245,6 +237,15 @@ function glRoutine(gl) {
             twgl.setUniforms(programInfoWireframe, uniforms);
 
             twgl.drawBufferInfo(gl, m.bufferInfoWireframe, type=gl.LINES);
+
+            // colors
+
+            gl.useProgram(programInfoColor.program);
+            twgl.setBuffersAndAttributes(gl, programInfoColor, m.bufferInfoColor);
+            twgl.setUniforms(programInfoColor, uniforms);
+
+            twgl.drawBufferInfo(gl, m.bufferInfoColor);
+
         }
 
         gl_width = gl.canvas.clientWidth;

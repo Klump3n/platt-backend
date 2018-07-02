@@ -1,0 +1,809 @@
+{
+    "openapi": "3.0.0",
+    "info": {},
+    "servers": [],
+    "paths": {},
+
+    "components": {
+
+        "schemas": {
+
+            "version": {
+                "description": "The program name and version.",
+                "required": [
+                    "programName",
+                    "programVersion"
+                ],
+                "properties": {
+                    "programName": {
+                        "type": "string",
+                        "example": "norderney"
+                    },
+                    "programVersion": {
+                        "type": "string",
+                        "example": "alpha-1-gbfed333-dirty"
+                    }
+                }
+
+            },
+
+            "availableDatasets": {
+                "description": "A list of available datasets on the server.",
+                "required": [
+                    "availableDatasets"
+                ],
+                "properties": {
+                    "availableDatasets": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                        },
+                        "example": [
+                            "numsim.napf.tiefziehversuch", "dataset a", "numsim.singlepass.s355j2+n"
+                        ]
+                    }
+                }
+            },
+
+            "activeScenes": {
+                "description": "A list with active scenes on the server.",
+                "required": [
+                    "activeScenes"
+                ],
+                "properties": {
+                    "activeScenes": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "babf090679cf7b50f1a52138dadc9ea50b6b0700",
+                            "77d8548a5def0e7a410259296eb24776ae19047c",
+                            "4c0e21b939da38778e76a03e284bb5ed92e6fdf7"
+                        ]
+                    }
+                }
+            },
+
+            "datasetsToAdd": {
+                "description": "Datasets that should be added.",
+                "required": [
+                    "datasetsToAdd"
+                ],
+                "properties": {
+                    "datasetsToAdd": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                        },
+                        "example": [
+                            "numsim.napf.tiefziehversuch", "dataset a", "dataset a", "numsim.singlepass.s355j2+n"
+                        ]
+                    }
+                }
+            },
+
+            "loadedDataset": {
+                "description": "The name, unique identifier and alias of a dataset that is loaded into a scene.",
+                "required": [
+                    "datasetName",
+                    "datasetHash"
+                ],
+                "properties": {
+                    "datasetName": {
+                        "description": "The folder name as present on the server.",
+                        "type": "string",
+                        "example": "numsim.napf.tiefziehversuch"
+                    },
+                    "datasetHash": {
+                        "description": "A unique identifier assigned to the dataset on the time of adding it to the scene.",
+                        "type": "string",
+                        "example": "47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    },
+                    "datasetAlias": {
+                        "description": "An alias for the dataset to be able to differentiate two identical datasets in a scene.",
+                        "type": "string",
+                        "example": "alias for numsim.napf.tiefziehversuch"
+                    },
+                    "datasetHref": {
+                        "description": "A link to the dataset in the scene.",
+                        "type": "string",
+                        "example": "/scenes/21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a/47e9f7fc6d1522c552fffaf1803a0e182262002"
+                    }
+                }
+            },
+
+            "sceneDelete": {
+                "type": "object",
+                "properties": {
+                    "sceneDeleted": {
+                        "type": "string",
+                        "example": "21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a"
+                    },
+                    "href": {
+                        "description": "A link to a page that exists.",
+                        "type": "string",
+                        "example": "/scenes"
+                    }
+                }
+            },
+
+            "listOfLoadedDatasets": {
+                "description": "Get the datasets that are loaded in a scene",
+                "required": [
+                    "loadedDatasets"
+                ],
+                "properties": {
+                    "loadedDatasets": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "$ref": "#/components/schemas/loadedDataset"
+                        }
+                    }
+                }
+            },
+
+            "datasetDelete": {
+                "type": "object",
+                "properties": {
+                    "datasetDeleted": {
+                        "type": "string",
+                        "example": "47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    },
+                    "href": {
+                        "description": "A link to the scene that the object belonged to.",
+                        "type": "string",
+                        "example": "/scenes/21dfb0dbf1034ff897aebfa0b8058a51e4a23f7a"
+                    }
+                }
+            },
+
+            "setColorbar": {
+                "description": "The colorbar of a dataset",
+                "required": [
+                    "selected",
+                    "current",
+                    "values"
+                ],
+                "properties": {
+                    "selected": {
+                        "description": "What is used as source for the colorbar. Can be some dataset hash, 'current' or 'values'.",
+                        "type": "string",
+                        "example": "cecffb41c6fe140b4ad1b1f04d82da19e3b02506"
+                    },
+                    "current": {
+                        "description": "Lock the values to the current field.",
+                        "type": "object",
+                        "required": [
+                            "min",
+                            "max"
+                        ],
+                        "properties": {
+                            "min": {
+                                "type": "number",
+                                "example": -1.0
+                            },
+                            "max": {
+                                "type": "number",
+                                "example": 1.0
+                            }
+                        }
+                    },
+                    "values": {
+                        "description": "Set some fixed values.",
+                        "type": "object",
+                        "required": [
+                            "min",
+                            "max"
+                        ],
+                        "properties": {
+                            "min": {
+                                "type": "number",
+                                "example": -1.0
+                            },
+                            "max": {
+                                "type": "number",
+                                "example": 1.0
+                            }
+                        }
+                    }
+                }
+            },
+
+            "colorbarResponse": {
+                "$ref" : "#/components/schemas/setColorbar"
+            },
+
+            "setOrientation": {
+                "description": "The orientation of a dataset",
+                "required": [
+                    "datasetOrientation"
+                ],
+                "properties": {
+                    "datasetOrientation": {
+                        "type": "array",
+                        "items": {
+                            "type": "number",
+                            "format": "double"
+                        },
+                        "example": [0.618801857889, 0.0962469609039, 0.282335580515, 0.480548538153, 0.516858801051, 0.912111011462, 0.865715417578, 0.243929876095, 0.425314633968, 0.567040145201, 0.482427207043, 0.850746627011, 0.952173194961, 0.418593580312, 0.491999373066, 0.794117627953],
+                        "minItems": 16,
+                        "maxItems": 16
+                    }
+                }
+            },
+
+            "orientationResponse": {
+                "description": "The metadata and orientation of an dataset",
+                "required": [
+                    "datasetMeta",
+                    "datasetOrientation"
+                ],
+                "properties": {
+                    "datasetMeta": {
+                        "type": "object",
+                        "$ref": "#/components/schemas/loadedDataset"
+                    },
+                    "datasetOrientation": {
+                        "type": "array",
+                        "items": {
+                            "type": "number",
+                            "format": "double"
+                        },
+                        "example": [0.618801857889, 0.0962469609039, 0.282335580515, 0.480548538153, 0.516858801051, 0.912111011462, 0.865715417578, 0.243929876095, 0.425314633968, 0.567040145201, 0.482427207043, 0.850746627011, 0.952173194961, 0.418593580312, 0.491999373066, 0.794117627953],
+                        "minItems": 16,
+                        "maxItems": 16
+                    }
+                }
+            },
+
+            "setTimestep": {
+                "description": "A single timestep in a dataset",
+                "required": [
+                    "datasetTimestepSelected"
+                ],
+                "properties": {
+                    "datasetTimestepSelected": {
+                        "description": "The selected timestep",
+                        "type": "string",
+                        "example": "000.02"
+                    }
+                }
+            },
+
+            "timestepResponse": {
+                "description": "The metadata and timestep information of an dataset",
+                "required": [
+                    "datasetMeta",
+                    "datasetTimestepList",
+                    "datasetTimestepSelected"
+                ],
+                "properties": {
+                    "datasetMeta": {
+                        "type": "object",
+                        "$ref": "#/components/schemas/loadedDataset"
+                    },
+                    "datasetTimestepList": {
+                        "description": "A sorted list of timesteps.",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": ["000.00", "000.01", "000.02"]
+                    },
+                    "datasetTimestepSelected": {
+                        "description": "The selected timestep",
+                        "type": "string",
+                        "example": "000.02"
+                    }
+                }
+            },
+
+            "setField": {
+                "description": "A single field in a dataset.",
+                "required": [
+                    "datasetFieldSelected"
+                ],
+                "properties": {
+                    "datasetFieldSelected": {
+                        "type": "object",
+                        "required": [
+                            "type",
+                            "name"
+                        ],
+                        "properties": {
+                            "type": {
+                                "description": "Either set to 'nodal' or 'elemental' field.",
+                                "type": "string",
+                                "example": "nodal"
+                            },
+                            "name": {
+                                "description": "The name of a nodal or elemental field.",
+                                "type": "string",
+                                "example": "nt11"
+                            }
+                        }
+                    }
+                }
+            },
+
+            "fieldResponse": {
+                "description": "The metadata and field information of an dataset",
+                "required": [
+                    "datasetMeta",
+                    "datasetFieldList",
+                    "datasetFieldSelected"
+                ],
+                "properties": {
+                    "datasetMeta": {
+                        "type": "object",
+                        "$ref": "#/components/schemas/loadedDataset"
+                    },
+                    "datasetFieldList": {
+                        "description": "A list of available fields for an dataset.",
+                        "type": "object",
+                        "required": [
+                            "elemental",
+                            "nodal"
+                        ],
+                        "properties": {
+                            "elemental": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "example": ["elemental_field_1", "elemental_field_2"]
+                            },
+                            "nodal": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "example": ["nodal_field_1", "nodal_field_2"]
+                            }
+                        }
+
+                    },
+                    "datasetFieldSelected": {
+                        "type": "object",
+                        "required": [
+                            "type",
+                            "name"
+                        ],
+                        "properties": {
+                            "type": {
+                                "description": "Either set to 'nodal' or 'elemental' field.",
+                                "type": "string",
+                                "example": "nodal"
+                            },
+                            "name": {
+                                "description": "The name of a nodal or elemental field.",
+                                "type": "string",
+                                "example": "nt11"
+                            }
+                        }
+                    }
+                }
+            },
+
+            "setElementset": {
+                "description": "A single elementset in a dataset.",
+                "required": [
+                    "datasetElementsetSelected"
+                ],
+                "properties": {
+                    "datasetElementsetSelected": {
+                        "type": "string",
+                        "example": "basePlate",
+                        "default": "__all__"
+                    }
+                }
+            },
+
+            "elementsetResponse": {
+                "description": "The metadata and elementset information of an dataset",
+                "required": [
+                    "datasetMeta",
+                    "datasetElementsetList",
+                    "datasetElementsetSelected"
+                ],
+                "properties": {
+                    "datasetMeta": {
+                        "type": "object",
+                        "$ref": "#/components/schemas/loadedDataset"
+                    },
+                    "datasetElementsetList": {
+                        "description": "A list of available elementsets for an dataset.",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": ["__all__", "basePlate", "bead1"]
+                    },
+                    "datasetElementsetSelected": {
+                        "type": "string",
+                        "example": "basePlate",
+                        "default": "__all__"
+                    }
+                }
+            },
+
+            "meshHashResponse": {
+                "description": "The metadata and field information of an dataset",
+                "required": [
+                    "datasetMeta",
+                    "datasetMeshHash",
+                    "datasetFieldHash"
+                ],
+                "properties": {
+                    "datasetMeta": {
+                        "type": "object",
+                        "$ref": "#/components/schemas/loadedDataset"
+                    },
+                    "datasetMeshHash": {
+                        "description": "The hash for the geometry that is currently served.",
+                        "type": "string",
+                        "example": "47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    },
+                    "datasetFieldHash": {
+                        "description": "The hash for the field that is currently served.",
+                        "type": "string",
+                        "example": "47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    },
+                }
+            },
+
+            "meshGeometryResponse": {
+                "description": "The geometry information of a dataset",
+                "required": [
+                    "datasetMeta",
+                    "datasetMeshHash",
+                    "datasetSurfaceNodesCenter",
+                    "datasetSurfaceNodes",
+                    "datasetSurfaceTets",
+                    "datasetSurfaceFreeEdges",
+                    "datasetSurfaceWireframe"
+                ],
+                "properties": {
+                    "datasetMeta": {
+                        "type": "object",
+                        "$ref": "#/components/schemas/loadedDataset"
+                    },
+                    "datasetMeshHash": {
+                        "description": "The hash for the geometry that is currently served.",
+                        "type": "string",
+                        "example": "47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    },
+
+                    "datasetSurfaceNodesCenter": {
+                        "description": "The center of the geometry.",
+                        "type": "array",
+                        "items": {
+                            "type": "float"
+                        },
+                        "minItems": "16",
+                        "maxItems": "16",
+                        "example": [0.1, 0.2, 0.3]
+                    },
+                    "datasetSurfaceNodes": {
+                        "description": "The {x, y, z} coordinates of the nodes in the order {x1, y1, z1, x2, y2, z2, ...}.",
+                        "type": "array",
+                        "items": {
+                            "type": "float"
+                        },
+                        "example": [0.1, 0.2, 0.3]
+                    },
+                    "datasetSurfaceTets": {
+                        "description": "The ordering of the nodes to for tetrahedra. Every three-tuple refers to a set of three sets of {x, y, z} coordinates from the datasetSurfaceNodes.",
+                        "type": "array",
+                        "items": {
+                            "type": "int"
+                        },
+                        "example": [121, 41, 12]
+                    },
+                    "datasetSurfaceFreeEdges": {
+                        "description": "The nodes that make up the free edges of the model. Every two-tuple refers to two sets of {x, y, z} coordinates from the datasetSurfaceNodes.",
+                        "type": "array",
+                        "items": {
+                            "type": "int"
+                        },
+                        "example": [13, 125, 12, 55]
+                    },
+                    "datasetSurfaceWireframe": {
+                        "description": "The nodes that make up the wireframe of the model. Every two-tuple refers to two sets of {x, y, z} coordinates from the datasetSurfaceNodes.",
+                        "type": "array",
+                        "items": {
+                            "type": "int"
+                        },
+                        "example": [13, 125, 12, 55]
+                    },
+                }
+            },
+
+            "meshFieldResponse": {
+                "description": "The surface field information of a dataset",
+                "required": [
+                    "datasetMeta",
+                    "datasetFieldHash",
+                    "datasetSurfaceField"
+                ],
+                "properties": {
+                    "datasetMeta": {
+                        "type": "object",
+                        "$ref": "#/components/schemas/loadedDataset"
+                    },
+                    "datasetFieldHash": {
+                        "description": "The hash for the field that is currently served.",
+                        "type": "string",
+                        "example": "47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    },
+                    "datasetSurfaceField": {
+                        "description": "The field values for every surface node of the model. Every value refers to one single node.",
+                        "type": "array",
+                        "items": {
+                            "type": "float"
+                        },
+                        "example": [0.1, 0.2, 0.3, 0.8, 0]
+                    },
+                }
+            },
+
+            "addDatasetsSuccess": {
+                "description": "The response on successfully creating a new scene.",
+                "type": "object",
+                "properties": {
+                    "sceneHash": {
+                        "description": "The unique identifier for the scene.",
+                        "type": "string",
+                        "example": "47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    },
+                    "href": {
+                        "description": "A link to the new scene.",
+                        "type": "string",
+                        "example": "/scenes/47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    },
+                    "addDatasetsSuccess": {
+                        "description": "An array with JSON objects containing information about datasets.",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "$ref": "#/components/schemas/loadedDataset"
+                        }
+                    }
+                }
+            },
+
+            "addDatasetsPartial": {
+                "description": "The response on partially creating a new scene.",
+                "type": "object",
+                "properties": {
+                    "sceneHash": {
+                        "description": "The unique identifier for the scene.",
+                        "type": "string",
+                        "example": "47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    },
+                    "href": {
+                        "description": "A link to the scene.",
+                        "type": "string",
+                        "example": "/scenes/47e9f7fc6d1522c552fffaf1803a0e1822620024"
+                    },
+                    "addDatasetsSuccess": {
+                        "description": "An array with JSON objects containing information about datasets.",
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "$ref": "#/components/schemas/loadedDataset"
+                        }
+                    },
+                    "addDatasetsFail": {
+                        "description": "An array of datasets that could not be added to the scene.",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                        },
+                        "example": ["dataset z", "dataset k"]
+                    }
+                }
+            },
+        },
+
+        "parameters": {
+
+            "acceptHeader": {
+                "description": "Simply accept JSON files.",
+                "in": "header",
+                "name": "Accept",
+                "schema": {}
+            },
+
+            "scenePath": {
+                "description": "The scene_hash path variable.",
+                "in": "path",
+                "name": "scene_hash",
+                "required": true,
+                "schema": {
+                    "type": "string"
+                }
+            },
+
+            "datasetPath": {
+                "description": "The dataset_hash path variable.",
+                "in": "path",
+                "name": "dataset_hash",
+                "required": true,
+                "schema": {
+                    "type": "string"
+                }
+            },
+
+        },
+
+        "responses": {
+
+            "sceneDeleted": {
+                "description": "Scene was deleted.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/sceneDelete"
+                        }
+                    }
+                }
+            },
+
+            "datasetDeleted": {
+                "description": "Dataset was deleted.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/datasetDelete"
+                        }
+                    }
+                }
+            },
+
+            "colorbar_200": {
+                "description": "The colorbar information for the scene..",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/components/schemas/colorbarResponse"
+                        }
+                    }
+                }
+            },
+
+            "orientation_200": {
+                "description": "The information about the dataset.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/components/schemas/orientationResponse"
+                        }
+                    }
+                }
+            },
+
+            "timestep_200": {
+                "description": "Timestep information about an dataset.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/components/schemas/timestepResponse"
+                        }
+                    }
+                }
+            },
+
+            "fields_200": {
+                "description": "Field information about an dataset.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/components/schemas/fieldResponse"
+                        }
+                    }
+                }
+            },
+
+            "elementsets_200": {
+                "description": "Elementset information about an dataset.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/components/schemas/elementsetResponse"
+                        }
+                    }
+                }
+            },
+
+            "mesh_hash_200": {
+                "description": "Mesh hash data for the requested dataset.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/components/schemas/meshHashResponse"
+                        }
+                    }
+                }
+            },
+
+            "mesh_geometry_200": {
+                "description": "Mesh geometry data for the requested dataset.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/components/schemas/meshGeometryResponse"
+                        }
+                    }
+                }
+            },
+
+            "mesh_field_200": {
+                "description": "Mesh field data for the requested dataset.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/components/schemas/meshFieldResponse"
+                        }
+                    }
+                }
+            },
+
+            "404": {
+                "description": "Not found",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "errorCode": {
+                                    "type": "string",
+                                    "example": "404"
+                                },
+                                "errorMessage": {
+                                    "type": "string",
+                                    "example": "Not found."
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+
+            "default": {
+                "description": "Unexpected error",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "description": "A default error message and code.",
+                            "properties": {
+                                "error": {
+                                    "properties": {
+                                        "errorCode": {
+                                            "type": "string",
+                                            "example": "An example default error code."
+                                        },
+                                        "errorMessage": {
+                                            "type": "string",
+                                            "example": "An example default error message."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

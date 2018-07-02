@@ -1,0 +1,733 @@
+{
+    "openapi": "3.0.0",
+    "info": {},
+    "servers": [],
+    "paths": {
+
+        "/version": {
+            "get": {
+                "summary": "Returns program name and version.",
+                "description": "Returns the program name and version of the server, so the client can determine if he is compatible.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/acceptHeader"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Program name and version",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "openapi_components.json#/components/schemas/version"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "$ref": "openapi_components.json#/components/responses/default"
+                    }
+                }
+            }
+        },
+
+        "/datasets": {
+            "get": {
+                "summary": "Returns a list of all simulation data on the server.",
+                "description": "Returns a listing of all the simulation data that is available in the directory, that the server is serving from.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/acceptHeader"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A list with the simulation data that is available on the server.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "openapi_components.json#/components/schemas/availableDatasets"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "$ref": "openapi_components.json#/components/responses/default"
+                    }
+                }
+            }
+        },
+
+        "/scenes": {
+
+            "get": {
+                "summary": "Returns a list of all active scenes on the server.",
+                "description": "Get a listing of all scene_hashes (that is: a listing of all scenes) available.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/acceptHeader"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "An datasets list object",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "$ref": "openapi_components.json#/components/schemas/activeScenes"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "$ref": "openapi_components.json#/components/responses/default"
+                    }
+                }
+            },
+
+            "post": {
+                "summary": "Create a new scene with some datasets.",
+                "description": "Create a new scene with a list of datasets that are used for initialization.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/acceptHeader"
+                    }
+                ],
+                "requestBody": {
+                    "description": "A list of datasets to be added to the new scene. Duplicates are allowed.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "openapi_components.json#/components/schemas/datasetsToAdd"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "New scene created. Complete success, all datasets could be added. The response contains a list with datasets that were added to the simulation.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "openapi_components.json#/components/schemas/addDatasetsSuccess"
+                                }
+                            }
+                        }
+                    },
+                    "206": {
+                        "description": "New scene created. Partial success, some datasets could not be added. The response contains a list with added datasets and a list with datasets, that could not be added.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "openapi_components.json#/components/schemas/addDatasetsPartial"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Could not create new scene - none of the requested datasets exist.",
+                        "$ref": "openapi_components.json#/components/responses/404"
+                    },
+                    "default": {
+                        "$ref": "openapi_components.json#/components/responses/default"
+                    }
+                }
+            }
+        },
+
+        "/scenes/{scene_hash}": {
+
+            "get": {
+                "summary": "Get a listing of all datasets in this scene.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/scenePath"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A list of all the datasets in this scene.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "openapi_components.json#/components/schemas/listOfLoadedDatasets"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "openapi_components.json#/components/responses/404"
+                    },
+                    "default": {
+                        "$ref": "openapi_components.json#/components/responses/default"
+                    }
+                }
+            },
+
+            "post": {
+                "summary": "Add one or more dataset(s) to the scene.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/scenePath"
+                    }
+                ],
+                "requestBody": {
+                    "description": "A list of datasets to add to the scene.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "openapi_components.json#/components/schemas/datasetsToAdd"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Complete success, all datasets could be added. The response contains a list with datasets that were added to the scene.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "openapi_components.json#/components/schemas/addDatasetsSuccess"
+                                }
+                            }
+                        }
+                    },
+                    "206": {
+                        "description": "New scene created. Partial success, some datasets could not be added. The response contains a list with added datasets and a list with datasets, that could not be added.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "openapi_components.json#/components/schemas/addDatasetsPartial"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "openapi_components.json#/components/responses/404"
+                    },
+                    "default": {
+                        "$ref": "openapi_components.json#/components/responses/default"
+                    }
+                }
+            },
+
+            "delete": {
+                "summary": "Delete a scene.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/scenePath"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "openapi_components.json#/components/responses/sceneDeleted"
+                    },
+                    "404": {
+                        "$ref": "openapi_components.json#/components/responses/404"
+                    },
+                    "default": {
+                        "$ref": "openapi_components.json#/components/responses/default"
+                    }
+                }
+            }
+        },
+
+        "/scenes/{scene_hash}/{dataset_hash}": {
+
+            "get": {
+                "summary": "Get all the information about this dataset.",
+                "description": "Returns information about this dataset. Like available timesteps, simulation subsets (temp, etc), orientation, ... unclear what exactly, so WIP.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/scenePath"
+                    },
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/datasetPath"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The information about the dataset.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "$ref": "openapi_components.json#/components/schemas/loadedDataset"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "openapi_components.json#/components/responses/404"
+                    },
+                    "default": {
+                        "$ref": "openapi_components.json#/components/responses/default"
+                    }
+                }
+            },
+
+            "delete": {
+                "summary": "Delete this dataset from the scene.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/scenePath"
+                    },
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/datasetPath"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "openapi_components.json#/components/responses/datasetDeleted"
+                    },
+                    "404": {
+                        "$ref": "openapi_components.json#/components/responses/404"
+                    },
+                    "default": {
+                        "$ref": "openapi_components.json#/components/responses/default"
+                    }
+                }
+            }
+        },
+
+        "/scenes/{scene_hash}/colorbar": {
+
+            "get": {
+                "summary": "Get the colorbar settings for the scene.",
+                "description": "",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/scenePath"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "openapi_components.json#/components/responses/colorbar_200"
+                    },
+                    "404": {
+                        "$ref": "openapi_components.json#/components/responses/404"
+                    },
+                    "default": {
+                        "$ref": "openapi_components.json#/components/responses/default"
+                    }
+                }
+            },
+
+            "patch": {
+                "summary": "Change the colorbar settings for the scene.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/scenePath"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Change the colorbar settings of the scene.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "openapi_components.json#/components/schemas/setColorbar"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "openapi_components.json#/components/responses/colorbar_200"
+                    },
+                    "404": {
+                        "$ref": "openapi_components.json#/components/responses/404"
+                    },
+                    "default": {
+                        "$ref": "openapi_components.json#/components/responses/default"
+                    }
+                }
+            }
+        },
+
+        "/scenes/{scene_hash}/{dataset_hash}/orientation": {
+
+            "get": {
+                "summary": "Get the orientation of this dataset.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/scenePath"
+                    },
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/datasetPath"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "openapi_components.json#/components/responses/orientation_200"
+                    },
+                    "default": {
+                        "$ref": "openapi_components.json#/components/responses/default"
+                    }
+                }
+            },
+
+            "patch": {
+                "summary": "Alter the orientation of this dataset.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/scenePath"
+                    },
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/datasetPath"
+                    }
+                ],
+                "requestBody": {
+                    "description": "A list of datasets to add to the scene.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "openapi_components.json#/components/schemas/setOrientation"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "openapi_components.json#/components/responses/orientation_200"
+                    },
+                    "404": {
+                        "$ref": "openapi_components.json#/components/responses/404"
+                    },
+                    "default": {
+                        "$ref": "openapi_components.json#/components/responses/default"
+                    }
+                }
+            }
+        },
+
+        "/scenes/{scene_hash}/{dataset_hash}/timesteps": {
+
+            "get": {
+                "summary": "Returns the current and selected timestep(s).",
+                "description": "Returns the currently selected and available timestep(s) of this dataset.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/scenePath"
+                    },
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/datasetPath"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "openapi_components.json#/components/responses/timestep_200"
+                    },
+                    "default": {
+                        "$ref": "openapi_components.json#/components/responses/default"
+                    }
+                }
+
+            },
+
+            "patch": {
+                "summary": "Sets the current timestep to one that is available.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/scenePath"
+                    },
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/datasetPath"
+                    }
+                ],
+                "requestBody": {
+                    "description": "The timestep to select. The `index` is referring to the `datasetTimesteps` array that has been returned in the GET method.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "openapi_components.json#/components/schemas/setTimestep"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "openapi_components.json#/components/responses/timestep_200"
+                    },
+                    "404": {
+                        "$ref": "openapi_components.json#/components/responses/404"
+                    },
+                    "default": {
+                        "$ref": "openapi_components.json#/components/responses/default"
+                    }
+                }
+
+            }
+        },
+
+        "/scenes/{scene_hash}/{dataset_hash}/fields": {
+
+            "get": {
+                "summary": "Returns the current and displayable field(s).",
+                "description": "Returns the currently displayed field and the displayable fields (temperature, etc) of this dataset.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/scenePath"
+                    },
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/datasetPath"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "openapi_components.json#/components/responses/fields_200"
+                    },
+                    "default": {
+                        "$ref": "openapi_components.json#/components/responses/default"
+                    }
+                }
+
+
+            },
+
+            "patch": {
+                "summary": "Sets the displayed field to one that is available.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/scenePath"
+                    },
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/datasetPath"
+                    }
+                ],
+                "requestBody": {
+                    "description": "A list of datasets to add to the scene.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "openapi_components.json#/components/schemas/setField"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "openapi_components.json#/components/responses/fields_200"
+                    },
+                    "404": {
+                        "$ref": "openapi_components.json#/components/responses/404"
+                    },
+                    "default": {
+                        "$ref": "openapi_components.json#/components/responses/default"
+                    }
+                }
+
+            }
+        },
+
+        "/scenes/{scene_hash}/{dataset_hash}/elementsets": {
+
+            "get": {
+                "summary": "Returns the current and displayable elementset(s).",
+                "description": "Returns the currently displayed elementset and the displayable elementsets of this dataset.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/scenePath"
+                    },
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/datasetPath"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "openapi_components.json#/components/responses/elementsets_200"
+                    },
+                    "default": {
+                        "$ref": "openapi_components.json#/components/responses/default"
+                    }
+                }
+
+
+            },
+
+            "patch": {
+                "summary": "Sets the displayed elementset to one that is available.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/scenePath"
+                    },
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/datasetPath"
+                    }
+                ],
+                "requestBody": {
+                    "description": "A list of datasets to add to the scene.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "openapi_components.json#/components/schemas/setElementset"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "openapi_components.json#/components/responses/elementsets_200"
+                    },
+                    "404": {
+                        "$ref": "openapi_components.json#/components/responses/404"
+                    },
+                    "default": {
+                        "$ref": "openapi_components.json#/components/responses/default"
+                    }
+                }
+
+            }
+        },
+
+        "/scenes/{scene_hash}/{dataset_hash}/mesh/hash": {
+
+            "get": {
+                "summary": "Returns the geometry and field hash for the mesh data.",
+                "description": "Returns the geometry and field hash for the mesh data.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/scenePath"
+                    },
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/datasetPath"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "openapi_components.json#/components/responses/mesh_hash_200"
+                    },
+                    "default": {
+                        "$ref": "openapi_components.json#/components/responses/default"
+                    }
+                }
+
+            }
+        },
+
+        "/scenes/{scene_hash}/{dataset_hash}/mesh/geometry": {
+
+            "get": {
+                "summary": "Returns the geometry mesh data.",
+                "description": "Returns the geometry mesh data.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/scenePath"
+                    },
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/datasetPath"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "openapi_components.json#/components/responses/mesh_geometry_200"
+                    },
+                    "default": {
+                        "$ref": "openapi_components.json#/components/responses/default"
+                    }
+                }
+
+            }
+        },
+
+        "/scenes/{scene_hash}/{dataset_hash}/mesh/field": {
+
+            "get": {
+                "summary": "Returns the field mesh data.",
+                "description": "Returns the field mesh data.",
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/scenePath"
+                    },
+                    {
+                        "$ref": "openapi_components.json#/components/parameters/datasetPath"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "openapi_components.json#/components/responses/mesh_field_200"
+                    },
+                    "default": {
+                        "$ref": "openapi_components.json#/components/responses/default"
+                    }
+                }
+
+            }
+        }
+    },
+
+    "components": {}
+}
