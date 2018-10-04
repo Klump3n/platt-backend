@@ -172,8 +172,8 @@ def print_version():
     """
     # Get the version information
     version_info = version()
-    program_name = version_info['program']
-    version_number = version_info['version']
+    program_name = version_info['programName']
+    version_number = version_info['programVersion']
 
     sys.exit('{} {}'.format(program_name, version_number))
 
