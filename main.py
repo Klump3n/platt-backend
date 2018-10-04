@@ -37,6 +37,10 @@ def parse_commandline():
         '--version' not in sys.argv and
         '-v' not in sys.argv
     )
+    external_data_source_requirements = (
+        '-e' in sys.argv or
+        '--external' in sys.argv
+    )
 
     parser = argparse.ArgumentParser(
         description=__doc__,
@@ -45,11 +49,29 @@ def parse_commandline():
     parser.add_argument(
         '-p', '--port', default=8008,
         help='The port for the web server.')
-    parser.add_argument(
+
+    source_group = parser.add_mutually_exclusive_group(
         # NOTE: see the comment above the declaration of
         # no_data_dir_requirements
-        '-d', '--data-dir', required=no_data_dir_requirements,
-        help='The directory in which we want to look for simulation data.')
+        required=no_data_dir_requirements)
+    source_group.add_argument(
+        '-d', '--data-dir',
+        help='The directory in which we want to look for simulation data.'
+    )
+    source_group.add_argument(
+        '-e', '--external', action='store_true',
+        help='Use an external data source.'
+    )
+
+    parser.add_argument(
+        '--ext_address', required=external_data_source_requirements,
+        help='IP address of the external data source'
+    )
+    parser.add_argument(
+        '--ext_port', required=external_data_source_requirements,
+        help='Port of the external data source'
+    )
+
     parser.add_argument('--test', action='store_true',
                         help='Perform a unit test.')
     parser.add_argument('-v', '--version', action='store_true',
@@ -59,10 +81,10 @@ def parse_commandline():
     return args
 
 
-def start_backend(data_dir, port):
+def start_backend(data_dir, port, ext_addr, ext_port):
     """
     Start the backend on the provided port, serving simulation data from the
-    provided directory.
+    provided directory or from the external source.
 
     Set the working directory to the program directory and display a welcome
     message, containing the program name and version along with the server
@@ -73,6 +95,8 @@ def start_backend(data_dir, port):
      data_dir (string): The path to the simulation data, either relative to the
       main.py file or absolute.
      port (int): The port for the web server.
+     ext_addr(str): The IP address of the external source.
+     ext_port (int): The network port of the external source.
 
     Returns:
      None: Nothing
@@ -86,33 +110,57 @@ def start_backend(data_dir, port):
     # Settings for the server
     #
     # Convert paths to os.PathLike
-    data_dir = pathlib.Path(data_dir)
     working_dir = pathlib.Path(__file__).cwd()
     frontend_dir = working_dir / 'frontend'
+
+    # Define the source of the data
+    data_source = None
+
+    if data_dir:
+        data_dir = pathlib.Path(data_dir)
+        data_source = 'local'
+
+    if ext_addr and ext_port:
+        data_source = 'external'
 
     # Change working directory in case we are not there yet
     os.chdir(working_dir)
 
-    # port = args.port
-
     # Welcome message
-    start_msg = '\nThis is {program_name} {version_number}\n'\
-                'Starting http server on port {port_text}\n\n'\
-                'Serving frontent from directory {frontend_dir_text}\n'\
-                'Will search for simulation data in directory {data_dir_text}'\
-                '\n'.format(
-                    program_name=program_name,
-                    version_number=version_number,
-                    port_text=port,
-                    frontend_dir_text=frontend_dir,
-                    data_dir_text=data_dir)
-    print(start_msg)
+    welcome_msg = ''
+    welcome_msg += '\nThis is {program_name} {version_number}\n'\
+                   'Starting http server on port {port_text}\n\n'\
+                   'Serving frontend from directory '\
+                   '{frontend_dir_text}\n'.format(
+                       program_name=program_name,
+                       version_number=version_number,
+                       port_text=port,
+                       frontend_dir_text=frontend_dir
+                   )
+
+    if data_source == 'local':
+        welcome_msg += 'Will search for simulation data in local directory '\
+                       '{data_dir_text}\n'.format(
+                           data_dir_text=data_dir
+                       )
+
+    if data_source == 'external':
+        welcome_msg += 'Serving data from external source at '\
+                       '{ext_addr_text}:{ext_port_text}\n'.format(
+                           ext_addr_text=ext_addr,
+                           ext_port_text=ext_port
+                       )
+
+    print(welcome_msg)
 
     # Instanciate and start the backend.
     web_instance = web_server.Web_Server(
         frontend_directory=frontend_dir,
         data_directory=data_dir,
-        port=port)
+        port=port,
+        ext_addr=ext_addr,
+        ext_port=ext_port
+    )
     web_instance.start()
 
     return None
@@ -139,7 +187,18 @@ def start_program():
     do_unittest = ARGS.test
     just_print_version = ARGS.version
     port = ARGS.port
-    data_dir = ARGS.data_dir
+
+    # Init the source
+    data_dir = None
+    ext_addr = None
+    ext_port = None
+
+    if ARGS.data_dir:
+        data_dir = ARGS.data_dir
+
+    if ARGS.external:
+        ext_addr = ARGS.ext_address
+        ext_port = ARGS.ext_port
 
     # Just print the version?
     if just_print_version:
@@ -154,7 +213,7 @@ def start_program():
         sys.exit('\nPerformed unittests -- exiting.')
 
     # Start the program
-    start_backend(data_dir, port)
+    start_backend(data_dir, port, ext_addr, ext_port)
 
     return None
 
