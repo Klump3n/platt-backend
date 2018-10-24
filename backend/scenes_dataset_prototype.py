@@ -33,27 +33,40 @@ class _DatasetPrototype:
      Load all the simulation data on initialization.
 
     """
-    def __init__(self, dataset_path):
+    # def __init__(self, dataset_path):
+    def __init__(self, source_dict=None, dataset_name=None):
         """
         Initialise a dataset. We expect the path to some simulation data as an
         input.
 
         """
-        if not isinstance(dataset_path, os.PathLike):
-            raise TypeError(
-                'dataset_path is {}, expected os.PathLike'.format(
-                    type(dataset_path).__name__))
+        self.source = source_dict
+        self.source_type = source_dict['source']
 
-        # Check if the path exists
-        if not dataset_path.exists():
-            raise ValueError(
-                '{} does not exist'.format(dataset_path.absolute()))
+        if self.source_type == 'local':
+            data_dir = self.source['local']
 
-        # Save the dataset path
-        self.dataset_path = dataset_path.absolute()
+            # Check if the path exists
+            if not data_dir.exists():
+                raise ValueError(
+                    '{} does not exist'.format(data_dir.absolute()))
+
+            # Set the data dir
+            self._data_dir = data_dir.absolute()
+
+            self.dataset_path = self._data_dir / dataset_name
+
+            # Check if the path exists
+            if not self.dataset_path.exists():
+                raise ValueError(
+                    '{} does not exist'.format(self.dataset_path.absolute()))
+
+        if self.source_type == 'external':
+            self.ext_addr = source_dict['external']['addr']
+            self.ext_port = source_dict['external']['port']
 
         # Grab the last entry from the path
-        self.dataset_name = self.dataset_path.absolute().name
+        self.dataset_name = dataset_name
 
         # Generate the SHA1 on dataset object creation
         self.dataset_sha1 = timestamp_to_sha1()
@@ -98,7 +111,7 @@ class _DatasetPrototype:
         self._meshes = {}
 
         # initialize the mesh parser
-        self._mp = dp.ParseDataset(self.dataset_path)
+        self._mp = dp.ParseDataset(source_dict=self.source, dataset_name=dataset_name)
 
         # for init: find the lowest timestep and set it
         lowest_timestep = self.timestep_list()[0]
@@ -185,12 +198,20 @@ class _DatasetPrototype:
          except.
 
         """
-        dataset_dir = self.dataset_path / 'fo'
-        dirs = sorted(dataset_dir.glob('*/'))  # Glob all directories
-
         timestep_list = []
-        for path in dirs:
-            timestep_list.append(path.name)
+
+        if self.source_type == 'local':
+            dataset_dir = self.dataset_path / 'fo'
+            dirs = sorted(dataset_dir.glob('*/'))  # Glob all directories
+
+            for path in dirs:
+                timestep_list.append(path.name)
+
+        if self.source_type == 'external':
+            import backend.global_settings as gloset
+            ext_index = gloset.scene_manager.ext_src_index()
+            dataset_dict = ext_index[self.dataset_name]
+            timestep_list = list(dataset_dict.keys())
 
         # sorting from...
         # https://blog.codinghorror.com/sorting-for-humans-natural-sort-order/
@@ -243,30 +264,41 @@ class _DatasetPrototype:
          except.
 
         """
-        timestep_dir = self.dataset_path / 'fo' / self._selected_timestep
-
         elemental_fields = []
-        elemental_field_dir = timestep_dir / 'eo'
-        elemental_field_paths = sorted(elemental_field_dir.glob('*.bin'))
-        for field in elemental_field_paths:
-            elemental_fields.append(field.stem)  # just append the file name
-
-        # cut the element type from the field name
-        try:
-            elemental_fields = [
-                field.rsplit('.', 1) for field in elemental_fields
-            ]
-            elemental_fields = sorted(
-                np.unique(np.asarray(elemental_fields)[:, 0])
-            )
-        except IndexError:
-            pass
-
         nodal_fields = []
-        nodal_field_dir = timestep_dir / 'no'
-        nodal_field_paths = sorted(nodal_field_dir.glob('*.bin'))
-        for field in nodal_field_paths:
-            nodal_fields.append(field.stem)  # just append the file name
+
+        if self.source_type == 'local':
+            timestep_dir = self.dataset_path / 'fo' / self._selected_timestep
+
+            elemental_field_dir = timestep_dir / 'eo'
+            elemental_field_paths = sorted(elemental_field_dir.glob('*.bin'))
+            for field in elemental_field_paths:
+                elemental_fields.append(field.stem)  # just append the file name
+
+            # cut the element type from the field name
+            try:
+                elemental_fields = [
+                    field.rsplit('.', 1) for field in elemental_fields
+                ]
+                elemental_fields = sorted(
+                    np.unique(np.asarray(elemental_fields)[:, 0])
+                )
+            except IndexError as e:
+                print(e)
+                raise
+
+            nodal_field_dir = timestep_dir / 'no'
+            nodal_field_paths = sorted(nodal_field_dir.glob('*.bin'))
+            for field in nodal_field_paths:
+                nodal_fields.append(field.stem)  # just append the file name
+
+        if self.source_type == 'external':
+            import backend.global_settings as gloset
+            ext_index = gloset.scene_manager.ext_src_index()
+            timestep_dict = ext_index[self.dataset_name][self._selected_timestep]
+
+            elemental_fields = list(timestep_dict['elem_out'].keys())
+            nodal_fields = list(timestep_dict['node_out'].keys())
 
         return_dict = {
             'elemental': elemental_fields,
@@ -338,30 +370,36 @@ class _DatasetPrototype:
          except.
 
         """
-        timestep_dir = self.dataset_path / 'fo' / self._selected_timestep
-
-        elset_names = []
-        all_elsets = timestep_dir.glob('*.elset.*.bin')
-        elset_groups = []
-
         # results
         return_dict = {}
 
-        for elset in all_elsets:
-            filename = elset.parts[-1]
-            elset_name = re.match('(.+)\.elset\.', filename).groups()[0]
-            return_dict[elset_name] = {}
-            elset_names.append(elset_name)
+        if self.source_type == 'local':
+            timestep_dir = self.dataset_path / 'fo' / self._selected_timestep
 
-        for elset_name_key in return_dict:
-            elset_groups.append(timestep_dir.glob('{}.elset.*.bin'.format(elset_name_key)))
+            elset_names = []
+            all_elsets = timestep_dir.glob('*.elset.*.bin')
+            elset_groups = []
 
-        for elset_group in elset_groups:
-            for elset in elset_group:
+            for elset in all_elsets:
                 filename = elset.parts[-1]
-                elset_type = re.search('elset\.(.+)\.bin', filename).groups()[0]
-                elset_name = re.search('(.+)\.elset\.', filename).groups()[0]
-                return_dict[elset_name][elset_type] = elset
+                elset_name = re.match('(.+)\.elset\.', filename).groups()[0]
+                return_dict[elset_name] = {}
+                elset_names.append(elset_name)
+
+            for elset_name_key in return_dict:
+                elset_groups.append(timestep_dir.glob('{}.elset.*.bin'.format(elset_name_key)))
+
+            for elset_group in elset_groups:
+                for elset in elset_group:
+                    filename = elset.parts[-1]
+                    elset_type = re.search('elset\.(.+)\.bin', filename).groups()[0]
+                    elset_name = re.search('(.+)\.elset\.', filename).groups()[0]
+                    return_dict[elset_name][elset_type] = elset
+
+        if self.source_type == 'external':
+            import backend.global_settings as gloset
+            ext_index = gloset.scene_manager.ext_src_index()
+            return_dict = ext_index[self.dataset_name][self._selected_timestep]['elset']
 
         elset_keys = []
         for elset_name_key in return_dict:

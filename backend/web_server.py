@@ -41,7 +41,11 @@ class Web_Server:
      The global_settings module is initialized in __init__().
 
     """
-    def __init__(self, frontend_directory, data_directory, port=8008):
+    def __init__(
+            self,
+            frontend_directory, port=8008,
+            source_dict=None
+    ):
         """
         Initialise the webserver.
 
@@ -56,6 +60,8 @@ class Web_Server:
           the simulation data.
          port (int, optional, defaults to 8008): The port on which the
           backend listens to connections.
+         ext_addr (str): IP address of the external source.
+         ext_port (int): Network port of the external source.
 
         Returns:
          None: Nothing.
@@ -98,11 +104,10 @@ class Web_Server:
         }
 
         self.port = port
-        self.data_directory = data_directory
 
         # Initialise the global variables. For later use just import the
         # backend.global_settings and use the scene manager from there.
-        global_settings.init(data_dir=self.data_directory)
+        global_settings.init(source_dict=source_dict)
 
         return None
 

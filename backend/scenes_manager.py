@@ -6,6 +6,7 @@ This module takes care of storing and manipulating scenes.
 import os
 import pathlib
 from backend.scenes_scene_prototype import _ScenePrototype
+import backend.interface_external_data as external_data
 
 
 class SceneManager:
@@ -35,7 +36,7 @@ class SceneManager:
      TypeError: If `data_dir` is not of type `str`.
 
     """
-    def __init__(self, data_dir):
+    def __init__(self, source_dict=None):
         """
         Initialise the manager.
 
@@ -44,17 +45,25 @@ class SceneManager:
         self._scene_list is a dictionary for containing scenes.
 
         """
-        if not isinstance(data_dir, os.PathLike):
-            raise TypeError('data_dir is {}, expected os.PathLike'.format(
-                type(data_dir).__name__))
+        self.source = source_dict
+        self.source_type = source_dict['source']
 
-        # Check if the path exists
-        if not data_dir.exists():
-            raise ValueError(
-                '{} does not exist'.format(data_dir.absolute()))
+        if self.source_type == 'local':
+            data_dir = self.source['local']
+            # Check if the path exists
+            if not data_dir.exists():
+                raise ValueError(
+                    '{} does not exist'.format(data_dir.absolute()))
 
-        # Set the data dir
-        self._data_dir = data_dir.absolute()
+            # Set the data dir
+            self._data_dir = data_dir.absolute()
+
+        if self.source_type == 'external':
+            self.ext_addr = source_dict['external']['addr']
+            self.ext_port = source_dict['external']['port']
+
+            self._local_src_index = {}
+            self._local_src_index = self.ext_src_index(update=True)
 
         self._scene_list = {}
 
@@ -84,6 +93,18 @@ class SceneManager:
          what?).
 
         """
+        if self.source_type == 'local':
+            return self._list_available_datasets_local()
+        if self.source_type == 'external':
+            return self._list_available_datasets_external()
+        else:
+            return None
+
+    def _list_available_datasets_local(self):
+        """
+        Returns locally available datasets.
+
+        """
         # Find all the folders in _data_dir
         dirs_in_data_dir = sorted(self._data_dir.glob('*/'))
 
@@ -95,6 +116,15 @@ class SceneManager:
                 availableDatasets['availableDatasets'].append(
                     str(candidate.name))
 
+        return availableDatasets
+
+    def _list_available_datasets_external(self):
+        """
+        Returns externally available datasets.
+
+        """
+        availableDatasets = {
+            'availableDatasets': list(self._local_src_index.keys())}
         return availableDatasets
 
     def new_scene(self, dataset_list):
@@ -142,7 +172,7 @@ class SceneManager:
 
         try:
             # Get a new instance of a scene
-            new_scene = _ScenePrototype(data_dir=self._data_dir)
+            new_scene = _ScenePrototype(source_dict=self.source)
             new_scene_hash = new_scene.name()
             self._scene_list[new_scene_hash] = new_scene
             # Here still dataset_list, so we can have a addDatasetFail entry
@@ -288,9 +318,7 @@ class SceneManager:
                         'one_dataset is {}, expected str'.format(
                             type(one_dataset).__name__))
 
-                # Cast to os.PathLike
-                one_dataset_path = target_scene._data_dir / one_dataset
-                dataset_hash = target_scene.add_dataset(one_dataset_path)
+                dataset_hash = target_scene.add_dataset(one_dataset)
                 dataset_meta = target_scene._dataset_list[dataset_hash].meta()
                 return_dict['addDatasetsSuccess'].append(dataset_meta)
 
@@ -844,3 +872,18 @@ class SceneManager:
         }
 
         return return_dict
+
+    def ext_src_index(self, update=False):
+        """
+        Keep a copy of the index of the external source.
+
+        Args:
+         update (bool, defaults to False): If set to True it will query the
+          proxy for an updated index, updates the local copy and then return
+          that.
+
+        """
+        if update:
+            self._local_src_index = external_data.index(source_dict=self.source)
+
+        return self._local_src_index

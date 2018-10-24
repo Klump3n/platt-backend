@@ -8,7 +8,7 @@ So far it only contains the scene_manager.
 from backend.scenes_manager import SceneManager
 
 
-def init(data_dir):
+def init(source_dict=None):
     """
     Initialise the global variables.
 
@@ -16,11 +16,11 @@ def init(data_dir):
     and exposes methods to manipulate them and the objects that are contained.
 
     Args:
-     data_dir (os.PathLike): The directory that contains the simulation data.
+     source_dict (dict): Information about the provided data source.
 
     Notes:
      Import this module everywhere you need to manipulate scenes.
 
     """
     global scene_manager        # This gets exposed
-    scene_manager = SceneManager(data_dir)
+    scene_manager = SceneManager(source_dict=source_dict)

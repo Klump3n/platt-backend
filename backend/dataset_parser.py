@@ -18,7 +18,7 @@ class ParseDataset:
     Unpack and store data for a dataset.
 
     """
-    def __init__(self, dataset_dir):
+    def __init__(self, source_dict=None, dataset_name=None):
         """
         Initialize the parser.
 
@@ -30,12 +30,33 @@ class ParseDataset:
          TypeError: If ``type(dataset_dir)`` is not `os.PathLike`.
 
         """
-        if not isinstance(dataset_dir, os.PathLike):
-            raise TypeError('dataset_dir is {}, expected os.PathLike'.format(
-                type(dataset_dir).__name__))
+        self.source = source_dict
+        self.source_type = source_dict['source']
 
-        self.dataset_dir = dataset_dir
-        self.fo_dir = self.dataset_dir / 'fo'
+        self._dataset_name = dataset_name
+
+        if self.source_type == 'local':
+            data_dir = self.source['local']
+
+            # Check if the path exists
+            if not data_dir.exists():
+                raise ValueError(
+                    '{} does not exist'.format(data_dir.absolute()))
+
+            # Set the data dir
+            self._data_dir = data_dir.absolute()
+
+            self.dataset_dir = self._data_dir / dataset_name
+            self.fo_dir = self.dataset_dir / 'fo'
+
+            # Check if the path exists
+            if not self.dataset_dir.exists():
+                raise ValueError(
+                    '{} does not exist'.format(self.dataset_dir.absolute()))
+
+        if self.source_type == 'external':
+            self.ext_addr = source_dict['external']['addr']
+            self.ext_port = source_dict['external']['port']
 
         # self._nodal_field_map = None
         self._nodal_field_map_dict = {}
@@ -43,10 +64,6 @@ class ParseDataset:
         self._blank_field_node_count_dict = {}
 
         self._surface_triangulation_dict = {}
-
-        # self._elemental_field_map = None
-        # self._elemental_field_map_combined = None
-        # self._elemental_surface_node_count = None
 
         self._field_dict = None
 
@@ -159,11 +176,80 @@ class ParseDataset:
 
         return data
 
-    def _geometry_data(self, directory, elementset, current_hash=None):
+    def _read_binary_data_external(self, object_key_list, fmt_list):
+        """
+        Return the data that was read from the binary file at path.
+
+        fmt is a dict, containing
+         data_point_size (int): The number of bytes per data point
+         data_point_type (str): The data type (d = double, i = integer)
+         points_per_unit (int): The number of data points that belong together.
+
+        Args:
+         binary_file (os.PathLike): The file from which we want to read binary
+          data.
+         fmt (dict): A dictionary containing the number of bytes per
+          data point, the format of the data point (int, double, ...) and the
+          number of data points that make up a unit (see above).
+
+        Returns:
+         list: The data we read.
+
+        Raises:
+         TypeError: If ``type(binary_file)`` is not `os.PathLike`.
+         TypeError: If ``type(fmt)`` is not `dict`.
+         ValueError: If ``binary_file`` does not exist.
+
+        """
+        if len(object_key_list) != len(fmt_list):
+            return None
+        return_list = []
+
+        import backend.interface_external_data as ext_data
+        bin_data = ext_data.simulation_file(source_dict=self.source, object_key_list=object_key_list)
+
+        for it, fmt in enumerate(fmt_list):
+            # let this just raise a KeyError if we hand it a wrong dict
+            data_point_size = fmt['data_point_size']
+            data_point_type = fmt['data_point_type']
+            points_per_unit = fmt['points_per_unit']
+
+            bin_data_points = int(len(bin_data[it]) / data_point_size)
+
+            # little endian
+            struct_format = '<{}{}'.format(bin_data_points, data_point_type)
+
+            data = struct.unpack(struct_format, bin_data[it])
+            data = np.asarray(data)
+
+            # reshape the data if we have more than one unit per pack
+            if points_per_unit > 1:
+                data.shape = (
+                    int(bin_data_points/points_per_unit), points_per_unit
+                )
+
+            return_list.append(data)
+
+        return return_list
+
+    def _geometry_data(self, timestep, elementset, current_hash=None):
         """
         Get the geometry data for the dataset.
 
+        TODO: Refactor this stuff
+
         """
+        if self.source_type == 'local':
+            return self._geometry_data_local(timestep, elementset, current_hash)
+        if self.source_type == 'external':
+            return self._geometry_data_external(timestep, elementset, current_hash)
+        else:
+            return None
+
+    def _geometry_data_local(self, timestep, elementset, current_hash=None):
+
+        directory = self.fo_dir / timestep
+
         # parse nodes
         nodes_path = sorted(directory.glob('nodes.bin'))[0]
         nodes_hash = self._file_hash(nodes_path)
@@ -223,11 +309,101 @@ class ParseDataset:
 
         return return_dict
 
+    def _geometry_data_external(self, timestep, elementset, current_hash=None):
+        """
+        # loop = asdasdad
+        # coro_elem_1 = asd
+        # coro_elem_2 = asd
+        # coro_nodes = asd
+        # asyncio.gather(coro_elem_1, coro_elem_2, coro_nodes)
+
+        """
+        # This is so dumb.
+        import backend.global_settings as gloset
+        ext_index = gloset.scene_manager.ext_src_index()
+        timestep_dict = ext_index[self._dataset_name][timestep]
+
+        # parse nodes
+        nodes_key = timestep_dict['geom']['nodes']['object_key']
+        nodes_hash = timestep_dict['geom']['nodes']['sha1sum']
+        nodes_format = binary_formats.nodes()
+
+        # parse elements
+        elements = {}
+        elements_types = list(timestep_dict['geom']['elements'].keys())
+        for elements_type in elements_types:
+
+            current_elem = timestep_dict['geom']['elements']
+
+            elements_format = getattr(binary_formats, elements_type)()
+
+            elements[elements_type] = {}
+            elements[elements_type]['key'] = current_elem[elements_type]['object_key']
+            elements[elements_type]['hash'] = current_elem[elements_type]['sha1sum']
+            elements[elements_type]['fmt'] = elements_format
+
+        # calculate hash
+        mesh_checksum = nodes_hash  # init with nodes
+        for element in elements:    # add every element
+            mesh_checksum = self._string_hash(
+                elements[element]['hash'],
+                update=mesh_checksum
+            )
+        # update the mesh hash with the selected elementset
+        for element_type in elementset:
+            elementset_sha1 = elementset[element_type]['sha1sum']
+            mesh_checksum = self._string_hash(
+                elementset_sha1,
+                update=mesh_checksum
+            )
+
+        return_dict = {'hash': mesh_checksum}
+
+        if current_hash is None or mesh_checksum not in current_hash:
+
+            object_key_list = []
+            fmt_list = []
+
+            object_key_list.append(nodes_key)
+            fmt_list.append(nodes_format)
+            for element in elements:
+                object_key_list.append(elements[element]['key'])
+                fmt_list.append(elements[element]['fmt'])
+
+
+            geom_data = self._read_binary_data_external(object_key_list, fmt_list)
+
+            return_dict['nodes'] = {}
+            return_dict['nodes']['fmt'] = nodes_format
+            return_dict['nodes']['data'] = geom_data[0]
+
+            return_dict['elements'] = {}
+            for it, element in enumerate(elements):
+                element_path = elements[element]['key']
+
+                return_dict['elements'][element] = {}
+                return_dict['elements'][element]['fmt'] = elements[element]['fmt']
+                return_dict['elements'][element]['data'] = geom_data[it+1]
+
+        else:
+            return_dict['nodes'] = None
+            return_dict['elements'] = None
+
+        return return_dict
+
     def _elementset_data(self, elementset):
         """
         Parse the elementset binary data.
 
         """
+        if self.source_type == 'local':
+            return self._elementset_data_local(elementset)
+        if self.source_type == 'external':
+            return self._elementset_data_external(elementset)
+        else:
+            return None
+
+    def _elementset_data_local(self, elementset):
         if elementset == {}:
             return None
 
@@ -243,7 +419,35 @@ class ParseDataset:
 
         return return_dict
 
-    def _field_data(self, directory, field, elementset, current_hash=None):
+    def _elementset_data_external(self, elementset):
+        # # This is so dumb.
+        # import backend.global_settings as gloset
+        # ext_index = gloset.scene_manager.ext_src_index()
+        # elset_dict = ext_index[self._dataset_name][timestep]['elset']
+
+        if elementset == {}:
+            return None
+
+        return_dict = {}
+
+        elset_key_list = []
+        elset_fmt_list = []
+
+        elementset_fmt = binary_formats.elementset()
+
+        for element_type in elementset:
+            elset_key_list.append(elementset[element_type]['object_key'])
+            elset_fmt_list.append(elementset_fmt)
+
+        elementset_data = self._read_binary_data_external(elset_key_list, elset_fmt_list)
+
+        for it, element_type in enumerate(elementset):
+            return_dict[element_type] = elementset_data[it]
+
+        return return_dict
+
+
+    def _field_data(self, timestep, field, elementset, current_hash=None):
         """
         Return the field data for the dataset.
 
@@ -253,7 +457,7 @@ class ParseDataset:
         time) is saved.
 
         Args:
-         directory (pathlib.Path): Path to the eo/no directories.
+         timestep (str): Requested timestep.
          field (dict): Dictionary containing the requested field type and name.
          current_hash (str, optional): Hash of the currently selected field.
 
@@ -262,6 +466,16 @@ class ParseDataset:
           contains 'None'.
 
         """
+        if self.source_type == 'local':
+            return self._field_data_local(timestep, field, elementset, current_hash=None)
+        if self.source_type == 'external':
+            return self._field_data_external(timestep, field, elementset, current_hash=None)
+        else:
+            return None
+
+    def _field_data_local(self, timestep, field, elementset, current_hash=None):
+        directory = self.fo_dir / timestep
+
         req_field_type = field['type']
         req_field_name = field['name']
 
@@ -343,6 +557,96 @@ class ParseDataset:
             'data': data
         }
 
+    def _field_data_external(self, timestep, field, elementset, current_hash=None):
+
+        # This is so dumb.
+        import backend.global_settings as gloset
+        ext_index = gloset.scene_manager.ext_src_index()
+        timestep_dict = ext_index[self._dataset_name][timestep]
+
+        req_field_type = field['type']
+        req_field_name = field['name']
+
+        if req_field_type == 'nodal':
+            field_format = binary_formats.nodal_fields()
+        elif req_field_type == 'elemental':
+            field_format = binary_formats.elemental_fields()
+        else:
+            return None
+
+        if req_field_type == 'nodal':
+
+            object_key = timestep_dict['node_out'][req_field_name]['object_key']
+            field_hash = timestep_dict['node_out'][req_field_name]['sha1sum']
+
+            # update the field hash with the selected elementset
+            for element_type in elementset:
+                elementset_sha1 = elementset[element_type]['sha1sum']
+                field_hash = self._string_hash(
+                    elementset_sha1,
+                    update=field_hash
+                )
+
+            if current_hash is None or field_hash not in current_hash:
+                data = {
+                    'nodal': self._read_binary_data_external([object_key], [field_format])[0]  # get the only thing in the array
+                }
+            else:
+                data = {'nodal': None}
+
+        if req_field_type == 'elemental':
+
+            elem_types = list(timestep_dict['elem_out'][req_field_name].keys())
+            elements_to_load = {}
+
+            field_hash = ''  # init
+
+            for elem_type in elem_types:
+                object_key = timestep_dict['elem_out'][req_field_name][elem_type]['object_key']
+                object_hash = timestep_dict['elem_out'][req_field_name][elem_type]['sha1sum']
+
+                elements_to_load[elem_type] = object_key
+
+                # Update hash
+                field_hash = self._string_hash(
+                    object_hash,
+                    update=field_hash
+                )
+
+            # update the field hash with the selected elementset
+            for element_type in elementset:
+                elementset_sha1 = elementset[element_type]['sha1sum']
+                field_hash = self._string_hash(
+                    elementset_sha1,
+                    update=field_hash
+                )
+
+            if current_hash is None or field_hash not in current_hash:
+                data = {
+                    'elemental': {}
+                }
+
+                elements_to_load_list = []
+                fmt_list = []
+                for element_key in elements_to_load:
+                    elements_to_load_list.append(elements_to_load[element_key])
+                    fmt_list.append(field_format)
+
+                element_data_list = self._read_binary_data_external(elements_to_load_list, fmt_list)
+
+                for it, element_key in enumerate(elements_to_load):
+                    data['elemental'][element_key] = element_data_list[it]
+            else:
+                data = {'elemental': None}
+
+        return {
+            'hash': field_hash,
+            'fmt': field_format,
+            'type': req_field_type,
+            'data': data
+        }
+
+
     def _blank_field(self, node_count):
         """
         Create an empty field.
@@ -390,24 +694,22 @@ class ParseDataset:
             'free_edges': {'data': None}
         }
 
-        timestep_path = self.fo_dir / timestep
-
         try:
             mesh_dict = self._geometry_data(
-                timestep_path, elementset, current_hash=hash_dict['mesh'])
+                timestep, elementset, current_hash=hash_dict['mesh'])
 
         except (TypeError, KeyError):
             mesh_dict = self._geometry_data(
-                timestep_path, elementset, current_hash=None)
+                timestep, elementset, current_hash=None)
 
         if field is not None:
             try:
                 field_dict = self._field_data(
-                    timestep_path, field, elementset, current_hash=hash_dict['field'])
+                    timestep, field, elementset, current_hash=hash_dict['field'])
 
             except (TypeError, KeyError):
                 field_dict = self._field_data(
-                    timestep_path, field, elementset, current_hash=None)
+                    timestep, field, elementset, current_hash=None)
 
         else:
             # Corner case for unsetting the fields once they were set
@@ -452,12 +754,20 @@ class ParseDataset:
             # this is necessary so we parse a new field when we need it
             field_hash = None
             # update the mesh hash with the selected elementset
-            for element_type in elementset:  # add every elementset
-                elementset_path = elementset[element_type]
-                field_hash = self._file_hash(
-                    elementset_path,
-                    update=field_hash
-                )
+            if self.source_type == 'local':
+                for element_type in elementset:  # add every elementset
+                    elementset_path = elementset[element_type]
+                    field_hash = self._file_hash(
+                        elementset_path,
+                        update=field_hash
+                    )
+            if self.source_type == 'external':
+                for element_type in elementset:  # add every elementset
+                    elementset_sha1 = elementset[element_type]['sha1sum']
+                    field_hash = self._string_hash(
+                        elementset_sha1,
+                        update=field_hash
+                    )
             return_dict['hash_dict']['field'] = field_hash
 
         else:

@@ -123,6 +123,15 @@ def start_backend(data_dir, port, ext_addr, ext_port):
     if ext_addr and ext_port:
         data_source = 'external'
 
+    source_dict = {
+        'source': data_source,
+        'local': data_dir,
+        'external': {
+            'addr': ext_addr,
+            'port': ext_port
+        }
+    }
+
     # Change working directory in case we are not there yet
     os.chdir(working_dir)
 
@@ -156,10 +165,8 @@ def start_backend(data_dir, port, ext_addr, ext_port):
     # Instanciate and start the backend.
     web_instance = web_server.Web_Server(
         frontend_directory=frontend_dir,
-        data_directory=data_dir,
         port=port,
-        ext_addr=ext_addr,
-        ext_port=ext_port
+        source_dict=source_dict
     )
     web_instance.start()
 

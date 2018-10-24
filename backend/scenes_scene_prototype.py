@@ -42,20 +42,28 @@ class _ScenePrototype:
     """
     def __init__(
             self,
-            data_dir
+            source_dict=None
     ):
         """
         Initialise an scene with some simulation data.
 
         """
-        if not isinstance(data_dir, os.PathLike):
-            raise TypeError('data_dir is {}, expected os.PathLike'.format(
-                type(data_dir).__name__))
+        self.source = source_dict
+        self.source_type = source_dict['source']
 
-        if not data_dir.exists():
-            raise ValueError('data_dir does not exist')
+        if self.source_type == 'local':
+            data_dir = self.source['local']
+            # Check if the path exists
+            if not data_dir.exists():
+                raise ValueError(
+                    '{} does not exist'.format(data_dir.absolute()))
 
-        self._data_dir = data_dir  # This is already absolute
+            # Set the data dir
+            self._data_dir = data_dir.absolute()
+
+        if self.source_type == 'external':
+            self.ext_addr = source_dict['external']['addr']
+            self.ext_port = source_dict['external']['port']
 
         # This turns a linux timestamp into a sha1 hash, to uniquely identify a
         # scene based on the time it was created.
@@ -97,7 +105,7 @@ class _ScenePrototype:
         """
         return self._scene_hash
 
-    def add_dataset(self, dataset_path):
+    def add_dataset(self, dataset_name):
         """
         Add one dataset.
 
@@ -105,7 +113,7 @@ class _ScenePrototype:
         can add. Do this by checking for a /fo or /frb subpath.
 
         Args:
-         object_path (os.Pathlike): The path to the dataset we want to add
+         dataset_name (str): Name of the dataset we want to add
 
         Returns:
          dict: The metadata of the dataset we added.
@@ -118,31 +126,35 @@ class _ScenePrototype:
           `dataset_path.`
 
         """
-        if not isinstance(dataset_path, os.PathLike):
-            raise TypeError(
-                'dataset_path is {}, expected os.PathLike'.format(
-                    type(dataset_path).__name__))
+        # dataset_path = self._data_dir / dataset_name
 
-        if not dataset_path.exists():
-            raise ValueError('path \'{}\' does not exist'.format(
-                dataset_path))
+        # if not isinstance(dataset_path, os.PathLike):
+        #     raise TypeError(
+        #         'dataset_path is {}, expected os.PathLike'.format(
+        #             type(dataset_path).__name__))
 
-        if not dataset_path.is_dir():
-            raise ValueError('dataset_path must point to a directory')
+        # if not dataset_path.exists():
+        #     raise ValueError('path \'{}\' does not exist'.format(
+        #         dataset_path))
 
-        # Casts this to os.pathlike
-        fo_dir = dataset_path / 'fo'
-        frb_dir = dataset_path / 'frb'
+        # if not dataset_path.is_dir():
+        #     raise ValueError('dataset_path must point to a directory')
 
-        # Raise an exception in case there are no subfolders called 'fo' or
-        # 'frb'
-        if not (fo_dir.exists() or frb_dir.exists()):
-            raise ValueError(
-                '{} contains neither \'fo\' nor \'frb\''.format(
-                    dataset_path))
+        # # Casts this to os.pathlike
+        # fo_dir = dataset_path / 'fo'
+        # frb_dir = dataset_path / 'frb'
+
+        # # Raise an exception in case there are no subfolders called 'fo' or
+        # # 'frb'
+        # if not (fo_dir.exists() or frb_dir.exists()):
+        #     raise ValueError(
+        #         '{} contains neither \'fo\' nor \'frb\''.format(
+        #             dataset_path))
 
         # Create and append a new dataset
-        new_dataset = _DatasetPrototype(dataset_path=dataset_path)
+        # new_dataset = _DatasetPrototype(dataset_path=dataset_path)
+        new_dataset = _DatasetPrototype(source_dict=self.source, dataset_name=dataset_name)
+
         dataset_meta = new_dataset.meta()
         dataset_hash = dataset_meta['datasetHash']
         self._dataset_list[dataset_hash] = new_dataset
