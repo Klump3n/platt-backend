@@ -153,12 +153,15 @@ class _ScenePrototype:
 
         # Create and append a new dataset
         # new_dataset = _DatasetPrototype(dataset_path=dataset_path)
+        print(1)
         new_dataset = _DatasetPrototype(source_dict=self.source, dataset_name=dataset_name)
-
+        print(2)
         dataset_meta = new_dataset.meta()
+        print(3)
         dataset_hash = dataset_meta['datasetHash']
+        print(4)
         self._dataset_list[dataset_hash] = new_dataset
-
+        print(5)
         return dataset_hash
 
     def list_datasets(self):

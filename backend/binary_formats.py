@@ -90,6 +90,12 @@ def elemental_fields():
 
     return elemental_field_dict
 
+def valid_element_types():
+    """
+    Return a list with the valid element type names.
+
+    """
+    return ["c3d6", "c3d8"]
 
 def c3d8():
     """
@@ -270,3 +276,45 @@ def c3d6():
     c3d6_dict['edges'] = edges
 
     return c3d6_dict
+
+def skin():
+    """
+    Return the format for a skin.
+
+    Parse a four byte integer that contains two different numbers.
+
+    number_mask  = int("00000011111111111111111111111111", 2)
+    face_id_mask = int("11111100000000000000000000000000", 2)
+
+    # one integer
+    word = struct.unpack("<1I".format(datacount), data) 
+
+    # get the number by and-ing the number mask
+    number = word & number_mask
+
+    # get the face id by and-ing the face id mask and bit shifting by 26 bits
+    face_id = (word & face_id_mask) >> 26
+
+    """
+    skin_dict = {}
+
+    file_name = 'skin.c3d.bin'
+
+    data_point_size = 4    # 4 bytes of ...
+    data_point_type = 'i'     # ... integers
+    points_per_unit = 1  # 1 point per element
+
+    number_mask  = int("00000011111111111111111111111111", 2)
+    face_id_mask = int("11111100000000000000000000000000", 2)
+    face_id_bitshift_right_by = 26
+
+    skin_dict['file_name'] = file_name
+    skin_dict['data_point_size'] = data_point_size
+    skin_dict['data_point_type'] = data_point_type
+    skin_dict['points_per_unit'] = points_per_unit
+
+    skin_dict["number_mask"] = number_mask
+    skin_dict["face_id_mask"] = face_id_mask
+    skin_dict["face_id_bitshift_right_by"] = face_id_bitshift_right_by
+
+    return skin_dict

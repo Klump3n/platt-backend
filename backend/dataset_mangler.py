@@ -7,32 +7,45 @@ intended as a module for the dataset parser.
 import numpy as np
 
 
-def model_surface(elements, nodes, elementset):
+def model_surface(elements, nodes, skins, elementset):
 
-    # for every element get the faces and the edges of the element
-    bulk_faces_and_edges_dict = _dataset_sort_elements_by_faces(elements, elementset)
+    # if we have provided skins we can accelerate this process a little bit
+    if not skins == dict():
+        # get the elements and faces of the skins
+        skin_element_faces = extract_external_skins(skins)
 
-    # from the faces for every element find those faces that define the
-    # boundary (surface) of the dataset
-    bulk_faces = bulk_faces_and_edges_dict['bulk_faces']
-    bulk_edges = bulk_faces_and_edges_dict['bulk_edges']
+        surface_faces = skin_surface_faces(elements, skin_element_faces)
 
-    # from the bulk data get the faces on the surface and the unique set of
-    # elements for those faces
-    surface_faces_dict = _dataset_surface_faces_and_elements(bulk_faces)
-    surface_faces = surface_faces_dict['surface_faces']
+        wireframe_and_free_edges = skin_wireframe_edges(elements, surface_faces)
+
+        surface_wireframe_lines = wireframe_and_free_edges['wireframe_lines']
+        surface_edge_lines = wireframe_and_free_edges['edge_lines']
+
+    else:
+        # for every element get the faces and the edges of the element
+        bulk_faces_and_edges_dict = _dataset_sort_elements_by_faces(elements, elementset)
+
+        # from the faces for every element find those faces that define the
+        # boundary (surface) of the dataset
+        bulk_faces = bulk_faces_and_edges_dict['bulk_faces']
+        bulk_edges = bulk_faces_and_edges_dict['bulk_edges']
+
+        # from the bulk data get the faces on the surface and the unique set of
+        # elements for those faces
+        surface_faces_dict = _dataset_surface_faces_and_elements(bulk_faces)
+        surface_faces = surface_faces_dict['surface_faces']
+
+        # From the edges of every element find the wireframe for the surface of the
+        # dataset and the free edges of the dataset, that is edges that give a
+        # rough outline of the how the dataset looks
+        wireframe_and_free_edges = _dataset_edges(bulk_edges)
+
+        surface_wireframe_lines = wireframe_and_free_edges['wireframe_lines']
+        surface_edge_lines = wireframe_and_free_edges['edge_lines']
 
     # create tets (rather triangles) for the surface
     surface_triangulation_dict = _dataset_triangulate_surface(surface_faces)
     surface_triangulation = surface_triangulation_dict['surface_triangulation']
-
-    # From the edges of every element find the wireframe for the surface of the
-    # dataset and the free edges of the dataset, that is edges that give a
-    # rough outline of the how the dataset looks
-    wireframe_and_free_edges = _dataset_edges(bulk_edges)
-
-    surface_wireframe_lines = wireframe_and_free_edges['wireframe_lines']
-    surface_edge_lines = wireframe_and_free_edges['edge_lines']
 
     # "compress" the data. only keep the nodes from the surface and remove
     # redundant information. create a map for the field data so we can also
@@ -91,6 +104,103 @@ def model_surface(elements, nodes, elementset):
     return return_dict
 
 
+def extract_external_skins(skins):
+    """
+    For a set of external skins get the elements and faces that are involved.
+
+    """
+    ret = {}
+
+    for skin in skins:
+
+        ret[skin] = list()
+
+        element_number_mask = skins[skin]["fmt"]["number_mask"]
+        face_id_mask = skins[skin]["fmt"]["face_id_mask"]
+        face_id_bitshift_right_by = skins[skin]["fmt"]["face_id_bitshift_right_by"]
+        for value in skins[skin]["data"]:
+            # get the number by and-ing the number mask
+            number = value & element_number_mask
+            # get the face id by and-ing the face id mask and bit shifting by 26 bits
+            face_id = (value & face_id_mask) >> face_id_bitshift_right_by
+            ret[skin].append([number, face_id])
+
+    return ret
+
+def skin_surface_faces(elements, element_faces):
+
+    ret = dict()
+
+    ret["surface_faces"] = list()
+    ret["element_corners_for_face"] = list()
+    ret["element_types_for_face"] = list()
+    ret["element_idxs_for_face"] = list()
+
+    for element_type, elem_face_list in element_faces.items():
+        type_data = elements[element_type]["data"]
+        type_fmt = elements[element_type]["fmt"]
+        print(type_fmt)
+        for element_idx, face_idx in elem_face_list:
+
+            face_nodes = type_fmt["faces"][face_idx]
+
+            ret["surface_faces"].append(type_data[element_idx][face_nodes])
+            # ret["element_corners_for_face"].append(type_data[element_idx])
+            ret["element_corners_for_face"].append(type_fmt["faces"][face_idx])
+            ret["element_types_for_face"].append(element_type)
+            ret["element_idxs_for_face"].append(element_idx)
+
+    return ret
+
+def skin_wireframe_edges(elements, surface_faces):
+
+    edges = list()
+    edges_hashes = list()
+
+    # face indices
+    node_count = {
+        3: [[0, 1], [1, 2], [2, 0]],
+        4: [[0, 1], [1, 2], [2, 3], [3, 0]]
+    }
+
+    faces = surface_faces["surface_faces"]
+    for face in faces:
+        ei = node_count[len(face)]  # get face indices for either 3 or 4 nodes
+
+        for edge in ei:
+            line = sorted([face[edge[0]], face[edge[1]]])
+            edges.append(line)
+            edges_hashes.append(hash(tuple(line)))
+
+    # find out which edges occur how often
+    _, unique_indices, edges_hash_counts = np.unique(
+        edges_hashes, return_counts=True, return_index=True)
+
+    # edges that occur once are free edges
+    free_edges_hash_indices = np.where(edges_hash_counts == 1)[0]
+
+    # edges that occur twice are wireframe
+    wireframe_hash_indices = np.where(edges_hash_counts == 2)[0]
+
+    num_free_edges = len(free_edges_hash_indices)
+    num_inner_edges = len(wireframe_hash_indices)
+
+    free_edges_lines = [None]*num_free_edges
+    wireframe_edges = [None]*num_inner_edges
+
+    for it, index in enumerate(free_edges_hash_indices):  # PARALLELIZE ME
+        free_edge = edges[unique_indices[index]]
+        free_edges_lines[it] = free_edge
+
+    for it, index in enumerate(wireframe_hash_indices):  # PARALLELIZE ME
+        wireframe_edge = edges[unique_indices[index]]
+        wireframe_edges[it] = wireframe_edge
+
+    return {
+        'edge_lines': free_edges_lines,
+        'wireframe_lines': wireframe_edges
+    }
+
 def expand_elemental_fields(elemental_fields, elements, surface_triangulation):
 
     if elemental_fields is None:
@@ -133,6 +243,7 @@ def expand_elemental_fields(elemental_fields, elements, surface_triangulation):
         nodal_field = np.dot(extrapolation_matrix, integration_field_data)
 
         for jt, corner in enumerate(triangle):
+
             res.append(nodal_field[elem_corners[jt]])
 
     return res
@@ -151,7 +262,6 @@ def model_surface_fields_nodal(field_map, field_values):
 
     """
     remapped_field_data = _remap_index_data(field_map, field_values)
-
     remapped_field = {
         'type': 'field',
         'points_per_unit': 1,
@@ -716,7 +826,6 @@ def _remap_index_data(field_map, data):
 
     """
     remapped_data = []
-
     for index in field_map:
         remapped_data.append(data[index])
 

@@ -63,6 +63,7 @@ class SceneManager:
             self.ext_port = source_dict['external']['port']
 
             self._local_src_index = {}
+            self._local_src_dataset_index = {}
             self._local_src_index = self.ext_src_index(update=True)
 
         self._scene_list = {}
@@ -321,6 +322,7 @@ class SceneManager:
                 dataset_hash = target_scene.add_dataset(one_dataset)
                 dataset_meta = target_scene._dataset_list[dataset_hash].meta()
                 return_dict['addDatasetsSuccess'].append(dataset_meta)
+                self.ext_src_dataset_index(update=True, dataset=one_dataset)
 
             # Catch everything that could have gone wrong and just report that
             # the dataset could not be added. NOTE: This also catches the case
@@ -884,6 +886,28 @@ class SceneManager:
 
         """
         if update:
-            self._local_src_index = external_data.index(source_dict=self.source)
+            ext_dict = external_data.index(
+                source_dict=self.source, namespace=None)
+            self._local_src_index = ext_dict["namespaces"]
 
         return self._local_src_index
+
+    def ext_src_dataset_index(self, update=False, dataset=None):
+        """
+        Keep a copy of the index for a dataset in the external source.
+
+        Args:
+         update (bool, defaults to False): If set to True it will query the
+          proxy for an updated index, updates the local copy and then return
+          that.
+
+        """
+        if not dataset:
+            # Don't know what to return
+            return
+
+        if update:
+            self._local_src_dataset_index[dataset] = external_data.index(
+                source_dict=self.source, namespace=dataset)
+
+        return self._local_src_dataset_index[dataset]

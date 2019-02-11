@@ -9,7 +9,7 @@ import hashlib
 import struct
 
 
-async def _handshake(source_dict=None, action=None, object_key=None, loop=None):
+async def _handshake(source_dict=None, action=None, namespace=None, object_key=None, loop=None):
     """
     Perform the handshake.
 
@@ -26,9 +26,13 @@ async def _handshake(source_dict=None, action=None, object_key=None, loop=None):
 
     # Tell the proxy what we want to do
     do_json = {'do': action}
+    if namespace == None:
+        namespace = ""
+    do_json['namespace'] = namespace
     if action == 'file':
         do_json['object_key'] = object_key
     json_pkg = json.dumps(do_json)
+
     json_pkg = json_pkg.encode()
 
     length = struct.pack('L', len(json_pkg))
@@ -87,7 +91,7 @@ async def _handshake(source_dict=None, action=None, object_key=None, loop=None):
 
     return rx_b
 
-def index(source_dict=None):
+def index(source_dict=None, namespace=None):
     """
     Obtain the index of the ceph cluster.
 
@@ -95,12 +99,13 @@ def index(source_dict=None):
     parallel.
 
     """
-    loop = asyncio.get_event_loop()
-    res = loop.run_until_complete(_handshake(source_dict=source_dict, action='index', loop=loop))
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    res = loop.run_until_complete(_handshake(source_dict=source_dict, action='index', namespace=namespace, loop=loop))
     loop.close()
     return json.loads(res.decode())
 
-def simulation_file(source_dict=None, object_key_list=[]):
+def simulation_file(source_dict=None, namespace=None, object_key_list=[]):
     """
     Obtain a simulation file from the ceph cluster.
 
@@ -112,7 +117,7 @@ def simulation_file(source_dict=None, object_key_list=[]):
     asyncio.set_event_loop(loop)
     all_coros = []
     for object_key in object_key_list:
-        all_coros.append(_handshake(source_dict=source_dict, action='file', object_key=object_key, loop=loop))
+        all_coros.append(_handshake(source_dict=source_dict, action='file', namespace=namespace, object_key=object_key, loop=loop))
     res = loop.run_until_complete(asyncio.gather(*all_coros))
     loop.close()
     return res

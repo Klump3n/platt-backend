@@ -206,7 +206,11 @@ class ParseDataset:
         return_list = []
 
         import backend.interface_external_data as ext_data
-        bin_data = ext_data.simulation_file(source_dict=self.source, object_key_list=object_key_list)
+        bin_data = ext_data.simulation_file(
+            source_dict=self.source,
+            namespace=self._dataset_name,
+            object_key_list=object_key_list
+        )
 
         for it, fmt in enumerate(fmt_list):
             # let this just raise a KeyError if we hand it a wrong dict
@@ -320,27 +324,46 @@ class ParseDataset:
         """
         # This is so dumb.
         import backend.global_settings as gloset
-        ext_index = gloset.scene_manager.ext_src_index()
+        ext_index = gloset.scene_manager.ext_src_dataset_index(
+            update=False, dataset=self._dataset_name)
         timestep_dict = ext_index[self._dataset_name][timestep]
 
         # parse nodes
-        nodes_key = timestep_dict['geom']['nodes']['object_key']
-        nodes_hash = timestep_dict['geom']['nodes']['sha1sum']
+        nodes_key = timestep_dict['nodes']['object_key']
+        nodes_hash = timestep_dict['nodes']['sha1sum']
         nodes_format = binary_formats.nodes()
 
         # parse elements
         elements = {}
-        elements_types = list(timestep_dict['geom']['elements'].keys())
+        elements_types = list(timestep_dict['elements'].keys())
         for elements_type in elements_types:
+            if elements_type in binary_formats.valid_element_types():
 
-            current_elem = timestep_dict['geom']['elements']
+                current_elem = timestep_dict['elements']
 
-            elements_format = getattr(binary_formats, elements_type)()
+                elements_format = getattr(binary_formats, elements_type)()
 
-            elements[elements_type] = {}
-            elements[elements_type]['key'] = current_elem[elements_type]['object_key']
-            elements[elements_type]['hash'] = current_elem[elements_type]['sha1sum']
-            elements[elements_type]['fmt'] = elements_format
+                elements[elements_type] = {}
+                elements[elements_type]['key'] = current_elem[elements_type]['object_key']
+                elements[elements_type]['hash'] = current_elem[elements_type]['sha1sum']
+                elements[elements_type]['fmt'] = elements_format
+
+        skins = {}
+        try:
+            skin_element_types = list(timestep_dict["skin"].keys())
+            current_skin = timestep_dict['skin']
+            skin_format = binary_formats.skin()
+
+            for element_type in skin_element_types:
+                if element_type in binary_formats.valid_element_types():
+                    skins[element_type] = {}
+                    skins[element_type]['key'] = current_skin[element_type]['object_key']
+                    skins[element_type]['hash'] = current_skin[element_type]['sha1sum']
+                    skins[element_type]['fmt'] = skin_format
+
+        except KeyError:
+            # no skins found
+            pass
 
         # calculate hash
         mesh_checksum = nodes_hash  # init with nodes
@@ -351,11 +374,12 @@ class ParseDataset:
             )
         # update the mesh hash with the selected elementset
         for element_type in elementset:
-            elementset_sha1 = elementset[element_type]['sha1sum']
-            mesh_checksum = self._string_hash(
-                elementset_sha1,
-                update=mesh_checksum
-            )
+            if element_type in binary_formats.valid_element_types():
+                elementset_sha1 = elementset[element_type]['sha1sum']
+                mesh_checksum = self._string_hash(
+                    elementset_sha1,
+                    update=mesh_checksum
+                )
 
         return_dict = {'hash': mesh_checksum}
 
@@ -369,7 +393,9 @@ class ParseDataset:
             for element in elements:
                 object_key_list.append(elements[element]['key'])
                 fmt_list.append(elements[element]['fmt'])
-
+            for skin in skins:
+                object_key_list.append(skins[skin]['key'])
+                fmt_list.append(skins[skin]['fmt'])
 
             geom_data = self._read_binary_data_external(object_key_list, fmt_list)
 
@@ -385,9 +411,19 @@ class ParseDataset:
                 return_dict['elements'][element]['fmt'] = elements[element]['fmt']
                 return_dict['elements'][element]['data'] = geom_data[it+1]
 
+            return_dict["skins"] = {}
+            for it, skin in enumerate(skins):
+                skin_path = skins[skin]['key']
+
+                return_dict["skins"][skin] = {}
+                return_dict["skins"][skin]['fmt'] = skins[skin]['fmt']
+                return_dict["skins"][skin]['data'] = geom_data[it+1+len(elements)]
+
+
         else:
             return_dict['nodes'] = None
             return_dict['elements'] = None
+            return_dict['skins'] = None
 
         return return_dict
 
@@ -561,7 +597,8 @@ class ParseDataset:
 
         # This is so dumb.
         import backend.global_settings as gloset
-        ext_index = gloset.scene_manager.ext_src_index()
+        ext_index = gloset.scene_manager.ext_src_dataset_index(
+            update=False, dataset=self._dataset_name)
         timestep_dict = ext_index[self._dataset_name][timestep]
 
         req_field_type = field['type']
@@ -576,8 +613,8 @@ class ParseDataset:
 
         if req_field_type == 'nodal':
 
-            object_key = timestep_dict['node_out'][req_field_name]['object_key']
-            field_hash = timestep_dict['node_out'][req_field_name]['sha1sum']
+            object_key = timestep_dict['nodal'][req_field_name]['object_key']
+            field_hash = timestep_dict['nodal'][req_field_name]['sha1sum']
 
             # update the field hash with the selected elementset
             for element_type in elementset:
@@ -596,14 +633,15 @@ class ParseDataset:
 
         if req_field_type == 'elemental':
 
-            elem_types = list(timestep_dict['elem_out'][req_field_name].keys())
+            elem_types = list(timestep_dict['elemental'][req_field_name].keys())
             elements_to_load = {}
 
             field_hash = ''  # init
 
             for elem_type in elem_types:
-                object_key = timestep_dict['elem_out'][req_field_name][elem_type]['object_key']
-                object_hash = timestep_dict['elem_out'][req_field_name][elem_type]['sha1sum']
+
+                object_key = timestep_dict['elemental'][req_field_name][elem_type]['object_key']
+                object_hash = timestep_dict['elemental'][req_field_name][elem_type]['sha1sum']
 
                 elements_to_load[elem_type] = object_key
 
@@ -725,6 +763,7 @@ class ParseDataset:
 
         mesh_nodes = mesh_dict['nodes']
         mesh_elements = mesh_dict['elements']
+        mesh_skins = mesh_dict["skins"]
 
         if mesh_elements is not None:
             self._mesh_elements = mesh_elements
@@ -733,7 +772,7 @@ class ParseDataset:
 
             elementset_data = self._elementset_data(elementset)
 
-            self._compressed_model_surface = dm.model_surface(mesh_elements, mesh_nodes, elementset_data)
+            self._compressed_model_surface = dm.model_surface(mesh_elements, mesh_nodes, mesh_skins, elementset_data)
 
             self._nodal_field_map_dict[mesh_dict['hash']] = self._compressed_model_surface['nodal_field_map']
             self._blank_field_node_count_dict[mesh_dict['hash']] = self._compressed_model_surface['old_max_node_index']
@@ -753,6 +792,10 @@ class ParseDataset:
 
             # this is necessary so we parse a new field when we need it
             field_hash = None
+            field_hash = self._string_hash(
+                str(node_count),
+                update=field_hash
+            )
             # update the mesh hash with the selected elementset
             if self.source_type == 'local':
                 for element_type in elementset:  # add every elementset

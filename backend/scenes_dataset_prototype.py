@@ -111,10 +111,16 @@ class _DatasetPrototype:
         self._meshes = {}
 
         # initialize the mesh parser
+
         self._mp = dp.ParseDataset(source_dict=self.source, dataset_name=dataset_name)
+
+        import backend.global_settings as gloset
+        ext_index = gloset.scene_manager.ext_src_dataset_index(
+            update=True, dataset=self.dataset_name)
 
         # for init: find the lowest timestep and set it
         lowest_timestep = self.timestep_list()[0]
+
         self.timestep(set_timestep=lowest_timestep)
 
     def meta(self):
@@ -209,7 +215,10 @@ class _DatasetPrototype:
 
         if self.source_type == 'external':
             import backend.global_settings as gloset
-            ext_index = gloset.scene_manager.ext_src_index()
+            ext_index = gloset.scene_manager.ext_src_dataset_index(
+                update=False, dataset=self.dataset_name)
+
+            # ext_index = gloset.scene_manager.ext_src_index()
             dataset_dict = ext_index[self.dataset_name]
             timestep_list = list(dataset_dict.keys())
 
@@ -234,7 +243,6 @@ class _DatasetPrototype:
 
         """
         if set_timestep is not None:
-
             if set_timestep not in self.timestep_list():
                 return self._selected_timestep
 
@@ -294,15 +302,27 @@ class _DatasetPrototype:
 
         if self.source_type == 'external':
             import backend.global_settings as gloset
-            ext_index = gloset.scene_manager.ext_src_index()
+            ext_index = gloset.scene_manager.ext_src_dataset_index(
+                update=False, dataset=self.dataset_name)
             timestep_dict = ext_index[self.dataset_name][self._selected_timestep]
 
-            elemental_fields = list(timestep_dict['elem_out'].keys())
-            nodal_fields = list(timestep_dict['node_out'].keys())
+            try:
+                elemental_fields = list(timestep_dict['elemental'].keys())
+            except KeyError:
+                elemental_fields = list()
+            try:
+                nodal_fields = list(timestep_dict['nodal'].keys())
+            except KeyError:
+                nodal_fields = list()
 
+        # sorting from...
+        # https://blog.codinghorror.com/sorting-for-humans-natural-sort-order/
+        # neat.
+        convert = lambda text: int(text) if text.isdigit() else text.lower()
+        alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
         return_dict = {
-            'elemental': elemental_fields,
-            'nodal': nodal_fields
+            'elemental': sorted(elemental_fields, key=alphanum_key),
+            'nodal': sorted(nodal_fields, key=alphanum_key)
         }
 
         return return_dict
@@ -398,8 +418,12 @@ class _DatasetPrototype:
 
         if self.source_type == 'external':
             import backend.global_settings as gloset
-            ext_index = gloset.scene_manager.ext_src_index()
-            return_dict = ext_index[self.dataset_name][self._selected_timestep]['elset']
+            ext_index = gloset.scene_manager.ext_src_dataset_index(
+                update=False, dataset=self.dataset_name)
+            try:
+                return_dict = ext_index[self.dataset_name][self._selected_timestep]['elset']
+            except KeyError:
+                return_dict = dict()
 
         elset_keys = []
         for elset_name_key in return_dict:
@@ -534,7 +558,6 @@ class _DatasetPrototype:
             self._meshes['current'] = self._meshes[mp_data_mesh_hash]
 
         if mp_data_field_hash not in hash_dict['field']:
-
             self._fields['current'] = {
                 'field_hash': mp_data['hash_dict']['field'],
                 'field': mp_data['field']['data']
@@ -543,5 +566,4 @@ class _DatasetPrototype:
             self._fields[mp_data['hash_dict']['field']] = self._fields['current']
 
         else:
-
             self._fields['current'] = self._fields[mp_data_field_hash]

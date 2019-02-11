@@ -83,7 +83,8 @@ function DatasetView(gl, sceneHash, datasetHash) {
 
         /** Initialise the eventListener for mouse-button-pressing */
         ogl.canvas.addEventListener("mousedown", doMouseDown, false);
-        ogl.canvas.addEventListener("DOMMouseScroll", doMouseWheel, false);
+        ogl.canvas.addEventListener("mousewheel", doMouseWheel, false); // Chrome
+        ogl.canvas.addEventListener("DOMMouseScroll", doMouseWheel, false); // Firefox
     });
 
 
@@ -419,6 +420,7 @@ function DatasetView(gl, sceneHash, datasetHash) {
      * @param {event} event
      */
     function doMouseWheel(event){
+
         var factor = 10;
         var delta = factor*Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail)));
 
