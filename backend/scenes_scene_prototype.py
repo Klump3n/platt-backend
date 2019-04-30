@@ -126,42 +126,12 @@ class _ScenePrototype:
           `dataset_path.`
 
         """
-        # dataset_path = self._data_dir / dataset_name
-
-        # if not isinstance(dataset_path, os.PathLike):
-        #     raise TypeError(
-        #         'dataset_path is {}, expected os.PathLike'.format(
-        #             type(dataset_path).__name__))
-
-        # if not dataset_path.exists():
-        #     raise ValueError('path \'{}\' does not exist'.format(
-        #         dataset_path))
-
-        # if not dataset_path.is_dir():
-        #     raise ValueError('dataset_path must point to a directory')
-
-        # # Casts this to os.pathlike
-        # fo_dir = dataset_path / 'fo'
-        # frb_dir = dataset_path / 'frb'
-
-        # # Raise an exception in case there are no subfolders called 'fo' or
-        # # 'frb'
-        # if not (fo_dir.exists() or frb_dir.exists()):
-        #     raise ValueError(
-        #         '{} contains neither \'fo\' nor \'frb\''.format(
-        #             dataset_path))
-
         # Create and append a new dataset
         # new_dataset = _DatasetPrototype(dataset_path=dataset_path)
-        print(1)
         new_dataset = _DatasetPrototype(source_dict=self.source, dataset_name=dataset_name)
-        print(2)
         dataset_meta = new_dataset.meta()
-        print(3)
         dataset_hash = dataset_meta['datasetHash']
-        print(4)
         self._dataset_list[dataset_hash] = new_dataset
-        print(5)
         return dataset_hash
 
     def list_datasets(self):

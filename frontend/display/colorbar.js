@@ -491,6 +491,7 @@ function Colorbar(sceneHash, datasets) {
 
             var colorbar_track_dataset_sub_name = document.createElement('div');
             colorbar_track_dataset_sub_name.setAttribute('class', 'colorbar_form_sub_entry_track_name');
+            colorbar_track_dataset_sub_name.setAttribute('title', dataset_name);
             colorbar_track_dataset_sub_name.innerHTML = dataset_name;
             colorbar_track_dataset_entry_sub.appendChild(colorbar_track_dataset_sub_name);
 

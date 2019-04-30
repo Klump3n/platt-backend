@@ -139,7 +139,7 @@ def skin_surface_faces(elements, element_faces):
     for element_type, elem_face_list in element_faces.items():
         type_data = elements[element_type]["data"]
         type_fmt = elements[element_type]["fmt"]
-        print(type_fmt)
+
         for element_idx, face_idx in elem_face_list:
 
             face_nodes = type_fmt["faces"][face_idx]

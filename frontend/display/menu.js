@@ -497,16 +497,6 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
     }
 
 
-
-
-
-
-
-
-
-
-
-
     /**
      * Based on a checkbox turn on/off the control of the orientation of a dataset.
      */
@@ -524,6 +514,9 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
     function reset_orientation() {
         var dataset_hash = this.getAttribute('data-name');
         meshData[dataset_hash].datasetView.resetOrientation(dataset_hash);
+    }
+
+    function track_timestep() {
     }
 
     /**
@@ -592,6 +585,25 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
         dataset_timestep_next.innerHTML = '>';
         dataset_timestep_next.addEventListener('click', increase_timestep);
 
+
+        // timestep tracking (always update to the newest field values)
+        var dataset_timestep_tracking_container = document.createElement('div');
+        dataset_timestep_tracking_container.setAttribute('class', 'dataset_timestep_tracking_container');
+
+        var dataset_timestep_tracking_checkbox = document.createElement('input');
+        dataset_timestep_tracking_checkbox.setAttribute('type', 'checkbox');
+        dataset_timestep_tracking_checkbox.setAttribute('data-name', that.dataset_hash);
+        dataset_timestep_tracking_checkbox.setAttribute('class', 'dataset_timestep_tracking_checkbox');
+        dataset_timestep_tracking_checkbox.setAttribute('id', 'dataset_timestep_tracking_checkbox_'+that.dataset_hash);
+        // dataset_timestep_tracking_checkbox.addEventListener('click', track_timestep_updates);
+
+        var dataset_timestep_tracking_label = document.createElement('label');
+        dataset_timestep_tracking_label.setAttribute('for', 'dataset_timestep_tracking_checkbox_'+that.dataset_hash);
+        dataset_timestep_tracking_label.setAttribute('class', 'dataset_timestep_tracking_label');
+        dataset_timestep_tracking_label.setAttribute('title', 'Tick the box to follow the newest data on the cluster (if possible)');
+        dataset_timestep_tracking_label.innerHTML = 'Track updates';
+
+
         var dataset_timestep_menu_padding_container = document.createElement('div');
         dataset_timestep_menu_padding_container.setAttribute('class', 'dataset_timestep_menu_padding_container');
         dataset_timestep_menu_padding_container.setAttribute('id', 'dataset_timestep_menu_padding_container_'+that.dataset_hash);
@@ -607,8 +619,12 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
         dataset_timestep_menu_padding_container.appendChild(dataset_timestep_menu);
         dataset_timestep_controls_container.appendChild(dataset_timestep_menu_padding_container);
 
+        dataset_timestep_tracking_container.appendChild(dataset_timestep_tracking_checkbox);
+        dataset_timestep_tracking_container.appendChild(dataset_timestep_tracking_label);
+
         dataset_timestep_container.appendChild(dataset_timestep_heading);
         dataset_timestep_container.appendChild(dataset_timestep_controls_container);
+        dataset_timestep_container.appendChild(dataset_timestep_tracking_container);
 
         var dataset_field_container = document.createElement('div');
         dataset_field_container.setAttribute('class', 'dataset_function_container dataset_function_separator');

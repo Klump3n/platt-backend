@@ -73,7 +73,7 @@
     margin-bottom: 2px;
     left: 10px;
     width: auto;
-    max-width: 150px;
+    max-width: 180px;
     height: auto;
 }
 
@@ -111,6 +111,35 @@
     width: calc(100% - 30px);
 }
 
+.dataset_timestep_tracking_container {
+    position: relative;
+    text-align: center;
+    align-items: center;
+    background-color: #00556e;
+    padding: 2px;
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+.dataset_timestep_tracking_checkbox
+{
+    cursor: pointer;
+    width: 13px;
+    height: 13px;
+    padding: 0;
+    margin: 0;
+    vertical-align: bottom;
+    position: relative;
+}
+
+.dataset_timestep_tracking_label
+{
+    cursor: pointer;
+    text-align: center;
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
 /* Absolute to .dataset_timestep_current */
 .dataset_timestep_menu_padding_container
 {
@@ -132,8 +161,8 @@
     padding-right: 3px;
 
     min-width: 50px;
-    max-width: 100px;
-    max-height: 80px;
+    max-width: 150px;
+    max-height: 150px;
 }
 
 .dataset_timestep_menu {
@@ -206,7 +235,7 @@
 
     min-width: 120px;
     max-width: 200px;
-    max-height: 80px;
+    max-height: 150px;
 }
 
 .dataset_field_menu {
@@ -316,7 +345,7 @@
     margin-bottom: 2px;
     left: 10px;
     width: auto;
-    max-width: 150px;
+    max-width: 200px;
     height: auto;
 }
 
@@ -366,8 +395,8 @@
 {
     padding-left: 2px;
     align-content: center;
-    white-space: nowrap;
     text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .colorbar_form_sub_entry_track_hash
