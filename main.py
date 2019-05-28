@@ -6,11 +6,17 @@ either 8008 or the supplied value.
 """
 import os
 import sys
+import time
 import argparse
 import pathlib
+import multiprocessing
 
 from util.version import version
+from util.greet import greeting
+from util.loggers import CoreLog as cl, BackendLog as bl, SimulationLog as sl
+
 import backend.web_server as web_server
+import backend.platt_proxy_client as platt_client
 
 
 def parse_commandline():
@@ -46,6 +52,14 @@ def parse_commandline():
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
+
+    parser.add_argument(
+        "-l", "--log",
+        help="Set the logging level",
+        default="info",
+        choices=["debug", "info", "warning", "error", "critical", "quiet"]
+    )
+
     parser.add_argument(
         '-p', '--port', default=8008,
         help='The port for the web server.')
@@ -120,15 +134,56 @@ def start_backend(data_dir, port, ext_addr, ext_port):
         data_dir = pathlib.Path(data_dir)
         data_source = 'local'
 
+    platt_gateway = None
+    gateway_comm_dict = dict()
     if ext_addr and ext_port:
         data_source = 'external'
+
+        # event that can be queried if the connection to the proxy is active
+        proxy_connection_active_event = multiprocessing.Event()
+        # queue for pushing information about new files over the socket
+        tell_new_file_queue = multiprocessing.Queue()
+        # index request event
+        get_index_event = multiprocessing.Event()
+        # index data queue (answer to request event)
+        receive_index_data_queue = multiprocessing.Queue()
+        # queue for requesting files
+        file_request_queue = multiprocessing.Queue()
+        # queue for receiving file contents, name and hash after requesting them
+        file_contents_name_hash_queue = multiprocessing.Queue()
+        # shutdown the platt gateway
+        shutdown_platt_gateway_event = multiprocessing.Event()
+
+        gateway_comm_dict["proxy_connection_active_event"] = proxy_connection_active_event
+        gateway_comm_dict["tell_new_file_queue"] = tell_new_file_queue
+        gateway_comm_dict["get_index_event"] = get_index_event
+        gateway_comm_dict["get_index_data_queue"] = receive_index_data_queue
+        gateway_comm_dict["file_request_queue"] = file_request_queue
+        gateway_comm_dict["file_contents_name_hash_queue"] = file_contents_name_hash_queue
+        gateway_comm_dict["shutdown_platt_gateway_event"] = shutdown_platt_gateway_event
+
+        platt_gateway = multiprocessing.Process(
+            target=platt_client.Client,
+            args=(
+                ext_addr,
+                ext_port,
+                proxy_connection_active_event,
+                tell_new_file_queue,
+                get_index_event,
+                receive_index_data_queue,
+                file_request_queue,
+                file_contents_name_hash_queue,
+                shutdown_platt_gateway_event
+            )
+        )
 
     source_dict = {
         'source': data_source,
         'local': data_dir,
         'external': {
             'addr': ext_addr,
-            'port': ext_port
+            'port': ext_port,
+            "comm_dict": gateway_comm_dict
         }
     }
 
@@ -136,7 +191,8 @@ def start_backend(data_dir, port, ext_addr, ext_port):
     os.chdir(working_dir)
 
     # Welcome message
-    welcome_msg = ''
+    welcome_msg = str()
+    welcome_msg += greeting
     welcome_msg += '\nThis is {program_name} {version_number}\n'\
                    'Starting http server on port {port_text}\n\n'\
                    'Serving frontend from directory '\
@@ -160,15 +216,37 @@ def start_backend(data_dir, port, ext_addr, ext_port):
                            ext_port_text=ext_port
                        )
 
+
     print(welcome_msg)
 
-    # Instanciate and start the backend.
-    web_instance = web_server.Web_Server(
-        frontend_directory=frontend_dir,
-        port=port,
-        source_dict=source_dict
+    web_inst = multiprocessing.Process(
+        target=web_server.Web_Server,
+        args=(
+            frontend_dir,
+            port,
+            source_dict,
+        )
     )
-    web_instance.start()
+
+    try:
+        if platt_gateway:
+            platt_gateway.start()
+        web_inst.start()
+
+        web_inst.join()
+        if platt_gateway:
+            platt_gateway.join()
+    except KeyboardInterrupt:
+        if platt_gateway:
+            shutdown_platt_gateway_event.set()
+        pass                    # quiet
+    finally:
+        time.sleep(1)           # wait for the processes to flush it all
+        web_inst.terminate()
+        try:
+            platt_gateway.terminate()
+        except Exception as e:
+            print(e)
 
     return None
 
@@ -219,11 +297,24 @@ def start_program():
 
         sys.exit('\nPerformed unittests -- exiting.')
 
+    setup_logging(ARGS.log)
+
     # Start the program
     start_backend(data_dir, port, ext_addr, ext_port)
 
     return None
 
+def setup_logging(logging_level):
+    """
+    Setup the loggers.
+
+    """
+    cl(logging_level)           # setup simulation logging
+    cl.info("Started Core logging with level '{}'".format(logging_level))
+    sl(logging_level)           # setup simulation logging
+    sl.info("Started Simulation logging with level '{}'".format(logging_level))
+    bl(logging_level)           # setup backend logging
+    bl.info("Started Backend logging with level '{}'".format(logging_level))
 
 def print_version():
     """

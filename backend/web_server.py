@@ -8,6 +8,10 @@ import os
 # conda install cherrypy
 import cherrypy
 
+import logging.config
+
+import multiprocessing
+
 from ws4py.server.cherrypyserver import WebSocketTool
 
 from backend.web_server_api import ServerAPI
@@ -67,6 +71,7 @@ class Web_Server:
          None: Nothing.
 
         """
+        self._source_dict = source_dict
 
         control_path = os.path.join(frontend_directory, 'control')
         display_path = os.path.join(frontend_directory, 'display')
@@ -109,7 +114,7 @@ class Web_Server:
         # backend.global_settings and use the scene manager from there.
         global_settings.init(source_dict=source_dict)
 
-        return None
+        self.start()
 
     def start(self):
         """
@@ -158,8 +163,80 @@ class Web_Server:
         cherrypy.tree.mount(
             WebSocketAPI(), '/websocket', self._websocket_conf)
 
-        # Start the server
+        LOG_CONF = {
+            'version': 1,
+
+            'formatters': {
+                'void': {
+                    'format': ''
+                },
+                'standard': {
+                    'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+                },
+            },
+            'handlers': {
+                'default': {
+                    'level':'INFO',
+                    'class':'logging.StreamHandler',
+                    'formatter': 'standard',
+                    'stream': 'ext://sys.stdout'
+                },
+                'cherrypy_console': {
+                    'level':'INFO',
+                    'class':'logging.StreamHandler',
+                    'formatter': 'void',
+                    'stream': 'ext://sys.stdout'
+                },
+                'cherrypy_access': {
+                    'level':'INFO',
+                    'class': 'logging.handlers.RotatingFileHandler',
+                    'formatter': 'void',
+                    'filename': 'access.log',
+                    'maxBytes': 10485760,
+                    'backupCount': 20,
+                    'encoding': 'utf8'
+                },
+                'cherrypy_error': {
+                    'level':'INFO',
+                    'class': 'logging.handlers.RotatingFileHandler',
+                    'formatter': 'void',
+                    'filename': 'errors.log',
+                    'maxBytes': 10485760,
+                    'backupCount': 20,
+                    'encoding': 'utf8'
+                },
+            },
+            'loggers': {
+                '': {
+                    'handlers': ['default'],
+                    'level': 'INFO'
+                },
+                'CORE': {
+                    'handlers': ['default'],
+                    'level': 'INFO' ,
+                    'propagate': False
+                },
+                'cherrypy.access': {
+                    'handlers': ['cherrypy_console'],
+                    # 'handlers': ['cherrypy_access'],
+                    'level': 'INFO',
+                    'propagate': False
+                },
+                'cherrypy.error': {
+                    'handlers': ['cherrypy_console'],
+                    # 'handlers': ['cherrypy_console', 'cherrypy_error'],
+                    'level': 'INFO',
+                    'propagate': False
+                },
+            }
+        }
+
+        cherrypy.config.update({'log.screen': True,
+                                'log.access_file': '',
+                                'log.error_file': ''})
+        cherrypy.engine.unsubscribe('graceful', cherrypy.log.reopen_files)
+        logging.config.dictConfig(LOG_CONF)
+
+        # # Start the server
         cherrypy.engine.start()
         cherrypy.engine.block()
-
-        return None

@@ -8,6 +8,7 @@ import pathlib
 from backend.scenes_scene_prototype import _ScenePrototype
 import backend.interface_external_data as external_data
 
+import backend.platt_proxy_client as platt_client
 
 class SceneManager:
     """
@@ -61,6 +62,10 @@ class SceneManager:
         if self.source_type == 'external':
             self.ext_addr = source_dict['external']['addr']
             self.ext_port = source_dict['external']['port']
+
+            connection_active_event = self.source["external"]["comm_dict"]["proxy_connection_active_event"]
+
+            connection_active_event.wait()
 
             self._local_src_index = {}
             self._local_src_dataset_index = {}
@@ -888,7 +893,9 @@ class SceneManager:
         if update:
             ext_dict = external_data.index(
                 source_dict=self.source, namespace=None)
-            self._local_src_index = ext_dict["namespaces"]
+            self._local_src_index = ext_dict
+            # self._local_src_index = list(ext_dict.keys())
+            # self._local_src_index = ext_dict["namespaces"]
 
         return self._local_src_index
 
@@ -906,8 +913,4 @@ class SceneManager:
             # Don't know what to return
             return
 
-        if update:
-            self._local_src_dataset_index[dataset] = external_data.index(
-                source_dict=self.source, namespace=dataset)
-
-        return self._local_src_dataset_index[dataset]
+        return {dataset: self._local_src_index[dataset]}

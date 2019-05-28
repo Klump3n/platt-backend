@@ -12,6 +12,8 @@ import numpy as np
 import backend.binary_formats as binary_formats
 import backend.dataset_mangler as dm
 
+import cherrypy
+
 
 class ParseDataset:
     """
@@ -365,25 +367,45 @@ class ParseDataset:
             # no skins found
             pass
 
-        # calculate hash
-        mesh_checksum = nodes_hash  # init with nodes
-        for element in elements:    # add every element
-            mesh_checksum = self._string_hash(
-                elements[element]['hash'],
-                update=mesh_checksum
-            )
-        # update the mesh hash with the selected elementset
+        # calculate the hash if we have the sha1sums in the index, else just
+        # get everything for every timestep
+        hash_list = list()
+        hash_list.append(nodes_hash)
+        for element in elements:
+            hash_list.append(elements[element]['hash'])
         for element_type in elementset:
-            if element_type in binary_formats.valid_element_types():
-                elementset_sha1 = elementset[element_type]['sha1sum']
+            hash_list.append(elementset[element_type]['sha1sum'])
+        for skin in skins:
+            hash_list.append(skins[element_type]['hash'])
+
+        calc_hashes = True
+        for one_hash in hash_list:
+            if one_hash == "":
+                calc_hashes = False
+
+        # init to None
+        mesh_checksum = None
+
+        if calc_hashes:
+            # calculate hash
+            mesh_checksum = nodes_hash  # init with nodes
+            for element in elements:    # add every element
                 mesh_checksum = self._string_hash(
-                    elementset_sha1,
+                    elements[element]['hash'],
                     update=mesh_checksum
                 )
+            # update the mesh hash with the selected elementset
+            for element_type in elementset:
+                if element_type in binary_formats.valid_element_types():
+                    elementset_sha1 = elementset[element_type]['sha1sum']
+                    mesh_checksum = self._string_hash(
+                        elementset_sha1,
+                        update=mesh_checksum
+                    )
 
         return_dict = {'hash': mesh_checksum}
 
-        if current_hash is None or mesh_checksum not in current_hash:
+        if current_hash is None or mesh_checksum is None or mesh_checksum not in current_hash:
 
             object_key_list = []
             fmt_list = []
@@ -611,20 +633,31 @@ class ParseDataset:
         else:
             return None
 
+        field_hash = None
+
         if req_field_type == 'nodal':
 
-            object_key = timestep_dict['nodal'][req_field_name]['object_key']
-            field_hash = timestep_dict['nodal'][req_field_name]['sha1sum']
+            hash_list = list()
 
-            # update the field hash with the selected elementset
+            hash_list.append(timestep_dict['nodal'][req_field_name]['sha1sum'])
             for element_type in elementset:
-                elementset_sha1 = elementset[element_type]['sha1sum']
-                field_hash = self._string_hash(
-                    elementset_sha1,
-                    update=field_hash
-                )
+                hash_list.append(elementset[element_type]['sha1sum'])
 
-            if current_hash is None or field_hash not in current_hash:
+            calc_hashes = True
+            for one_hash in hash_list:
+                if one_hash == "":
+                    calc_hashes = False
+
+            if calc_hashes:
+                for one_hash in hash_list:
+                    field_hash = self._string_hash(
+                        one_hash,
+                        update=field_hash
+                    )
+
+            object_key = timestep_dict['nodal'][req_field_name]['object_key']
+
+            if current_hash is None or field_hash is None or field_hash not in current_hash:
                 data = {
                     'nodal': self._read_binary_data_external([object_key], [field_format])[0]  # get the only thing in the array
                 }
@@ -636,7 +669,24 @@ class ParseDataset:
             elem_types = list(timestep_dict['elemental'][req_field_name].keys())
             elements_to_load = {}
 
-            field_hash = ''  # init
+            hash_list = list()
+
+            for elem_type in elem_types:
+                hash_list.append(timestep_dict['elemental'][req_field_name][elem_type]['sha1sum'])
+            for element_type in elementset:
+                hash_list.append(elementset[element_type]['sha1sum'])
+
+            calc_hashes = True
+            for one_hash in hash_list:
+                if one_hash == "":
+                    calc_hashes = False
+
+            if calc_hashes:
+                for one_hash in hash_list:
+                    field_hash = self._string_hash(
+                        one_hash,
+                        update=field_hash
+                    )
 
             for elem_type in elem_types:
 
@@ -645,21 +695,21 @@ class ParseDataset:
 
                 elements_to_load[elem_type] = object_key
 
-                # Update hash
-                field_hash = self._string_hash(
-                    object_hash,
-                    update=field_hash
-                )
+                # # Update hash
+                # field_hash = self._string_hash(
+                #     object_hash,
+                #     update=field_hash
+                # )
 
-            # update the field hash with the selected elementset
-            for element_type in elementset:
-                elementset_sha1 = elementset[element_type]['sha1sum']
-                field_hash = self._string_hash(
-                    elementset_sha1,
-                    update=field_hash
-                )
+            # # update the field hash with the selected elementset
+            # for element_type in elementset:
+            #     elementset_sha1 = elementset[element_type]['sha1sum']
+            #     field_hash = self._string_hash(
+            #         elementset_sha1,
+            #         update=field_hash
+            #     )
 
-            if current_hash is None or field_hash not in current_hash:
+            if current_hash is None or field_hash is None or field_hash not in current_hash:
                 data = {
                     'elemental': {}
                 }
@@ -736,7 +786,7 @@ class ParseDataset:
             mesh_dict = self._geometry_data(
                 timestep, elementset, current_hash=hash_dict['mesh'])
 
-        except (TypeError, KeyError):
+        except (TypeError, KeyError) as e:
             mesh_dict = self._geometry_data(
                 timestep, elementset, current_hash=None)
 
@@ -745,7 +795,7 @@ class ParseDataset:
                 field_dict = self._field_data(
                     timestep, field, elementset, current_hash=hash_dict['field'])
 
-            except (TypeError, KeyError):
+            except (TypeError, KeyError) as e:
                 field_dict = self._field_data(
                     timestep, field, elementset, current_hash=None)
 
