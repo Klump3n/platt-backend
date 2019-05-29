@@ -8,6 +8,9 @@ import logging
 
 class BaseLogger(object):
 
+    _logger = None
+    _name = None
+
     class _BaseLogger(object):
         _name = None
         _logging_level = None
@@ -16,12 +19,14 @@ class BaseLogger(object):
         _ch = None
 
         def __init__(self, name=None, logging_level="info", time=True):
-        # def __init__(self, name, logging_level=None):
-            if not name:
-                raise AttributeError("Need to provide a name for the logger")
-            self._name = name
-            self._time = time
-            self.set_level(logging_level)
+            if self._logger:
+                pass
+            else:
+                if not name:
+                    raise AttributeError("Need to provide a name for the logger")
+                self._name = name
+                self._time = time
+                self.set_level(logging_level)
 
         def set_level(self, logging_level):
             if logging_level is None:
@@ -86,7 +91,9 @@ class BaseLogger(object):
 
 
             self._logger = logging.getLogger(self._name)
+
             self._logger.setLevel(logging_level)
+            self._logger.propagate = False  # log things only once, here
 
             fmt_date = "%d.%m.%Y %T"
             formatter = logging.Formatter(fmt, fmt_date)
@@ -103,9 +110,6 @@ class BaseLogger(object):
             if logging_level == logging.NOTSET:
                 logging.disable()
 
-    _logger = None
-    _name = None
-
     def __init__(self, name, logging_level=None, time=True):
         self.__class__._name = name
 
@@ -113,16 +117,16 @@ class BaseLogger(object):
             self.__class__._logger = BaseLogger._BaseLogger(
                 self.__class__._name, logging_level, time)
 
-    @classmethod
-    def set_level(cls, logging_level=None):
-        class_exists = (cls._logger)
-        if not class_exists:
-            raise AttributeError("Instantiate class first to set the level")
-        name_exists = (cls._name is not None)
-        level_is_different = (cls._logger._logging_level != logging_level)
-        if class_exists:
-            if name_exists:
-                cls._logger.set_level(logging_level)
+    # @classmethod
+    # def set_level(cls, logging_level=None):
+    #     class_exists = (cls._logger)
+    #     if not class_exists:
+    #         raise AttributeError("Instantiate class first to set the level")
+    #     name_exists = (cls._name is not None)
+    #     level_is_different = (cls._logger._logging_level != logging_level)
+    #     if class_exists:
+    #         if name_exists:
+    #             cls._logger.set_level(logging_level)
 
 
     @classmethod
@@ -137,7 +141,7 @@ class BaseLogger(object):
         if cls._logger is None or msg is None:
             pass
         else:
-            cls._wrapper_instance.log(11, "\u001b[33m{}\u001b[0m".format(msg))
+            cls._logger._logger.log(11, "\u001b[33m{}\u001b[0m".format(msg))
 
 
     @classmethod
@@ -145,14 +149,14 @@ class BaseLogger(object):
         if cls._logger is None or msg is None:
             pass
         else:
-            cls._wrapper_instance.log(15, "{}".format(msg))
+            cls._logger._logger.log(15, "{}".format(msg))
 
     @classmethod
     def verbose_warning(cls, msg=None):
         if cls._logger is None or msg is None:
             pass
         else:
-            cls._wrapper_instance.log(16, "\u001b[33m{}\u001b[0m".format(msg))
+            cls._logger._logger.log(16, "\u001b[33m{}\u001b[0m".format(msg))
 
 
     @classmethod
