@@ -7,6 +7,7 @@ So far it only contains the scene_manager.
 """
 from backend.scenes_manager import SceneManager
 
+from util.loggers import BackendLog as bl
 
 def init(source_dict=None):
     """
@@ -22,5 +23,6 @@ def init(source_dict=None):
      Import this module everywhere you need to manipulate scenes.
 
     """
+    bl.verbose("Creating global scene manager instance")
     global scene_manager        # This gets exposed
     scene_manager = SceneManager(source_dict=source_dict)

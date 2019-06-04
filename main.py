@@ -13,7 +13,8 @@ import multiprocessing
 
 from util.version import version
 from util.greet import greeting
-from util.loggers import CoreLog as cl, BackendLog as bl, SimulationLog as sl
+# from util.loggers import CoreLog as cl, BackendLog as bl, SimulationLog as sl
+from util.loggers import GatewayLog as gl, BackendLog as bl
 
 import backend.web_server as web_server
 import backend.platt_proxy_client as platt_client
@@ -224,7 +225,7 @@ def start_backend(data_dir, port, ext_addr, ext_port):
         args=(
             frontend_dir,
             port,
-            source_dict,
+            source_dict
         )
     )
 
@@ -297,6 +298,7 @@ def start_program():
 
         sys.exit('\nPerformed unittests -- exiting.')
 
+    # start the different loggers
     setup_logging(ARGS.log)
 
     # Start the program
@@ -309,10 +311,8 @@ def setup_logging(logging_level):
     Setup the loggers.
 
     """
-    cl(logging_level)           # setup simulation logging
-    cl.info("Started Core logging with level '{}'".format(logging_level))
-    sl(logging_level)           # setup simulation logging
-    sl.info("Started Simulation logging with level '{}'".format(logging_level))
+    gl(logging_level)           # setup simulation logging
+    gl.info("Started Gateway logging with level '{}'".format(logging_level))
     bl(logging_level)           # setup backend logging
     bl.info("Started Backend logging with level '{}'".format(logging_level))
 

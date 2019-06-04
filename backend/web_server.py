@@ -10,8 +10,6 @@ import cherrypy
 
 import logging.config
 
-import multiprocessing
-
 from ws4py.server.cherrypyserver import WebSocketTool
 
 from backend.web_server_api import ServerAPI
@@ -20,6 +18,8 @@ from backend.web_server_websocket import (
 from backend.web_server_control import ServerRoot
 from backend.web_server_display import ServerScenesDispatcher
 import backend.global_settings as global_settings
+
+from util.loggers import BackendLog as bl
 
 
 class Web_Server:
@@ -141,7 +141,6 @@ class Web_Server:
          until after the backend is shut down.
 
         """
-
         # Set the port
         cherrypy.config.update(
             {'server.socket_port': self.port,
@@ -149,8 +148,11 @@ class Web_Server:
             }
         )
 
+        bl.debug("Subscribing to SceneManagerPlugin")
         # Add the SceneManagerPlugin to the server bus
         SceneManagerPlugin(cherrypy.engine).subscribe()
+
+        bl.debug("Adding WebSocketTool")
         cherrypy.tools.websocket = WebSocketTool()
 
         # Load the server class for displaying fem data
@@ -163,80 +165,13 @@ class Web_Server:
         cherrypy.tree.mount(
             WebSocketAPI(), '/websocket', self._websocket_conf)
 
-        LOG_CONF = {
-            'version': 1,
-
-            'formatters': {
-                'void': {
-                    'format': ''
-                },
-                'standard': {
-                    'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
-                },
-            },
-            'handlers': {
-                'default': {
-                    'level':'INFO',
-                    'class':'logging.StreamHandler',
-                    'formatter': 'standard',
-                    'stream': 'ext://sys.stdout'
-                },
-                'cherrypy_console': {
-                    'level':'INFO',
-                    'class':'logging.StreamHandler',
-                    'formatter': 'void',
-                    'stream': 'ext://sys.stdout'
-                },
-                'cherrypy_access': {
-                    'level':'INFO',
-                    'class': 'logging.handlers.RotatingFileHandler',
-                    'formatter': 'void',
-                    'filename': 'access.log',
-                    'maxBytes': 10485760,
-                    'backupCount': 20,
-                    'encoding': 'utf8'
-                },
-                'cherrypy_error': {
-                    'level':'INFO',
-                    'class': 'logging.handlers.RotatingFileHandler',
-                    'formatter': 'void',
-                    'filename': 'errors.log',
-                    'maxBytes': 10485760,
-                    'backupCount': 20,
-                    'encoding': 'utf8'
-                },
-            },
-            'loggers': {
-                '': {
-                    'handlers': ['default'],
-                    'level': 'INFO'
-                },
-                'CORE': {
-                    'handlers': ['default'],
-                    'level': 'INFO' ,
-                    'propagate': False
-                },
-                'cherrypy.access': {
-                    'handlers': ['cherrypy_console'],
-                    # 'handlers': ['cherrypy_access'],
-                    'level': 'INFO',
-                    'propagate': False
-                },
-                'cherrypy.error': {
-                    'handlers': ['cherrypy_console'],
-                    # 'handlers': ['cherrypy_console', 'cherrypy_error'],
-                    'level': 'INFO',
-                    'propagate': False
-                },
-            }
-        }
-
         cherrypy.config.update({'log.screen': True,
                                 'log.access_file': '',
                                 'log.error_file': ''})
         cherrypy.engine.unsubscribe('graceful', cherrypy.log.reopen_files)
-        logging.config.dictConfig(LOG_CONF)
 
         # # Start the server
+        bl.debug("Starting engine")
         cherrypy.engine.start()
+        bl.debug("Blocking engine")
         cherrypy.engine.block()

@@ -10,6 +10,7 @@ import cherrypy
 import re
 
 import util.version
+from util.loggers import BackendLog as bl
 
 # This imports the scene manager and the data_directory
 import backend.global_settings as gloset
@@ -143,8 +144,8 @@ class ServerAPI:
                     if self.is_scene_locked(scene_hash):
                         raise cherrypy.HTTPError(503, 'scene is locked, try again later')
 
-                except KeyError:
-                    pass
+                except KeyError as e:
+                    bl.debug_warning("KeyError: {}".format(e))
 
                 self.lock_scene_if_unlocked(scene_hash)
 
@@ -172,7 +173,7 @@ class ServerAPI:
                     output = self.post_scenes(datasets)
 
                 except (KeyError, TypeError) as e:
-                    print('{}'.format(e))
+                    bl.debug_warning("KeyError/TypeError: {}".format(e))
                     output = None
 
         ##################################################
@@ -196,7 +197,7 @@ class ServerAPI:
                     output = self.post_scenes_scenehash(scene_hash, datasets)
 
                 except (KeyError, TypeError) as e:
-                    print('{}'.format(e))
+                    bl.debug_warning("KeyError/TypeError: {}".format(e))
                     output = None
 
             # DELETE
@@ -226,7 +227,7 @@ class ServerAPI:
                             scene_hash, colorbar_information)
 
                     except (KeyError, TypeError) as e:
-                        print('{}'.format(e))
+                        bl.debug_warning("KeyError/TypeError: {}".format(e))
                         output = None
 
             else:
@@ -297,7 +298,7 @@ class ServerAPI:
                         )
 
                     except (KeyError, TypeError) as e:
-                        print('{}'.format(e))
+                        bl.debug_warning("KeyError/TypeError: {}".format(e))
                         output = None
 
                 ##################################################
@@ -315,7 +316,7 @@ class ServerAPI:
                         )
 
                     except (KeyError, TypeError) as e:
-                        print('{}'.format(e))
+                        bl.debug_warning("KeyError/TypeError: {}".format(e))
                         output = None
 
                 ##################################################
@@ -333,7 +334,7 @@ class ServerAPI:
                         )
 
                     except (KeyError, TypeError) as e:
-                        print('{}'.format(e))
+                        bl.debug_warning("KeyError/TypeError: {}".format(e))
                         output = None
 
                 ##################################################
@@ -351,7 +352,7 @@ class ServerAPI:
                         )
 
                     except (KeyError, TypeError) as e:
-                        print('{}'.format(e))
+                        bl.debug_warning("KeyError/TypeError: {}".format(e))
                         output = None
 
         ##################################################

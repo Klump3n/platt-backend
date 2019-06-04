@@ -14,6 +14,7 @@ import backend.dataset_mangler as dm
 
 import cherrypy
 
+from util.loggers import BackendLog as bl
 
 class ParseDataset:
     """
@@ -363,9 +364,8 @@ class ParseDataset:
                     skins[element_type]['hash'] = current_skin[element_type]['sha1sum']
                     skins[element_type]['fmt'] = skin_format
 
-        except KeyError:
-            # no skins found
-            pass
+        except KeyError as e:
+            bl.debug_warning("No skins found: {}".format(e))
 
         # calculate the hash if we have the sha1sums in the index, else just
         # get everything for every timestep
@@ -787,6 +787,7 @@ class ParseDataset:
                 timestep, elementset, current_hash=hash_dict['mesh'])
 
         except (TypeError, KeyError) as e:
+            bl.debug_warning("No mesh for given hash_dict found: {}".format(e))
             mesh_dict = self._geometry_data(
                 timestep, elementset, current_hash=None)
 
@@ -796,6 +797,7 @@ class ParseDataset:
                     timestep, field, elementset, current_hash=hash_dict['field'])
 
             except (TypeError, KeyError) as e:
+                bl.debug_warning("No field for given hash_dict found: {}".format(e))
                 field_dict = self._field_data(
                     timestep, field, elementset, current_hash=None)
 

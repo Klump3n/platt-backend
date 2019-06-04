@@ -11,6 +11,7 @@ import cherrypy
 
 import backend.global_settings as gloset
 
+from util.loggers import BackendLog as bl
 
 class ServerRoot:
     """

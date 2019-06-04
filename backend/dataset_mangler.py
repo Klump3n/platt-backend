@@ -6,6 +6,7 @@ intended as a module for the dataset parser.
 """
 import numpy as np
 
+from util.loggers import BackendLog as bl
 
 def model_surface(elements, nodes, skins, elementset):
 

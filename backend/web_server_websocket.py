@@ -28,6 +28,7 @@ import backend.global_settings as gloset
 configure_logger(level=logging.DEBUG)
 logger = logging.getLogger('ws4py')
 
+from util.loggers import BackendLog as bl
 
 class SceneManagerPlugin(WebSocketPlugin):
     """

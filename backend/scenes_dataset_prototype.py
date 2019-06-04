@@ -13,6 +13,8 @@ import numpy as np
 from backend.util.timestamp_to_sha1 import timestamp_to_sha1
 import backend.dataset_parser as dp
 
+from util.loggers import BackendLog as bl
+
 
 class _DatasetPrototype:
     """
@@ -292,7 +294,7 @@ class _DatasetPrototype:
                     np.unique(np.asarray(elemental_fields)[:, 0])
                 )
             except IndexError as e:
-                print(e)
+                bl.debug_warning("IndexError in field_dict: {}".format(e))
                 raise
 
             nodal_field_dir = timestep_dir / 'no'
@@ -308,11 +310,13 @@ class _DatasetPrototype:
 
             try:
                 elemental_fields = list(timestep_dict['elemental'].keys())
-            except KeyError:
+            except KeyError as e:
+                bl.debug_warning("KeyError in field_dict (elemental_fields): {}".format(e))
                 elemental_fields = list()
             try:
                 nodal_fields = list(timestep_dict['nodal'].keys())
-            except KeyError:
+            except KeyError as e:
+                bl.debug_warning("KeyError in field_dict (nodal_fields): {}".format(e))
                 nodal_fields = list()
 
         # sorting from...
@@ -422,7 +426,8 @@ class _DatasetPrototype:
                 update=False, dataset=self.dataset_name)
             try:
                 return_dict = ext_index[self.dataset_name][self._selected_timestep]['elset']
-            except KeyError:
+            except KeyError as e:
+                bl.debug_warning("KeyError in field_dict (return_dict): {}".format(e))
                 return_dict = dict()
 
         elset_keys = []

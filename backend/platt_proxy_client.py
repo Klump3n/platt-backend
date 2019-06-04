@@ -15,13 +15,13 @@ import struct
 import asyncio
 import socket
 import threading
-import multiprocessing
 import base64
 import logging
 import queue
 from contextlib import suppress
 
-from util.loggers import CoreLog as cl, BackendLog as bl, SimulationLog as sl
+# from util.loggers import CoreLog as cl, BackendLog as bl, SimulationLog as sl
+from util.loggers import GatewayLog as gl
 
 class Client(object):
     def __init__(
@@ -37,7 +37,7 @@ class Client(object):
             file_contents_name_hash_client_queue,
             shutdown_client_event
     ):
-        cl.info("Client init")
+        gl.info("Client init")
 
         self._host = host
         self._port = port
@@ -108,7 +108,7 @@ class Client(object):
             self.stop()
 
     def stop(self):
-        cl.info("Shutdown client")
+        gl.info("Shutdown client")
         self._loop.stop()
 
         for task in self.tasks:
@@ -121,7 +121,7 @@ class Client(object):
 
         # clear when shutdown complete
         self._shutdown_client_event.clear()
-        cl.info("Client shutdown complete")
+        gl.info("Client shutdown complete")
 
     ##################################################################
     # watch the connections to the proxy
@@ -174,8 +174,50 @@ class Client(object):
         on connection.
 
         """
-        await self._loop.run_in_executor(
-            None, self._queue_cleanup_executor)
+        # remember which files we spotted in the queue how many times
+        data_in_queue_occurences = dict()
+
+        while True:
+
+            new_data_in_queue_occurences = dict()
+
+            if self._shutdown_client_event.is_set():
+                return
+
+            await asyncio.sleep(5)   # do this every five seconds
+
+            # reset the index requests
+            if not self._index_connection_active:
+                self._get_index_event.clear()
+
+            # clear the queue of things that are no longer needed
+            #
+            # this is of course a race condition with the actual file retrieval
+            # but qsize is a bit slow, so I think this is fine
+            data_queue_size = self._file_contents_name_hash_client_queue.qsize()
+
+            for i in range(data_queue_size):
+                try:
+                    data = self._file_contents_name_hash_client_queue.get()
+                except queue.Empty:
+                    pass
+                else:
+                    data_name = data["file_request"]["object"]
+
+                    try:
+                        last_occ_count = data_in_queue_occurences[data_name]
+                    except KeyError:
+                        last_occ_count = 0
+
+                    new_data_in_queue_occurences[data_name] = last_occ_count + 1
+
+                    # reinsert into queue or delete it (don't reinsert)
+                    if ((last_occ_count + 1) < 3):
+                        self._file_contents_name_hash_client_queue.put(data)
+                    else:
+                        pass    # delete it
+
+            data_queue_size = new_data_in_queue_occurences.copy()
 
     def _queue_cleanup_executor(self):
         """
@@ -218,7 +260,7 @@ class Client(object):
 
             try:
                 # open a connection
-                cl.info("Attempting to open a connection for receiving "
+                gl.info("Attempting to open a connection for receiving "
                              "new file information")
                 new_file_reader, new_file_writer = (
                     await asyncio.open_connection(
@@ -226,7 +268,7 @@ class Client(object):
                 )
 
             except (OSError, asyncio.TimeoutError):
-                cl.info("Can't establish a connection to receive new file "
+                gl.info("Can't establish a connection to receive new file "
                              "information, waiting a bit")
                 await asyncio.sleep(3.5)
 
@@ -246,12 +288,12 @@ class Client(object):
                         await read_connection_task
 
                 except Exception as e:
-                    cl.error("Exception in new_files: {}".format(e))
+                    gl.error("Exception in new_files: {}".format(e))
 
                 finally:
                     new_file_writer.close()
                     self._new_file_information_connection_active = False
-                    cl.info("New file connection closed")
+                    gl.info("New file connection closed")
 
     async def read_new_file(self, reader, writer):
         """
@@ -266,7 +308,7 @@ class Client(object):
         # send a final ack
         await self.send_ack(writer)
 
-        cl.info("New file from server: {}".format(res))
+        gl.info("New file from server: {}".format(res))
         self._new_file_receive_queue.put(res)
 
 
@@ -281,7 +323,7 @@ class Client(object):
         while True:
             try:
                 # open a connection
-                cl.info("Attempting to open a connection for receiving "
+                gl.info("Attempting to open a connection for receiving "
                              "the index")
                 index_request_reader, index_request_writer = (
                     await asyncio.open_connection(
@@ -289,7 +331,7 @@ class Client(object):
                 )
 
             except (OSError, asyncio.TimeoutError):
-                cl.info("Can't establish a connection to receive the "
+                gl.info("Can't establish a connection to receive the "
                              "index, waiting a bit")
                 await asyncio.sleep(3.5)
 
@@ -316,12 +358,12 @@ class Client(object):
                         await index_event_watch_task
 
                 except Exception as e:
-                    cl.error("Exception in index: {}".format(e))
+                    gl.error("Exception in index: {}".format(e))
 
                 finally:
                     index_request_writer.close()
                     self._index_connection_active = True
-                    cl.info("Index connection closed")
+                    gl.info("Index connection closed")
 
     async def _watch_index_connection(self, reader, writer):
         """
@@ -345,7 +387,7 @@ class Client(object):
         if not get_index_event:
             return None
 
-        cl.info("Index request received")
+        gl.info("Index request received")
 
         index = await self.get_index(reader, writer)
 
@@ -382,13 +424,13 @@ class Client(object):
         """
         dictionary = {"todo": "index"}
 
-        cl.debug("Sending index request")
+        gl.debug("Sending index request")
         if await self.send_connection(reader, writer, dictionary):
 
-            cl.debug("Index request sent")
+            gl.debug("Index request sent")
 
             index = await self.read_data(reader, writer)
-            cl.debug("Index received")
+            gl.debug("Index received")
 
             if not index:
                 await self.send_nack(writer)
@@ -428,7 +470,7 @@ class Client(object):
         file_request_in_queue = await self._loop.run_in_executor(
             None, self.download_request_event_executor)
 
-        cl.debug("Requested file data and hash")
+        gl.debug("Requested file data and hash")
 
         return file_request_in_queue
 
@@ -461,7 +503,7 @@ class Client(object):
         while True:
             try:
                 # open a connection
-                cl.info("Attempting to open a connection for requesting files")
+                gl.info("Attempting to open a connection for requesting files")
                 file_request_reader, file_request_writer = (
                     await asyncio.open_connection(
                         self._host, self._port, loop=self._loop)
@@ -470,10 +512,10 @@ class Client(object):
             except (OSError, asyncio.TimeoutError):
                 counter += 1
                 if counter == 3:
-                    cl.warning("Too many timeouts")
+                    gl.warning("Too many timeouts")
                     break
 
-                cl.warning("Can't establish a connection to request files, "
+                gl.warning("Can't establish a connection to request files, "
                              "waiting a bit")
                 await asyncio.sleep(3.5)
 
@@ -505,12 +547,12 @@ class Client(object):
                     self._file_contents_name_hash_client_queue.put(res)
 
                 except Exception as e:
-                    cl.error("Exception in requests: {}".format(e))
+                    gl.error("Exception in requests: {}".format(e))
 
                 finally:
                     file_request_writer.close()
                     # self._file_request_connection_active = False
-                    cl.info("Request connection closed")
+                    gl.info("Request connection closed")
                     break
 
 
@@ -525,7 +567,7 @@ class Client(object):
     #     while True:
     #         try:
     #             # open a connection
-    #             cl.info("Attempting to open a connection for requesting "
+    #             gl.info("Attempting to open a connection for requesting "
     #                          "files")
     #             file_request_reader, file_request_writer = (
     #                 await asyncio.open_connection(
@@ -533,7 +575,7 @@ class Client(object):
     #             )
 
     #         except (OSError, asyncio.TimeoutError):
-    #             cl.info("Can't establish a connection to request files, "
+    #             gl.info("Can't establish a connection to request files, "
     #                          "waiting a bit")
     #             await asyncio.sleep(3.5)
 
@@ -563,12 +605,12 @@ class Client(object):
     #                     await watch_file_request_queue_task
 
     #             except Exception as e:
-    #                 cl.error("Exception in requests: {}".format(e))
+    #                 gl.error("Exception in requests: {}".format(e))
 
     #             finally:
     #                 file_request_writer.close()
     #                 self._file_request_connection_active = False
-    #                 cl.info("Request connection closed")
+    #                 gl.info("Request connection closed")
 
     # async def _watch_file_request_connection(self, reader, writer):
     #     """
@@ -592,7 +634,7 @@ class Client(object):
     #     if not file_request_in_queue:
     #         return None
 
-    #     cl.info("Requested file data and hash")
+    #     gl.info("Requested file data and hash")
     #     await self.send_connection(reader, writer, file_request_in_queue)
 
     # def file_request_event_executor(self):
@@ -625,7 +667,7 @@ class Client(object):
     #     while True:
     #         try:
     #             # open a connection
-    #             cl.info("Attempting to open a connection for receiving "
+    #             gl.info("Attempting to open a connection for receiving "
     #                          "requested files")
     #             file_answer_reader, file_answer_writer = (
     #                 await asyncio.open_connection(
@@ -633,7 +675,7 @@ class Client(object):
     #             )
 
     #         except (OSError, asyncio.TimeoutError):
-    #             cl.info("Can't establish a connection to receive "
+    #             gl.info("Can't establish a connection to receive "
     #                          "requested files, waiting a bit")
     #             await asyncio.sleep(3.5)
 
@@ -656,12 +698,12 @@ class Client(object):
     #                     await watch_file_request_server_answer_task
 
     #             except Exception as e:
-    #                 cl.error("Exception in requests: {}".format(e))
+    #                 gl.error("Exception in requests: {}".format(e))
 
     #             finally:
     #                 file_answer_writer.close()
     #                 self._file_answer_connection_active = False
-    #                 cl.info("Answer connection closed")
+    #                 gl.info("Answer connection closed")
 
     # async def watch_file_request_server_answer(self, reader, writer):
     #     """
@@ -706,7 +748,7 @@ class Client(object):
         except Exception as e:
             # if something goes wrong send a nack and start anew
             await self.send_nack(writer)
-            cl.error("An Exception occured: {}".format(e))
+            gl.error("An Exception occured: {}".format(e))
             raise
             return
         else:
@@ -721,7 +763,7 @@ class Client(object):
         except json.decoder.JSONDecodeError:
             # if we can not parse the json send a nack and start from the
             # beginning
-            cl.debug("Parsing {} as json failed".format(res))
+            gl.debug("Parsing {} as json failed".format(res))
             await self.send_nack(writer)
             raise
             return
@@ -729,7 +771,7 @@ class Client(object):
             # if ANYTHING else goes wrong send a nack and start from the
             # beginning
             await self.send_nack(writer)
-            cl.error("An Exception occured: {}".format(e))
+            gl.error("An Exception occured: {}".format(e))
             raise
             return
         else:
@@ -786,7 +828,7 @@ class Client(object):
         try:
             ck = ck.decode("UTF-8")
         except Exception as e:
-            cl.error("An Exception occured: {}".format(e))
+            gl.error("An Exception occured: {}".format(e))
         else:
             if ck.lower() == "ack":
                 return True

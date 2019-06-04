@@ -10,6 +10,7 @@ import cherrypy
 import backend.global_settings as gloset
 from backend.static.make_index import make_index
 
+from util.loggers import BackendLog as bl
 
 class ServerScenesDispatcher:
     """

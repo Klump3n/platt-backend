@@ -10,6 +10,8 @@ import backend.interface_external_data as external_data
 
 import backend.platt_proxy_client as platt_client
 
+from util.loggers import BackendLog as bl
+
 class SceneManager:
     """
     Stores scenes and contains methods for manipulating scenes.
@@ -184,7 +186,8 @@ class SceneManager:
             # Here still dataset_list, so we can have a addDatasetFail entry
             return_dict = self.add_datasets(new_scene_hash, dataset_list)
             return return_dict
-        except (ValueError, TypeError):
+        except (ValueError, TypeError) as e:
+            bl.debug_warning("Exception when creating new scene: {}".format(e))
             return None
 
     def scene(
@@ -222,7 +225,8 @@ class SceneManager:
 
             return scenes[index]
 
-        except ValueError:
+        except ValueError as e:
+            bl.debug_warning("Scene with hash {} not found: {}".format(scene_hash, e))
             return None
 
     def list_scenes(self):
@@ -334,10 +338,12 @@ class SceneManager:
             # that an entry in the list was not a string, so we might run in to
             # trouble? But it came from a list, so it can also go back into a
             # list I guess... Maybe FIXME.
-            except (TypeError, ValueError):
+            except (TypeError, ValueError) as e:
+                bl.debug_warning("Exception when adding dataset {}: {}".format(one_dataset, e))
                 try:
                     return_dict['addDatasetsFail'].append(one_dataset)
-                except KeyError:
+                except KeyError as f:
+                    bl.debug_warning("Further exception: {}".format(e))
                     return_dict['addDatasetsFail'] = []
                     return_dict['addDatasetsFail'].append(one_dataset)
 
@@ -436,7 +442,8 @@ class SceneManager:
 
         try:
             remaining_datasets = target_scene.delete_dataset(dataset_hash)
-        except ValueError:
+        except ValueError as e:
+            bl.debug_warning("Exception in delete_loaded_dataset: {}".format(e))
             # The dataset does not exist
             return None
 

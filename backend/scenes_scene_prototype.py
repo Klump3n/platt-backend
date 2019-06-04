@@ -16,6 +16,7 @@ from ws4py.messaging import TextMessage
 # configure the ws4py logger
 logger = logging.getLogger('ws4py')
 
+from util.loggers import BackendLog as bl
 
 class _ScenePrototype:
     """
@@ -169,7 +170,8 @@ class _ScenePrototype:
         try:
             # Return the object
             return self._dataset_list[dataset_hash]
-        except KeyError:
+        except KeyError as e:
+            bl.debug_warning('dataset_hash does not fit any dataset in scene: {}'.format(e))
             raise ValueError('dataset_hash does not fit any dataset in scene')
 
     def delete_dataset(self, dataset_hash):
@@ -196,7 +198,8 @@ class _ScenePrototype:
 
             # Delegate returning of the remainder to the standard method
             return self.list_datasets()
-        except KeyError:
+        except KeyError as e:
+            bl.debug_warning('dataset_hash does not fit any dataset in scene: {}'.format(e))
             raise ValueError('dataset_hash does not fit any dataset in scene')
 
     def colorbar_settings(self, colorbar_information=None):
