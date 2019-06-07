@@ -63,50 +63,50 @@ def simulation_file(source_dict=None, namespace=None, object_key_list=[]):
 
     # print(expectation_list)
 
-    # while (len(expectation_list) > 0):
+    while (len(expectation_list) > 0):
 
-    #     # try and read from the data queue (coming from the proxy)
-    #     try:
-    #         ans = file_request_answer_queue.get(True, 10)
-    #     except queue.Empty as e:
-    #         bl.debug_warning("Took more than 10 seconds for a file to appear in queue. Aborting. ({})".format(e))
-    #         break
-
-    #     request_dict = ans["file_request"]
-    #     obj_key = request_dict["object"]
-
-    #     try:
-    #         occurence_dict[obj_key] += 1
-    #     except KeyError:
-    #         occurence_dict[obj_key] = 1
-
-    #     if obj_key in expectation_list:
-    #         expectation_list.remove(obj_key)
-    #         index = object_key_list.index(obj_key)
-    #         res_bin[index] = request_dict["contents"]
-
-    #     else:
-    #         # if we keep getting the same file then it probably is not needed anymore
-    #         if (occurence_dict[obj_key] < 100):
-    #             # reinsert into queue
-    #             file_request_answer_queue.put(ans)
-    #         time.sleep(1e-2)    # don't spam
-
-    # return res_bin
-
-    while True:
+        # try and read from the data queue (coming from the proxy)
         try:
             ans = file_request_answer_queue.get(True, 10)
         except queue.Empty as e:
             bl.debug_warning("Took more than 10 seconds for a file to appear in queue. Aborting. ({})".format(e))
             break
-        counter += 1
+
         request_dict = ans["file_request"]
         obj_key = request_dict["object"]
-        print(obj_key)
-        index = object_key_list.index(obj_key)
-        res_bin[index] = request_dict["contents"]
-        if (counter == len(object_key_list)):
-            break
+
+        try:
+            occurence_dict[obj_key] += 1
+        except KeyError:
+            occurence_dict[obj_key] = 1
+
+        if obj_key in expectation_list:
+            expectation_list.remove(obj_key)
+            index = object_key_list.index(obj_key)
+            res_bin[index] = request_dict["contents"]
+
+        else:
+            # if we keep getting the same file then it probably is not needed anymore
+            if (occurence_dict[obj_key] < 100):
+                # reinsert into queue
+                file_request_answer_queue.put(ans)
+            time.sleep(1e-2)    # don't spam
 
     return res_bin
+
+    # while True:
+    #     try:
+    #         ans = file_request_answer_queue.get(True, 10)
+    #     except queue.Empty as e:
+    #         bl.debug_warning("Took more than 10 seconds for a file to appear in queue. Aborting. ({})".format(e))
+    #         break
+    #     counter += 1
+    #     request_dict = ans["file_request"]
+    #     obj_key = request_dict["object"]
+    #     print(obj_key)
+    #     index = object_key_list.index(obj_key)
+    #     res_bin[index] = request_dict["contents"]
+    #     if (counter == len(object_key_list)):
+    #         break
+
+    # return res_bin

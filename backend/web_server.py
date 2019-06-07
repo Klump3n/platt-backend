@@ -4,6 +4,8 @@ The web server class. This will host a web server at a given port.
 
 """
 import os
+import asyncio
+from contextlib import suppress
 
 # conda install cherrypy
 import cherrypy
@@ -47,6 +49,7 @@ class Web_Server:
     """
     def __init__(
             self,
+            # web_server_shutdown_event,
             frontend_directory, port=8008,
             source_dict=None
     ):
@@ -71,6 +74,23 @@ class Web_Server:
          None: Nothing.
 
         """
+        # self._web_server_shutdown_event = web_server_shutdown_event
+
+        # # create a new event loop
+        # self._loop = asyncio.new_event_loop()
+        # asyncio.set_event_loop(self._loop)
+
+        # start_server_task = self._loop.create_task(
+        #     self._start_server_coro())
+
+        # watch_server_stop_task = self._loop.create_task(
+        #     self._watch_server_stop_coro())
+
+        # self.tasks = [
+        #     start_server_task,
+        #     watch_server_stop_task
+        # ]
+
         self._source_dict = source_dict
 
         control_path = os.path.join(frontend_directory, 'control')
@@ -110,11 +130,7 @@ class Web_Server:
 
         self.port = port
 
-        # Initialise the global variables. For later use just import the
-        # backend.global_settings and use the scene manager from there.
-        global_settings.init(source_dict=source_dict)
-
-        self.start()
+        # self.start()
 
     def start(self):
         """
@@ -141,6 +157,10 @@ class Web_Server:
          until after the backend is shut down.
 
         """
+        # Initialise the global variables. For later use just import the
+        # backend.global_settings and use the scene manager from there.
+        global_settings.init(source_dict=self._source_dict)
+
         # Set the port
         cherrypy.config.update(
             {'server.socket_port': self.port,
@@ -169,9 +189,23 @@ class Web_Server:
                                 'log.access_file': '',
                                 'log.error_file': ''})
         cherrypy.engine.unsubscribe('graceful', cherrypy.log.reopen_files)
+        cherrypy.engine.subscribe('exit', self._stop)
 
-        # # Start the server
+        # Start the server
         bl.debug("Starting engine")
         cherrypy.engine.start()
         bl.debug("Blocking engine")
         cherrypy.engine.block()
+
+        return None
+
+    def _stop(self):
+        """
+        Send a stop message to the proxy.
+
+        """
+        if self._source_dict["source"] == "external":
+            gwc_dict = self._source_dict["external"]["comm_dict"]
+            shutdown_event = gwc_dict["shutdown_platt_gateway_event"]
+            shutdown_event.set()
+

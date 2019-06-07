@@ -9,11 +9,12 @@ import sys
 import time
 import argparse
 import pathlib
+import queue
+import threading
 import multiprocessing
 
 from util.version import version
 from util.greet import greeting
-# from util.loggers import CoreLog as cl, BackendLog as bl, SimulationLog as sl
 from util.loggers import GatewayLog as gl, BackendLog as bl
 
 import backend.web_server as web_server
@@ -141,19 +142,27 @@ def start_backend(data_dir, port, ext_addr, ext_port):
         data_source = 'external'
 
         # event that can be queried if the connection to the proxy is active
-        proxy_connection_active_event = multiprocessing.Event()
+        proxy_connection_active_event = threading.Event()
         # queue for pushing information about new files over the socket
-        tell_new_file_queue = multiprocessing.Queue()
+        tell_new_file_queue = queue.Queue()
+        with tell_new_file_queue.mutex:
+            tell_new_file_queue.queue.clear()
         # index request event
-        get_index_event = multiprocessing.Event()
+        get_index_event = threading.Event()
         # index data queue (answer to request event)
-        receive_index_data_queue = multiprocessing.Queue()
+        receive_index_data_queue = queue.Queue()
+        with receive_index_data_queue.mutex:
+            receive_index_data_queue.queue.clear()
         # queue for requesting files
-        file_request_queue = multiprocessing.Queue()
+        file_request_queue = queue.Queue()
+        with file_request_queue.mutex:
+            file_request_queue.queue.clear()
         # queue for receiving file contents, name and hash after requesting them
-        file_contents_name_hash_queue = multiprocessing.Queue()
+        file_contents_name_hash_queue = queue.Queue()
+        with file_contents_name_hash_queue.mutex:
+            file_contents_name_hash_queue.queue.clear()
         # shutdown the platt gateway
-        shutdown_platt_gateway_event = multiprocessing.Event()
+        shutdown_platt_gateway_event = threading.Event()
 
         gateway_comm_dict["proxy_connection_active_event"] = proxy_connection_active_event
         gateway_comm_dict["tell_new_file_queue"] = tell_new_file_queue
@@ -163,7 +172,7 @@ def start_backend(data_dir, port, ext_addr, ext_port):
         gateway_comm_dict["file_contents_name_hash_queue"] = file_contents_name_hash_queue
         gateway_comm_dict["shutdown_platt_gateway_event"] = shutdown_platt_gateway_event
 
-        platt_gateway = multiprocessing.Process(
+        platt_gateway = threading.Thread(
             target=platt_client.Client,
             args=(
                 ext_addr,
@@ -217,39 +226,18 @@ def start_backend(data_dir, port, ext_addr, ext_port):
                            ext_port_text=ext_port
                        )
 
-
     print(welcome_msg)
 
-    web_inst = multiprocessing.Process(
-        target=web_server.Web_Server,
-        args=(
-            frontend_dir,
-            port,
-            source_dict
-        )
+    winst = web_server.Web_Server(
+        frontend_dir,
+        port,
+        source_dict
     )
 
-    try:
-        if platt_gateway:
-            platt_gateway.start()
-        web_inst.start()
+    if platt_gateway:
+        platt_gateway.start()
 
-        web_inst.join()
-        if platt_gateway:
-            platt_gateway.join()
-    except KeyboardInterrupt:
-        if platt_gateway:
-            shutdown_platt_gateway_event.set()
-        pass                    # quiet
-    finally:
-        time.sleep(1)           # wait for the processes to flush it all
-        web_inst.terminate()
-        try:
-            platt_gateway.terminate()
-        except Exception as e:
-            print(e)
-
-    return None
+    winst.start()
 
 
 def start_program():
