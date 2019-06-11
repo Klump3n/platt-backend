@@ -209,6 +209,7 @@ class Client(object):
 
         while True:
 
+            # wait for 5 seconds, this is essentially a 5 second interval timer
             if self._shutdown_client_event.wait(5):
                 return
 
@@ -224,13 +225,18 @@ class Client(object):
             # but qsize is a bit slow, so I think this is fine
             data_queue_size = self._file_contents_name_hash_client_queue.qsize()
 
+            gl.debug("Data queue contains {} objects".format(data_queue_size))
+
             for i in range(data_queue_size):
                 try:
                     data = self._file_contents_name_hash_client_queue.get()
                 except queue.Empty:
                     pass
                 else:
-                    data_name = data["file_request"]["object"]
+                    data_object = data["file_request"]["object"]
+                    data_namespace = data["file_request"]["namespace"]
+
+                    data_name = "{}/{}".format(data_namespace, data_object)
 
                     try:
                         last_occ_count = data_in_queue_occurences[data_name]
@@ -243,9 +249,11 @@ class Client(object):
                     if ((last_occ_count + 1) < 3):
                         self._file_contents_name_hash_client_queue.put(data)
                     else:
+                        gl.debug_warning("Removing {} from data "
+                                         "queue".format(data_name))
                         pass    # delete it
 
-            data_queue_size = new_data_in_queue_occurences.copy()
+            data_in_queue_occurences = new_data_in_queue_occurences.copy()
 
     ##################################################################
     # handle the pushing of information about new files from the server
