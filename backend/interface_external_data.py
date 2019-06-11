@@ -3,10 +3,6 @@
 The interface for acquiring simulation data from the ceph proxy server.
 
 """
-import asyncio
-import json
-import hashlib
-import struct
 import time
 import queue
 
@@ -61,8 +57,6 @@ def simulation_file(source_dict=None, namespace=None, object_key_list=[]):
 
     counter = 0
 
-    # print(expectation_list)
-
     while (len(expectation_list) > 0):
 
         # try and read from the data queue (coming from the proxy)
@@ -93,20 +87,3 @@ def simulation_file(source_dict=None, namespace=None, object_key_list=[]):
             time.sleep(1e-2)    # don't spam
 
     return res_bin
-
-    # while True:
-    #     try:
-    #         ans = file_request_answer_queue.get(True, 10)
-    #     except queue.Empty as e:
-    #         bl.debug_warning("Took more than 10 seconds for a file to appear in queue. Aborting. ({})".format(e))
-    #         break
-    #     counter += 1
-    #     request_dict = ans["file_request"]
-    #     obj_key = request_dict["object"]
-    #     print(obj_key)
-    #     index = object_key_list.index(obj_key)
-    #     res_bin[index] = request_dict["contents"]
-    #     if (counter == len(object_key_list)):
-    #         break
-
-    # return res_bin
