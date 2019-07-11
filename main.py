@@ -19,7 +19,7 @@ from util.loggers import GatewayLog as gl, BackendLog as bl
 
 import backend.web_server as web_server
 import backend.platt_proxy_client as platt_client
-
+import backend.interface_external_data as ied
 
 def parse_commandline():
     """
@@ -174,6 +174,7 @@ def start_backend(data_dir, port, ext_addr, ext_port):
 
         platt_gateway = threading.Thread(
             target=platt_client.Client,
+            name="GatewayClient",
             args=(
                 ext_addr,
                 ext_port,
@@ -184,6 +185,16 @@ def start_backend(data_dir, port, ext_addr, ext_port):
                 file_request_queue,
                 file_contents_name_hash_queue,
                 shutdown_platt_gateway_event
+            )
+        )
+
+        watch_data = threading.Thread(
+            target=ied.ExternalDataWatchdog,
+            name="ExternalDataWatchdog",
+            args=(
+                [
+                    gateway_comm_dict
+                ]
             )
         )
 
@@ -236,6 +247,7 @@ def start_backend(data_dir, port, ext_addr, ext_port):
 
     if platt_gateway:
         platt_gateway.start()
+        watch_data.start()
 
     winst.start()
 

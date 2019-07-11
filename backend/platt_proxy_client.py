@@ -419,8 +419,6 @@ class Client(object):
         index = await self.get_index(reader, writer)
 
         self._index_data_queue.put(index)
-        # self._index_pipe_remote.send(index)
-        # self._index_avail_event.set()
 
         return True             # something other than None
 
@@ -461,10 +459,10 @@ class Client(object):
 
             if not index:
                 await self.send_nack(writer)
-                return
+
             await self.send_ack(writer)
 
-            self._index_data_queue.put(index)
+            return index
 
 
     ##################################################################
@@ -571,6 +569,9 @@ class Client(object):
                     )
 
                     file_request_dict = {"requested_file": requested_file}
+                    requested_descriptor = "{}/{}".format(
+                        requested_file["namespace"],
+                        requested_file["key"])
 
                     await self.send_connection(
                         file_request_reader,
@@ -584,9 +585,22 @@ class Client(object):
                         await self.send_nack(file_request_writer)
                         return
                     await self.send_ack(file_request_writer)
-                    res["file_request"]["contents"] = base64.b64decode(
-                        res["file_request"]["contents"].encode())
-                    self._file_contents_name_hash_client_queue.put(res)
+
+                    object_descriptor = "{}/{}".format(
+                        res["file_request"]["namespace"],
+                        res["file_request"]["object"])
+
+                    gl.debug("Received {}".format(object_descriptor))
+
+                    if object_descriptor == requested_descriptor:
+                        # decode the base64 contents
+                        res["file_request"]["contents"] = base64.b64decode(
+                            res["file_request"]["contents"].encode())
+                        self._file_contents_name_hash_client_queue.put(res)
+                        break
+
+                    else:
+                        gl.debug_warning("Not the requested file, trying again")
 
                 except Exception as e:
                     gl.error("Exception in requests: {}".format(e))
@@ -596,7 +610,6 @@ class Client(object):
                     file_request_writer.close()
                     # self._file_request_connection_active = False
                     gl.info("Request connection closed")
-                    break
 
     ##################################################################
     # utility functions for sending and receiving data to and from the client

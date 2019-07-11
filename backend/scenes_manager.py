@@ -5,6 +5,10 @@ This module takes care of storing and manipulating scenes.
 """
 import os
 import pathlib
+import asyncio
+import threading
+from contextlib import suppress
+
 from backend.scenes_scene_prototype import _ScenePrototype
 import backend.interface_external_data as external_data
 
@@ -51,6 +55,8 @@ class SceneManager:
         self.source = source_dict
         self.source_type = source_dict['source']
 
+        self._scene_list = {}
+
         if self.source_type == 'local':
             data_dir = self.source['local']
             # Check if the path exists
@@ -72,10 +78,6 @@ class SceneManager:
             self._local_src_index = {}
             self._local_src_dataset_index = {}
             self._local_src_index = self.ext_src_index(update=True)
-
-        self._scene_list = {}
-
-        return None
 
     def list_available_datasets(self):
         """
@@ -898,11 +900,10 @@ class SceneManager:
 
         """
         if update:
+
             ext_dict = external_data.index(
                 source_dict=self.source, namespace=None)
             self._local_src_index = ext_dict
-            # self._local_src_index = list(ext_dict.keys())
-            # self._local_src_index = ext_dict["namespaces"]
 
         return self._local_src_index
 

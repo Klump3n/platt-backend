@@ -268,7 +268,6 @@ def model_surface_fields_nodal(field_map, field_values):
         'points_per_unit': 1,
         'data': remapped_field_data
     }
-
     return remapped_field
 
 
