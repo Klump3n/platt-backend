@@ -25,28 +25,6 @@ def nodes():
 
     return nodes_dict
 
-def nodes_ma():
-    """
-    The node binary format for mechanical nodes files.
-
-    Same as nodes, just different file.
-
-    """
-    nodes_dict = {}
-
-    file_name = 'nodes_ma.bin'
-
-    data_point_size = 8    # 8 bytes of ...
-    data_point_type = 'd'     # ... doubles
-    points_per_unit = 3  # 3 coords per node
-
-    nodes_dict['file_name'] = file_name
-    nodes_dict['data_point_size'] = data_point_size
-    nodes_dict['data_point_type'] = data_point_type
-    nodes_dict['points_per_unit'] = points_per_unit
-
-    return nodes_dict
-
 def elementset():
     """
     The elementset binary format.

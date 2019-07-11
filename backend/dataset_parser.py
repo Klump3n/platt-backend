@@ -424,17 +424,6 @@ class ParseDataset:
         nodes_hash = timestep_dict['nodes']['sha1sum']
         nodes_format = binary_formats.nodes()
 
-        # mechanical nodes
-        get_nodes_ma = False
-
-        # see if mechanical nodes are in file (required for c3d15/c3d20)
-        if "nodes_ma" in timestep_dict:
-            # parse mechanical nodes
-            nodes_ma_key = timestep_dict['nodes_ma']['object_key']
-            nodes_ma_hash = timestep_dict['nodes_ma']['sha1sum']
-            nodes_ma_format = binary_formats.nodes_ma()
-            get_nodes_ma = True
-
         # parse elements
         elements = {}
         elements_types = list(timestep_dict['elements'].keys())
@@ -470,8 +459,6 @@ class ParseDataset:
         # get everything for every timestep
         hash_list = list()
         hash_list.append(nodes_hash)
-        if get_nodes_ma:
-            hash_list.append(nodes_ma_hash)
         for element in elements:
             hash_list.append(elements[element]['hash'])
         # for element_type in elementset:
@@ -510,10 +497,6 @@ class ParseDataset:
             object_key_list.append(nodes_key)
             fmt_list.append(nodes_format)
 
-            if get_nodes_ma:
-                object_key_list.append(nodes_ma_key)
-                fmt_list.append(nodes_ma_format)
-
             for element in elements:
                 object_key_list.append(elements[element]['key'])
                 fmt_list.append(elements[element]['fmt'])
@@ -534,7 +517,6 @@ class ParseDataset:
             if mesh_checksum in current_hash:
                 return_dict['hash'] = mesh_checksum
                 return_dict['nodes'] = None
-                return_dict['nodes_ma'] = None
                 return_dict['elements'] = None
                 return_dict['skins'] = None
                 return return_dict
@@ -544,21 +526,13 @@ class ParseDataset:
             return_dict['nodes']['fmt'] = nodes_format
             return_dict['nodes']['data'] = geom_data[0]
 
-            nodes_file_offset = 1
-
-            return_dict['nodes_ma'] = {}
-            if get_nodes_ma:
-                return_dict['nodes_ma']['fmt'] = nodes_ma_format
-                return_dict['nodes_ma']['data'] = geom_data[0]
-                nodes_file_offset += 1
-
             return_dict['elements'] = {}
             for it, element in enumerate(elements):
                 element_path = elements[element]['key']
 
                 return_dict['elements'][element] = {}
                 return_dict['elements'][element]['fmt'] = elements[element]['fmt']
-                return_dict['elements'][element]['data'] = geom_data[it+nodes_file_offset]
+                return_dict['elements'][element]['data'] = geom_data[it+1]
 
             return_dict["skins"] = {}
             for it, skin in enumerate(skins):
@@ -566,12 +540,11 @@ class ParseDataset:
 
                 return_dict["skins"][skin] = {}
                 return_dict["skins"][skin]['fmt'] = skins[skin]['fmt']
-                return_dict["skins"][skin]['data'] = geom_data[it+nodes_file_offset+len(elements)]
+                return_dict["skins"][skin]['data'] = geom_data[it+1+len(elements)]
 
         else:
             return_dict['hash'] = mesh_checksum
             return_dict['nodes'] = None
-            return_dict['nodes_ma'] = None
             return_dict['elements'] = None
             return_dict['skins'] = None
 
