@@ -281,6 +281,12 @@ class ServerAPI:
                     output = self.get_scenes_scenehash_datasethash_mesh(
                         scene_hash, dataset_hash)
 
+                ##################################################
+
+                if dataset_operation == 'tracking':
+                    output = self.get_scenes_scenehash_datasethash_tracking(
+                        scene_hash, dataset_hash)
+
             # PATCH
             if http_method == 'PATCH':
 
@@ -354,6 +360,16 @@ class ServerAPI:
                     except (KeyError, TypeError) as e:
                         bl.debug_warning("KeyError/TypeError: {}".format(e))
                         output = None
+
+                ##################################################
+
+                if dataset_operation == 'tracking':
+
+                    output = (
+                        self.patch_scenes_scenehash_datasethash_tracking(
+                            scene_hash, dataset_hash)  # this is just a toggle
+                    )
+
 
         ##################################################
 
@@ -624,6 +640,30 @@ class ServerAPI:
             scene_hash, dataset_hash)
 
         return dataset_mesh
+
+    def get_scenes_scenehash_datasethash_tracking(
+            self, scene_hash, dataset_hash):
+        """
+        Get the tracking of a dataset.
+
+        """
+        dataset_tracking = gloset.scene_manager.dataset_tracking(
+            scene_hash, dataset_hash, set_tracking=None)
+        return dataset_tracking
+
+    def patch_scenes_scenehash_datasethash_tracking(
+            self, scene_hash, dataset_hash):
+        """
+        Toggle the tracking of a dataset.
+
+        """
+        current_tracking = gloset.scene_manager.dataset_tracking(
+            scene_hash, dataset_hash, set_tracking=None)
+        new_tracking = not current_tracking["trackingState"]  # invert the current trackingState
+
+        dataset_tracking = gloset.scene_manager.dataset_tracking(
+            scene_hash, dataset_hash, set_tracking=new_tracking)
+        return dataset_tracking
 
     def get_scenes_scenehash_datasethash_mesh_hash(
             self, scene_hash, dataset_hash):

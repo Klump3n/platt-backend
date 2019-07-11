@@ -516,7 +516,47 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
         meshData[dataset_hash].datasetView.resetOrientation(dataset_hash);
     }
 
-    function track_timestep() {
+    function track_timestep_updates() {
+
+        console.log("HE");
+        var toggle_tracking = connectToAPIPromise(
+            basePath,
+            APIEndpoint = 'scenes/' + scene_hash + '/' + that.dataset_hash + '/tracking',
+            'patch',
+            {}
+        );
+        toggle_tracking.then(function(value) {
+            var trackingState = value["trackingState"];
+            var tracking_dataset_id = document.getElementById('dataset_timestep_tracking_checkbox_'+that.dataset_hash);
+
+            if (trackingState == true){
+                tracking_dataset_id.checked = true;
+            }
+            else {
+                tracking_dataset_id.checked = false;
+            }
+        });
+    }
+
+    function track_timestep_updates_state() {
+
+        var toggle_tracking = connectToAPIPromise(
+            basePath,
+            APIEndpoint = 'scenes/' + scene_hash + '/' + that.dataset_hash + '/tracking',
+            'get',
+            {}
+        );
+        toggle_tracking.then(function(value) {
+            var trackingState = value["trackingState"];
+            var tracking_dataset_id = document.getElementById('dataset_timestep_tracking_checkbox_'+that.dataset_hash);
+
+            if (trackingState == true){
+                tracking_dataset_id.checked = true;
+            }
+            else {
+                tracking_dataset_id.checked = false;
+            }
+        });
     }
 
     /**
@@ -595,7 +635,9 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
         dataset_timestep_tracking_checkbox.setAttribute('data-name', that.dataset_hash);
         dataset_timestep_tracking_checkbox.setAttribute('class', 'dataset_timestep_tracking_checkbox');
         dataset_timestep_tracking_checkbox.setAttribute('id', 'dataset_timestep_tracking_checkbox_'+that.dataset_hash);
-        // dataset_timestep_tracking_checkbox.addEventListener('click', track_timestep_updates);
+        dataset_timestep_tracking_checkbox.addEventListener('click', track_timestep_updates);
+
+        track_timestep_updates_state();
 
         var dataset_timestep_tracking_label = document.createElement('label');
         dataset_timestep_tracking_label.setAttribute('for', 'dataset_timestep_tracking_checkbox_'+that.dataset_hash);
