@@ -526,7 +526,7 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
             {}
         );
         toggle_tracking.then(function(value) {
-            var trackingState = value["trackingState"];
+            var trackingState = value["datasetTrackingState"];
             var tracking_dataset_id = document.getElementById('dataset_timestep_tracking_checkbox_'+that.dataset_hash);
 
             if (trackingState == true){
@@ -547,7 +547,7 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
             {}
         );
         toggle_tracking.then(function(value) {
-            var trackingState = value["trackingState"];
+            var trackingState = value["datasetTrackingState"];
             var tracking_dataset_id = document.getElementById('dataset_timestep_tracking_checkbox_'+that.dataset_hash);
 
             if (trackingState == true){

@@ -659,7 +659,7 @@ class ServerAPI:
         """
         current_tracking = gloset.scene_manager.dataset_tracking(
             scene_hash, dataset_hash, set_tracking=None)
-        new_tracking = not current_tracking["trackingState"]  # invert the current trackingState
+        new_tracking = not current_tracking["datasetTrackingState"]  # invert the current trackingState
 
         dataset_tracking = gloset.scene_manager.dataset_tracking(
             scene_hash, dataset_hash, set_tracking=new_tracking)
