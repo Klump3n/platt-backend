@@ -226,51 +226,19 @@ class ParseDataset:
          ValueError: If ``binary_file`` does not exist.
 
         """
-
-        # import sys
-
-        # def get_size(obj, seen=None):
-        #     """Recursively finds size of objects"""
-        #     size = sys.getsizeof(obj)
-        #     if seen is None:
-        #         seen = set()
-        #     obj_id = id(obj)
-        #     if obj_id in seen:
-        #         return 0
-        #     # Important mark as seen *before* entering recursion to gracefully handle
-        #     # self-referential objects
-        #     seen.add(obj_id)
-        #     if isinstance(obj, dict):
-        #         size += sum([get_size(v, seen) for v in obj.values()])
-        #         size += sum([get_size(k, seen) for k in obj.keys()])
-        #     elif hasattr(obj, '__dict__'):
-        #         size += get_size(obj.__dict__, seen)
-        #     elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, bytearray)):
-        #         size += sum([get_size(i, seen) for i in obj])
-        #     return size
-
-
         if len(object_key_list) != len(fmt_list):
             return None
         return_list = []
-        # print(fmt_list)
+
         import backend.interface_external_data as ext_data
 
-        print(object_key_list)
         # bin_data = [{object: X, namespace: X, contents: X, sha1sum: X}, ...]
         bin_data = ext_data.simulation_file(
             source_dict=self.source,
             namespace=self._dataset_name,
             object_key_list=object_key_list
         )
-        # print(len(bin_data))
-        # import sys
-        # print(get_size(bin_data))
 
-        # for d in bin_data:
-        #     print(get_size(d))
-
-        # sys.exit()
         for it, fmt in enumerate(fmt_list):
 
             bin_data_entry = bin_data[it]
@@ -418,7 +386,6 @@ class ParseDataset:
             update=False, dataset=self._dataset_name)
         timestep_dict = ext_index[self._dataset_name][timestep]
 
-        print(timestep_dict)
         # parse nodes
         nodes_key = timestep_dict['nodes']['object_key']
         nodes_hash = timestep_dict['nodes']['sha1sum']
