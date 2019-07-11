@@ -99,6 +99,8 @@ class _DatasetPrototype:
         self._selected_elementset_name = '__all__'
         self._selected_elementset_path_dict = {}
 
+        self._dataset_tracking = False
+
         self._hash_dict = {
             'mesh': None,
             'field': None
@@ -471,6 +473,17 @@ class _DatasetPrototype:
             )
 
         return self._selected_elementset_name
+
+    def tracking(self, set_tracking=None):
+        """
+        GET or PATCH (set/toggle) the tracking of a dataset.
+
+        """
+        if set_tracking is not None:
+            if set_tracking in [True, False]:
+                self._dataset_tracking = set_tracking
+
+        return self._dataset_tracking
 
     def surface_mesh(self, current_mesh_hash=None):
         """

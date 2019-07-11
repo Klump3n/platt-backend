@@ -518,7 +518,6 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
 
     function track_timestep_updates() {
 
-        console.log("HE");
         var toggle_tracking = connectToAPIPromise(
             basePath,
             APIEndpoint = 'scenes/' + scene_hash + '/' + that.dataset_hash + '/tracking',

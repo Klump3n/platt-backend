@@ -770,9 +770,11 @@ class SceneManager:
 
         dataset_meta = self.list_loaded_dataset_info(scene_hash, dataset_hash)
 
+        dataset_tracking = target_dataset.tracking(set_tracking)
+
         return_dict = {
             'datasetMeta': dataset_meta,
-            "datasetTrackingState": tracking
+            "datasetTrackingState": dataset_tracking
         }
 
         return return_dict
