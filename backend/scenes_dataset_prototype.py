@@ -308,16 +308,27 @@ class _DatasetPrototype:
                 update=False, dataset=self.dataset_name)
             timestep_dict = ext_index[self.dataset_name][self._selected_timestep]
 
+            # elemental_fields = []
+            # nodal_fields = []
+
             try:
-                elemental_fields = list(timestep_dict['elemental'].keys())
+                elemental_fields += list(timestep_dict["ta"]['elemental'].keys())  # thermal fields
             except KeyError as e:
-                bl.debug_warning("KeyError in field_dict (elemental_fields): {}".format(e))
-                elemental_fields = list()
+                bl.debug_warning("KeyError in thermal field_dict (elemental_fields): {}".format(e))
             try:
-                nodal_fields = list(timestep_dict['nodal'].keys())
+                elemental_fields += list(timestep_dict["ma"]['elemental'].keys())  # mechanical fields
             except KeyError as e:
-                bl.debug_warning("KeyError in field_dict (nodal_fields): {}".format(e))
-                nodal_fields = list()
+                bl.debug_warning("KeyError in mechanical field_dict (elemental_fields): {}".format(e))
+
+            try:
+                nodal_fields += list(timestep_dict["ta"]['nodal'].keys())  # thermal fields
+            except KeyError as e:
+                bl.debug_warning("KeyError in thermal field_dict (nodal_fields): {}".format(e))
+            try:
+                nodal_fields += list(timestep_dict["ma"]['nodal'].keys())  # mechanical fields
+            except KeyError as e:
+                bl.debug_warning("KeyError in mechanical field_dict (nodal_fields): {}".format(e))
+
 
         # sorting from...
         # https://blog.codinghorror.com/sorting-for-humans-natural-sort-order/
