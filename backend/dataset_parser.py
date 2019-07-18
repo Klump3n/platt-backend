@@ -276,7 +276,7 @@ class ParseDataset:
 
         return return_list
 
-    def _geometry_data(self, timestep, elementset, current_hash=None):
+    def _geometry_data(self, timestep, field, elementset, current_hash=None):
         """
         Get the geometry data for the dataset.
 
@@ -284,13 +284,13 @@ class ParseDataset:
 
         """
         if self.source_type == 'local':
-            return self._geometry_data_local(timestep, elementset, current_hash)
+            return self._geometry_data_local(timestep, field, elementset, current_hash)
         if self.source_type == 'external':
-            return self._geometry_data_external(timestep, elementset, current_hash)
+            return self._geometry_data_external(timestep, field, elementset, current_hash)
         else:
             return None
 
-    def _geometry_data_local(self, timestep, elementset, current_hash=None):
+    def _geometry_data_local(self, timestep, field, elementset, current_hash=None):
 
         directory = self.fo_dir / timestep
 
@@ -353,7 +353,7 @@ class ParseDataset:
 
         return return_dict
 
-    def _geometry_data_external(self, timestep, elementset, current_hash=list()):
+    def _geometry_data_external(self, timestep, field, elementset, current_hash=list()):
         """
         Get data from the gateway.
 
@@ -384,7 +384,11 @@ class ParseDataset:
         import backend.global_settings as gloset
         ext_index = gloset.scene_manager.ext_src_dataset_index(
             update=False, dataset=self._dataset_name)
-        timestep_dict = ext_index[self._dataset_name][timestep]
+
+        if field in ext_index[self._dataset_name][timestep]["ma"]:
+            timestep_dict = ext_index[self._dataset_name][timestep]["ma"]
+        else:
+            timestep_dict = ext_index[self._dataset_name][timestep]["ta"]
 
         # parse nodes
         nodes_key = timestep_dict['nodes']['object_key']
@@ -689,7 +693,11 @@ class ParseDataset:
         import backend.global_settings as gloset
         ext_index = gloset.scene_manager.ext_src_dataset_index(
             update=False, dataset=self._dataset_name)
-        timestep_dict = ext_index[self._dataset_name][timestep]
+
+        if field in ext_index[self._dataset_name][timestep]["ma"]:
+            timestep_dict = ext_index[self._dataset_name][timestep]["ma"]
+        else:
+            timestep_dict = ext_index[self._dataset_name][timestep]["ta"]
 
         req_field_type = field['type']
         req_field_name = field['name']
@@ -869,12 +877,12 @@ class ParseDataset:
 
         try:
             mesh_dict = self._geometry_data(
-                timestep, elementset, current_hash=hash_dict['mesh'])
+                timestep, field, elementset, current_hash=hash_dict['mesh'])
 
         except (TypeError, KeyError) as e:
             bl.debug_warning("No mesh for given hash_dict found: {}".format(e))
             mesh_dict = self._geometry_data(
-                timestep, elementset, current_hash=None)
+                timestep, field, elementset, current_hash=None)
             raise
 
         if field is not None:
