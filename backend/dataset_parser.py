@@ -385,8 +385,20 @@ class ParseDataset:
         ext_index = gloset.scene_manager.ext_src_dataset_index(
             update=False, dataset=self._dataset_name)
 
-        if field in ext_index[self._dataset_name][timestep]["ma"]:
-            timestep_dict = ext_index[self._dataset_name][timestep]["ma"]
+        try:
+            dest_field_name = field["name"]
+        except TypeError:
+            dest_field_name = "__no__field__"
+
+        ta_ma = list(ext_index[self._dataset_name][timestep].keys())
+
+        if len(ta_ma) == 1:
+            timestep_dict = ext_index[self._dataset_name][timestep]["ta"]
+        elif "ma" in ta_ma:
+            if dest_field_name in ext_index[self._dataset_name][timestep]["ma"]:
+                timestep_dict = ext_index[self._dataset_name][timestep]["ma"]
+            else:
+                timestep_dict = ext_index[self._dataset_name][timestep]["ta"]
         else:
             timestep_dict = ext_index[self._dataset_name][timestep]["ta"]
 
@@ -694,8 +706,20 @@ class ParseDataset:
         ext_index = gloset.scene_manager.ext_src_dataset_index(
             update=False, dataset=self._dataset_name)
 
-        if field in ext_index[self._dataset_name][timestep]["ma"]:
-            timestep_dict = ext_index[self._dataset_name][timestep]["ma"]
+        try:
+            dest_field_name = field["name"]
+        except TypeError:
+            dest_field_name = "__no__field__"
+
+        ta_ma = list(ext_index[self._dataset_name][timestep].keys())
+
+        if len(ta_ma) == 1:
+            timestep_dict = ext_index[self._dataset_name][timestep]["ta"]
+        elif "ma" in ta_ma:
+            if dest_field_name in ext_index[self._dataset_name][timestep]["ma"]:
+                timestep_dict = ext_index[self._dataset_name][timestep]["ma"]
+            else:
+                timestep_dict = ext_index[self._dataset_name][timestep]["ta"]
         else:
             timestep_dict = ext_index[self._dataset_name][timestep]["ta"]
 
