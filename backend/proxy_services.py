@@ -68,7 +68,7 @@ class ProxyServices(object):
             bl.debug("ProxyServices is shut down")
 
 
-def index(source_dict=None, namespace=None):
+def index(namespace=None):
     """
     Obtain the index of the ceph cluster.
 
@@ -76,7 +76,15 @@ def index(source_dict=None, namespace=None):
     parallel.
 
     """
-    return pi.index(source_dict=source_dict, namespace=namespace)
+    return pi.index(namespace=namespace)
+
+
+def subscribe(source_dict=None):
+    """
+    Get the most recent timestep for the selected namespace/field/geometry.
+
+    """
+    pass
 
 
 def simulation_file(source_dict=None, namespace=None, object_key_list=[]):

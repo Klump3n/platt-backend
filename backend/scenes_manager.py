@@ -134,7 +134,7 @@ class SceneManager:
 
         """
         availableDatasets = {
-            'availableDatasets': list(self._local_src_index.keys())}
+            'availableDatasets': list(self.ext_src_index().keys())}
         return availableDatasets
 
     def new_scene(self, dataset_list):
@@ -921,11 +921,12 @@ class SceneManager:
           that.
 
         """
-        if update:
+        self._local_src_index = ps.index(namespace=None)
 
-            ext_dict = ps.index(
-                source_dict=self.source, namespace=None)
-            self._local_src_index = ext_dict
+        # if update:
+        #     ext_dict = ps.index(
+        #         source_dict=self.source, namespace=None)
+        #     self._local_src_index = ext_dict
 
         return self._local_src_index
 
@@ -943,4 +944,5 @@ class SceneManager:
             # Don't know what to return
             return
 
-        return {dataset: self._local_src_index[dataset]}
+        return {dataset: self.ext_src_index(update=False)[dataset]}
+        # return {dataset: self._local_src_index[dataset]}
