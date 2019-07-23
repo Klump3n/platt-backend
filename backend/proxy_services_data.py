@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
+#! /usr/bin/env python3
 """
-The interface for acquiring simulation data from the ceph proxy server.
+Obtains data from the ceph proxy.
 
 """
 import time
@@ -10,6 +10,7 @@ import threading
 from contextlib import suppress
 
 from util.loggers import BackendLog as bl
+
 
 # for locking the GATEWAY_DATA dictionary (thread safety)
 GW_LOCK = threading.Lock()
@@ -23,55 +24,18 @@ GATEWAY_DATA = dict()
 # down
 
 
-class ExternalDataWatchdog:
+class ProxyData(object):
     """
-    Continually read the queue from the gateway client and save data coming
-    from it.
+    Obtains data from the proxy.
 
     """
-    def __init__(self, comm_dict):
+    def __init__(self, event_loop, comm_dict):
+
+        self._loop = event_loop
+        self._comm_dict = comm_dict
 
         self._shutdown_event = comm_dict["shutdown_platt_gateway_event"]
         self._file_request_answer_queue = comm_dict["file_contents_name_hash_queue"]
-
-        bl.debug("Starting ExternalDataWatchdog")
-        self._loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self._loop)
-
-        watch_incoming_files_task = self._loop.create_task(
-            self._watch_incoming_files_coro())
-        periodically_delete_files_task = self._loop.create_task(
-            self._periodic_file_deletion_coro())
-        periodically_update_index_task = self._loop.create_task(
-            self._periodic_index_update_coro())
-
-        self._tasks = [
-            watch_incoming_files_task,
-            periodically_delete_files_task,
-            periodically_update_index_task
-        ]
-
-        try:
-            # start the tasks
-            self._loop.run_until_complete(asyncio.wait(self._tasks))
-
-        except KeyboardInterrupt:
-            pass
-
-        finally:
-
-            self._loop.stop()
-
-            all_tasks = asyncio.Task.all_tasks()
-
-            for task in all_tasks:
-                task.cancel()
-                with suppress(asyncio.CancelledError):
-                    self._loop.run_until_complete(task)
-
-            self._loop.close()
-
-            bl.debug("ExternalDataWatchdog is shut down")
 
     async def _watch_incoming_files_coro(self):
         """
@@ -115,30 +79,6 @@ class ExternalDataWatchdog:
                 with GW_LOCK:
                     GATEWAY_DATA[occurence_key] = occurence_dict
 
-    async def _periodic_index_update_coro(self):
-        """
-        Update the index in periodic intervals.
-
-        """
-        index_updater = await self._loop.run_in_executor(
-            None, self._periodic_index_update_executor)
-
-    def _periodic_index_update_executor(self):
-        """
-        Update the index in periodic intervals.
-
-        Executor thread.
-
-        """
-        # have to import here because of circular import shenanigans
-        import backend.global_settings as global_settings
-        while True:
-
-            if self._shutdown_event.wait(120):  # update every 2 minutes
-                return
-
-            _ = global_settings.scene_manager.ext_src_index(update=True)
-
     async def _periodic_file_deletion_coro(self):
         """
         Periodically delete old data in the GATEWAY_DATA dictionary.
@@ -176,31 +116,6 @@ class ExternalDataWatchdog:
                             object_descriptor))
                         del GATEWAY_DATA[object_descriptor]
 
-def index(source_dict=None, namespace=None):
-    """
-    Obtain the index of the ceph cluster.
-
-    Note: this is an async function so that we can perform this action in
-    parallel.
-
-    """
-    comm_dict = source_dict["external"]["comm_dict"]
-    get_index_event = comm_dict["get_index_event"]
-    receive_index_data_queue = comm_dict["get_index_data_queue"]
-
-    index = None
-
-    get_index_event.set()
-
-    try:
-        bl.debug("Waiting for index")
-
-        index = receive_index_data_queue.get(True, 5)
-
-    except queue.Empty as e:
-        bl.debug_warning("Took more than 5 seconds to wait for index. ({})".format(e))
-
-    return index["index"]
 
 def simulation_file(source_dict=None, namespace=None, object_key_list=[]):
     """

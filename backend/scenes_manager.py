@@ -10,7 +10,7 @@ import threading
 from contextlib import suppress
 
 from backend.scenes_scene_prototype import _ScenePrototype
-import backend.interface_external_data as external_data
+import backend.proxy_services as ps
 
 import backend.platt_proxy_client as platt_client
 
@@ -923,7 +923,7 @@ class SceneManager:
         """
         if update:
 
-            ext_dict = external_data.index(
+            ext_dict = ps.index(
                 source_dict=self.source, namespace=None)
             self._local_src_index = ext_dict
 

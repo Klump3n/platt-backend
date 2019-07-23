@@ -230,10 +230,10 @@ class ParseDataset:
             return None
         return_list = []
 
-        import backend.interface_external_data as ext_data
+        import backend.proxy_services as ps
 
         # bin_data = [{object: X, namespace: X, contents: X, sha1sum: X}, ...]
-        bin_data = ext_data.simulation_file(
+        bin_data = ps.simulation_file(
             source_dict=self.source,
             namespace=self._dataset_name,
             object_key_list=object_key_list
