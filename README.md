@@ -1,3 +1,12 @@
+# The platt backend #
+
+This program displays the results of finite element simulations in a web
+browser. The data is hosted on a ceph cluster and provided by the
+[platt-ceph-gateway](https://github.com/Klump3n/platt-ceph-gateway).
+
+
+### OLD ###
+
 If you want to check out another version of the program (because you might need
 to do so for combatibility reasons):
 
@@ -16,3 +25,4 @@ Package requirements are:
 cherrypy
 sphinx -- for server documentation
 sphinx-js -- for js documentation
+
