@@ -41,14 +41,10 @@ def parse_commandline():
     # required while parsing the command line. The following will give True if
     # we neither want to test nor have the version printed out, but False
     # otherwise.
-    no_data_dir_requirements = (
+    version_test_requirements = (
         '--test' not in sys.argv and
         '--version' not in sys.argv and
         '-v' not in sys.argv
-    )
-    external_data_source_requirements = (
-        '-e' in sys.argv or
-        '--external' in sys.argv
     )
 
     parser = argparse.ArgumentParser(
@@ -67,26 +63,14 @@ def parse_commandline():
         '-p', '--port', default=8008,
         help='The port for the web server.')
 
-    source_group = parser.add_mutually_exclusive_group(
-        # NOTE: see the comment above the declaration of
-        # no_data_dir_requirements
-        required=no_data_dir_requirements)
-    source_group.add_argument(
-        '-d', '--data-dir',
-        help='The directory in which we want to look for simulation data.'
-    )
-    source_group.add_argument(
-        '-e', '--external', action='store_true',
-        help='Use an external data source.'
-    )
-
     parser.add_argument(
-        '--ext_address', required=external_data_source_requirements,
-        help='IP address of the external data source'
+        '--gw_address', required=version_test_requirements,
+        help='Address of the platt gateway'
     )
     parser.add_argument(
-        '--ext_port', required=external_data_source_requirements,
-        help='Port of the external data source'
+        '--gw_port', required=version_test_requirements,
+        help='Port of the platt gateway',
+        default=8009
     )
 
     parser.add_argument('--test', action='store_true',
@@ -98,10 +82,10 @@ def parse_commandline():
     return args
 
 
-def start_backend(data_dir, port, ext_addr, ext_port):
+def start_backend(port, ext_addr, ext_port):
     """
     Start the backend on the provided port, serving simulation data from the
-    provided directory or from the external source.
+    provided external source.
 
     Set the working directory to the program directory and display a welcome
     message, containing the program name and version along with the server
@@ -109,8 +93,6 @@ def start_backend(data_dir, port, ext_addr, ext_port):
     start an instance of the cherrypy ``Web_Server`` class.
 
     Args:
-     data_dir (string): The path to the simulation data, either relative to the
-      main.py file or absolute.
      port (int): The port for the web server.
      ext_addr(str): The IP address of the external source.
      ext_port (int): The network port of the external source.
@@ -132,10 +114,6 @@ def start_backend(data_dir, port, ext_addr, ext_port):
 
     # Define the source of the data
     data_source = None
-
-    if data_dir:
-        data_dir = pathlib.Path(data_dir)
-        data_source = 'local'
 
     platt_gateway = None
     gateway_comm_dict = dict()
@@ -201,7 +179,7 @@ def start_backend(data_dir, port, ext_addr, ext_port):
 
     source_dict = {
         'source': data_source,
-        'local': data_dir,
+        # 'local': data_dir,
         'external': {
             'addr': ext_addr,
             'port': ext_port,
@@ -225,18 +203,11 @@ def start_backend(data_dir, port, ext_addr, ext_port):
                        frontend_dir_text=frontend_dir
                    )
 
-    if data_source == 'local':
-        welcome_msg += 'Will search for simulation data in local directory '\
-                       '{data_dir_text}\n'.format(
-                           data_dir_text=data_dir
-                       )
-
-    if data_source == 'external':
-        welcome_msg += 'Serving data from external source at '\
-                       '{ext_addr_text}:{ext_port_text}\n'.format(
-                           ext_addr_text=ext_addr,
-                           ext_port_text=ext_port
-                       )
+    welcome_msg += 'Serving data from external source at '\
+                   '{ext_addr_text}:{ext_port_text}\n'.format(
+                       ext_addr_text=ext_addr,
+                       ext_port_text=ext_port
+                   )
 
     print(welcome_msg)
 
@@ -251,6 +222,7 @@ def start_backend(data_dir, port, ext_addr, ext_port):
         proxy_services.start()
 
     winst.start()
+
 
 def start_program():
     """
@@ -274,17 +246,8 @@ def start_program():
     just_print_version = ARGS.version
     port = ARGS.port
 
-    # Init the source
-    data_dir = None
-    ext_addr = None
-    ext_port = None
-
-    if ARGS.data_dir:
-        data_dir = ARGS.data_dir
-
-    if ARGS.external:
-        ext_addr = ARGS.ext_address
-        ext_port = ARGS.ext_port
+    ext_addr = ARGS.gw_address
+    ext_port = ARGS.gw_port
 
     # Just print the version?
     if just_print_version:
@@ -302,9 +265,10 @@ def start_program():
     setup_logging(ARGS.log)
 
     # Start the program
-    start_backend(data_dir, port, ext_addr, ext_port)
+    start_backend(port, ext_addr, ext_port)
 
     return None
+
 
 def setup_logging(logging_level):
     """
@@ -315,6 +279,7 @@ def setup_logging(logging_level):
     gl.info("Started Gateway logging with level '{}'".format(logging_level))
     bl(logging_level)           # setup backend logging
     bl.info("Started Backend logging with level '{}'".format(logging_level))
+
 
 def print_version():
     """
