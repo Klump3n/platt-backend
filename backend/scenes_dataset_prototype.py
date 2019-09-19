@@ -10,8 +10,13 @@ import os
 import re
 import numpy as np
 
+import queue
+import asyncio
+from contextlib import suppress
+
 from backend.util.timestamp_to_sha1 import timestamp_to_sha1
 import backend.dataset_parser as dp
+import backend.proxy_services_index as pi
 
 from util.loggers import BackendLog as bl
 
@@ -36,7 +41,7 @@ class _DatasetPrototype:
 
     """
     # def __init__(self, dataset_path):
-    def __init__(self, source_dict=None, dataset_name=None):
+    def __init__(self, source_dict=None, dataset_name=None, scene_hash=None):
         """
         Initialise a dataset. We expect the path to some simulation data as an
         input.
@@ -44,6 +49,9 @@ class _DatasetPrototype:
         """
         self.source = source_dict
         self.source_type = source_dict['source']
+
+        # hash of the surrounding scene
+        self._scene_hash = scene_hash
 
         if self.source_type == 'local':
             data_dir = self.source['local']
@@ -66,6 +74,9 @@ class _DatasetPrototype:
         if self.source_type == 'external':
             self.ext_addr = source_dict['external']['addr']
             self.ext_port = source_dict['external']['port']
+
+        # shutdown event
+        self._shutdown_event = source_dict["external"]["comm_dict"]["shutdown_platt_gateway_event"]
 
         # Grab the last entry from the path
         self.dataset_name = dataset_name
@@ -250,13 +261,13 @@ class _DatasetPrototype:
             if set_timestep not in self.timestep_list():
                 return self._selected_timestep
 
-            self._selected_timestep = set_timestep
-
             self._update_served_data(
-                    timestep=self._selected_timestep,
+                    timestep=set_timestep,
                     field=self._selected_field,
                     elementset=self._selected_elementset_path_dict
                 )
+
+            self._selected_timestep = set_timestep
 
         return self._selected_timestep
 
@@ -388,6 +399,10 @@ class _DatasetPrototype:
                 elementset=self._selected_elementset_path_dict
             )
 
+            # update the tracking dataset
+            if self.tracking():
+                self.tracking(set_tracking=True)
+
         return self._selected_field
 
     def elementset_dict(self):
@@ -483,6 +498,10 @@ class _DatasetPrototype:
                 elementset=self._selected_elementset_path_dict
             )
 
+            # update the tracking dataset
+            if self.tracking():
+                self.tracking(set_tracking=True)
+
         return self._selected_elementset_name
 
     def tracking(self, set_tracking=None):
@@ -493,6 +512,18 @@ class _DatasetPrototype:
         if set_tracking is not None:
             if set_tracking in [True, False]:
                 self._dataset_tracking = set_tracking
+
+            if set_tracking is True:
+                pi.subscribe(
+                    self.dataset_sha1,
+                    self._scene_hash,
+                    self.dataset_name,
+                    self,       # reference to the dataset for getting the current timestep
+                    self._external_object_keys
+                )
+
+            if set_tracking is False:
+                pi.unsubscribe(self.dataset_sha1)
 
         return self._dataset_tracking
 
@@ -562,6 +593,8 @@ class _DatasetPrototype:
             elementset=elementset,
             hash_dict=hash_dict
         )
+
+        self._external_object_keys = mp_data["object_key_list"]
 
         mp_data_mesh_hash = mp_data['hash_dict']['mesh']
         mp_data_field_hash = mp_data['hash_dict']['field']

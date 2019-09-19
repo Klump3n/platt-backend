@@ -36,13 +36,23 @@ class ProxyServices(object):
             self._pd._watch_incoming_files_coro())
         periodically_delete_files_task = self._loop.create_task(
             self._pd._periodic_file_deletion_coro())
+
         periodically_update_index_task = self._loop.create_task(
             self._pi._periodic_index_update_coro())
+        watch_new_files_task = self._loop.create_task(
+            self._pi._watch_new_files_coro())
+
+        self._shutdown_event = self._comm_dict["shutdown_platt_gateway_event"]
+
+        subscription_crawler_task = self._loop.create_task(
+            pi._subscription_crawler_coro(self._shutdown_event))
 
         self._tasks = [
             watch_incoming_files_task,
             periodically_delete_files_task,
-            periodically_update_index_task
+            periodically_update_index_task,
+            watch_new_files_task,
+            subscription_crawler_task
         ]
 
         try:

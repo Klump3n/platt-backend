@@ -325,8 +325,8 @@ class Client(object):
         # send a final ack
         await self.send_ack(writer)
 
-        gl.info("New file from server: {}".format(res))
-        self._new_file_receive_queue.put(res)
+        # gl.debug("New file from server: {}".format(res["new_file"]))
+        self._new_file_receive_queue.put(res["new_file"])
 
 
     ##################################################################

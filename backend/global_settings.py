@@ -26,9 +26,3 @@ def init(source_dict=None):
     bl.verbose("Creating global scene manager instance")
     global scene_manager        # This gets exposed
     scene_manager = SceneManager(source_dict=source_dict)
-
-    # # in the case of using the gateway to the ceph instance this will hold all
-    # # data coming in
-    # global proxy_data_dict
-    # if source_dict["source"] == "external":
-    #     proxy_data_dict = dict()

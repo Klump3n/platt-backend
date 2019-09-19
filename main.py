@@ -10,8 +10,8 @@ import time
 import argparse
 import pathlib
 import queue
+import asyncio
 import threading
-import multiprocessing
 
 from util.version import version
 from util.greet import greeting
@@ -251,7 +251,6 @@ def start_backend(data_dir, port, ext_addr, ext_port):
         proxy_services.start()
 
     winst.start()
-
 
 def start_program():
     """

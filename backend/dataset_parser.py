@@ -465,6 +465,21 @@ class ParseDataset:
                     update=mesh_checksum
                 )
 
+        object_key_list = []
+        fmt_list = []
+
+        object_key_list.append(nodes_key)
+        fmt_list.append(nodes_format)
+
+        for element in elements:
+            object_key_list.append(elements[element]['key'])
+            fmt_list.append(elements[element]['fmt'])
+        for skin in skins:
+            object_key_list.append(skins[skin]['key'])
+            fmt_list.append(skins[skin]['fmt'])
+
+        return_dict["object_key_list"] = object_key_list
+
         if (
                 current_hash is list() or
                 mesh_checksum is None or
@@ -473,19 +488,6 @@ class ParseDataset:
 
             # reset mesh checksum
             mesh_checksum = None
-
-            object_key_list = []
-            fmt_list = []
-
-            object_key_list.append(nodes_key)
-            fmt_list.append(nodes_format)
-
-            for element in elements:
-                object_key_list.append(elements[element]['key'])
-                fmt_list.append(elements[element]['fmt'])
-            for skin in skins:
-                object_key_list.append(skins[skin]['key'])
-                fmt_list.append(skins[skin]['fmt'])
 
             geom_dict_data = self._read_binary_data_external(object_key_list, fmt_list)
 
@@ -701,6 +703,8 @@ class ParseDataset:
 
     def _field_data_external(self, timestep, field, elementset, current_hash=None):
 
+        object_key_list = list()
+
         # This is so dumb.
         import backend.global_settings as gloset
         ext_index = gloset.scene_manager.ext_src_dataset_index(
@@ -763,6 +767,7 @@ class ParseDataset:
                 data = {
                     'nodal': nodal_field_data["contents"]
                 }
+                object_key_list = [object_key]
             else:
                 data = {'nodal': None}
 
@@ -840,6 +845,8 @@ class ParseDataset:
                         update=field_hash
                     )
 
+                object_key_list = elements_to_load_list
+
             else:
                 data = {'elemental': None}
 
@@ -847,7 +854,8 @@ class ParseDataset:
             'hash': field_hash,
             'fmt': field_format,
             'type': req_field_type,
-            'data': data
+            'data': data,
+            "object_key_list": object_key_list
         }
         return return_dict
 
@@ -907,7 +915,6 @@ class ParseDataset:
             bl.debug_warning("No mesh for given hash_dict found: {}".format(e))
             mesh_dict = self._geometry_data(
                 timestep, field, elementset, current_hash=None)
-            raise
 
         if field is not None:
             try:
@@ -934,6 +941,8 @@ class ParseDataset:
         mesh_nodes = mesh_dict['nodes']
         mesh_elements = mesh_dict['elements']
         mesh_skins = mesh_dict["skins"]
+
+        return_object_keys = mesh_dict["object_key_list"]  # gets modified later
 
         if mesh_elements is not None:
             self._mesh_elements = mesh_elements
@@ -988,6 +997,8 @@ class ParseDataset:
         # field dict is not None
         else:
 
+            return_object_keys += field_dict["object_key_list"]
+
             if field_type == 'nodal':
                 field_values = field_dict['data']['nodal']
 
@@ -1003,5 +1014,7 @@ class ParseDataset:
 
             if field_type == 'elemental':
                 return_dict['field'] = dm.model_surface_fields_elemental(field_values)
+
+        return_dict["object_key_list"] = return_object_keys
 
         return return_dict
