@@ -144,18 +144,51 @@ A click on the dataset reveals a small control menu.
 ![A click on the dataset reveals a small control
 menu](doc/readme_stuff/open_dataset.png)
 
+From here we can change the current timestep and the displayed field.
 
-change_orientation_moved.png
-change_orientation.png
-colorbar_lock_to_current.png
-colorbar_lock_to_values.png
-colorbar_track_dataset.png
+![Change the current timestep](doc/readme_stuff/show_timesteps.png)
 
+![Change the displayed field](doc/readme_stuff/show_fields.png)
 
-show_field_prefix.png
-show_fields.png
-show_timesteps.png
-track_updates.png
+The field can be reset by clicking on the topmost entry. The fields come in two
+varieties. Nodal fields and element nodal fields. Element nodal fields are
+interpolated from calculation points within the actual element onto the nodes of
+the element. Nodal fields a prefixed with `nod: ` and elemental nodal fields are
+prefixed with `elem: `.
+
+![Nodal and element nodal fields have different
+prefixes](doc/readme_stuff/show_field_prefix.png)
+
+By clicking on `Track updates` we can select the most recent timestep. Should we
+display a dataset that is being updated with new timesteps, the newest timestep
+is always selected.
+
+![Track updates to timesteps](doc/readme_stuff/track_updates.png)
+
+When we click on `Change` in the `Orientation` section, we can rotate and move
+around the dataset. Simply clicking and dragging the mouse on a dataset rotates
+it. Pressing `Ctrl` and then clicking and dragging the mouse moves the dataset
+around.
+
+![Change the orientation of a dataset](doc/readme_stuff/change_orientation.png)
+
+![Change the orientation of a dataset](doc/readme_stuff/change_orientation_moved.png)
+
+If we press on `Colorbar` we can select which intervals of the data we would
+like to see. By default the first bullet is selected. In this mode the colorbar
+always displays the full range of the data in the dataset. It can change for
+each timestep.
+
+![Track the dataset](doc/readme_stuff/colorbar_track_dataset.png)
+
+Selecting the second bullet locks the colorbar to whatever interval is currently selected. When changing the timestep the colorbar will not be updated.
+
+![Lock to current colorbar range](doc/readme_stuff/colorbar_lock_to_current.png)
+
+By selecting the last bullet we can specify ourselves what colorbar range we
+would like to see.
+
+![Lock to current colorbar range](doc/readme_stuff/colorbar_lock_to_values.png)
 
 
 ## Use in conjunction with the `platt-ceph-gateway` ##
