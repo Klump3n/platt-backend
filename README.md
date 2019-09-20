@@ -16,6 +16,11 @@ To obtain data to be displayed it relies on a running
 [platt-ceph-gateway](https://github.com/Klump3n/platt-ceph-gateway). This in
 turn requires a properly set up Ceph storage.
 
+Displaying data is done in a web browser. Recent versions of Firefox and Chrome
+work well. The browser has to support WebGl2. This can be tested by checking the
+support [here](https://get.webgl.org/webgl2/). A list of other supported devices
+can be found [here](https://caniuse.com/#feat=webgl2).
+
 To build the documentation you will also need `sphinx` and `sphinx-js`. The
 latter is not available via conda but must be pulled via pip, `pip install
 sphinx-js`. `sphinx` will be pulled as a dependency. The `sphinx` documentation
@@ -23,8 +28,6 @@ is rather incomplete.
 
 
 ## Terminology ##
-
-This should serve as a little glossary about terms I use in the following.
 
 * **Dataset**. A dataset is the collection of all files in a simulation. This
   involves the mesh files (the geometry, surfaces, etc.) as well as the fields
@@ -41,7 +44,7 @@ backend can be started by typing `./platt.py --gw_address $(HOST) --gw_port
 $(PORT)`. For more logging output `-l debug` may be appended to.
 
 
-## Client ##
+### Client ###
 
 Loading of displayed simulations is done via the command line utility.
 
@@ -117,13 +120,7 @@ USER@HOST ~/platt-backend/client ±master »
 ```
 
 
-## Backend ##
-
-The `backend/` directory contains the Python3 code for starting the web server
-and doing things with the downloaded data from the gateway.
-
-
-## Frontend ##
+### Frontend ###
 
 The `frontend/` directory contains the part of the project that is being handled
 by the web browser. It is written in plain JavaScript, WebGL, HTML and CSS. For
@@ -136,6 +133,9 @@ online, it would be wise to add support for HTTPS. The `cherrypy` web server
 should support it.
 
 Controlling the viewport/dataset.
+
+After creating a scene with a dataset, we are presented with a link. After
+opening this link in a web browser, we are greeted with this view: 
 
 ![A first glance at a fresh scene.](doc/readme_stuff/first_view.png)
 
@@ -150,6 +150,12 @@ Pool
 Namespace
 Binary files
 Sha1Sum
+
+
+## Backend ##
+
+The `backend/` directory contains the Python3 code for starting the web server
+and doing things with the downloaded data from the gateway.
 
 
 ## Classification of data ##
