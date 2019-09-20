@@ -209,12 +209,28 @@ and doing things with the downloaded data from the gateway.
 
 ## Classification of data ##
 
-Data comes in the form of a binary file. The naming convention is as follows.
-
+Data comes in the form of a binary file. There are binary files for the geometry
+(the mesh) and for the field values. The naming convention for the field value
+files is as follows:
 `universe.fo`.`type_1`.`type_2`.`fieldname`\[.`elemtype`\]@`timestep`
 
+* `universe.fo` is a leftover from earlier versions.
+* `type_1` can be either `ta` (for thermal analysis) or `ma` (for mechanical
+  analysis). At this stage simulations of the type `ma` can not be displayed.
+* `type_2` can be either `nodal` (for nodal fields, fields that are calculated
+  on the mesh nodes) or `elemental` (for element nodal fields, fields that are
+  calculated on nodes that do not coincide with the mesh nodes and have to be
+  interpolated).
+* `fieldname` is the name of the field that is being displayed.
+* `elemtype` is a information necessary for interpolation of element nodal field
+  values to the element nodes and thus only occurs when `type_2` equals
+  `elemental`.
+* `timestep` is the timestep for which this mesh information is valid. 
 
-There are several types of data that can be processed.
+
+Mesh files for different timesteps usually do not change. There is however the
+option of adaptive meshing.
+
 
 Geometry data (the mesh) Field data (data on the mesh).
 

@@ -64,11 +64,12 @@ class ProxyIndex(object):
 
                 try:
                     bl.debug("Waiting for index")
-                    index = receive_index_data_queue.get(True, 5)
+                    index = receive_index_data_queue.get(True, 100)
 
                 except queue.Empty as e:
-                    bl.debug_warning("Took more than 5 seconds to wait for "
-                                     "index ({})".format(e))
+                    bl.warning("Took more than 100 seconds to wait for "
+                               "index ({}). There will be nothing on display "
+                               "here.".format(e))
 
                 else:
                     LOCAL_INDEX = index["index"]
