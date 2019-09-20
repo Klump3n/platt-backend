@@ -135,7 +135,7 @@ should support it.
 Controlling the viewport/dataset.
 
 After creating a scene with a dataset, we are presented with a link. After
-opening this link in a web browser, we are greeted with this view: 
+opening this link in a web browser, we are greeted with this view:
 
 ![A first glance at a fresh scene.](doc/readme_stuff/first_view.png)
 
@@ -172,7 +172,8 @@ around.
 
 ![Change the orientation of a dataset](doc/readme_stuff/change_orientation.png)
 
-![Change the orientation of a dataset](doc/readme_stuff/change_orientation_moved.png)
+![Change the orientation of a
+dataset](doc/readme_stuff/change_orientation_moved.png)
 
 If we press on `Colorbar` we can select which intervals of the data we would
 like to see. By default the first bullet is selected. In this mode the colorbar
@@ -181,7 +182,8 @@ each timestep.
 
 ![Track the dataset](doc/readme_stuff/colorbar_track_dataset.png)
 
-Selecting the second bullet locks the colorbar to whatever interval is currently selected. When changing the timestep the colorbar will not be updated.
+Selecting the second bullet locks the colorbar to whatever interval is currently
+selected. When changing the timestep the colorbar will not be updated.
 
 ![Lock to current colorbar range](doc/readme_stuff/colorbar_lock_to_current.png)
 
@@ -196,10 +198,7 @@ would like to see.
 
 ### Data format ###
 
-Pool
-Namespace
-Binary files
-Sha1Sum
+Pool Namespace Binary files Sha1Sum
 
 
 ## Backend ##
@@ -212,8 +211,7 @@ and doing things with the downloaded data from the gateway.
 
 There are several types of data that can be processed.
 
-Geometry data (the mesh)
-Field data (data on the mesh).
+Geometry data (the mesh) Field data (data on the mesh).
 
 
 ## Mesh types supported ##
