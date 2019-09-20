@@ -139,6 +139,23 @@ opening this link in a web browser, we are greeted with this view:
 
 ![A first glance at a fresh scene.](doc/readme_stuff/first_view.png)
 
+A click on the dataset reveals a small control menu.
+
+![A click on the dataset reveals a small control
+menu](doc/readme_stuff/open_dataset.png)
+
+
+change_orientation_moved.png
+change_orientation.png
+colorbar_lock_to_current.png
+colorbar_lock_to_values.png
+colorbar_track_dataset.png
+
+
+show_field_prefix.png
+show_fields.png
+show_timesteps.png
+track_updates.png
 
 
 ## Use in conjunction with the `platt-ceph-gateway` ##
