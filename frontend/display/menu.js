@@ -700,38 +700,38 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
         dataset_field_container.appendChild(dataset_field_heading);
         dataset_field_container.appendChild(dataset_field_controls_container);
 
-        var dataset_elset_container = document.createElement('div');
-        dataset_elset_container.setAttribute('class', 'dataset_function_container dataset_function_separator');
+        // var dataset_elset_container = document.createElement('div');
+        // dataset_elset_container.setAttribute('class', 'dataset_function_container dataset_function_separator');
 
-        // heading for elset, just says 'Elset'
-        var dataset_elset_heading = document.createElement('div');
-        dataset_elset_heading.setAttribute('class', 'dataset_function_heading');
-        dataset_elset_heading.innerHTML = 'Elset';
+        // // heading for elset, just says 'Elset'
+        // var dataset_elset_heading = document.createElement('div');
+        // dataset_elset_heading.setAttribute('class', 'dataset_function_heading');
+        // dataset_elset_heading.innerHTML = 'Elset';
 
-        var dataset_elset_controls_container = document.createElement('div');
+        // var dataset_elset_controls_container = document.createElement('div');
 
-        var dataset_elset_current = document.createElement('div');
-        dataset_elset_current.setAttribute('class', 'dataset_elset_current');
-        dataset_elset_current.setAttribute('id', 'dataset_elset_current_'+that.dataset_hash);
-        dataset_elset_current.addEventListener('click', open_elset_menu);
-        dataset_elset_current.setAttribute('data-name', that.dataset_hash);
-        dataset_elset_current.innerHTML = 'PLACEHOLDER';
+        // var dataset_elset_current = document.createElement('div');
+        // dataset_elset_current.setAttribute('class', 'dataset_elset_current');
+        // dataset_elset_current.setAttribute('id', 'dataset_elset_current_'+that.dataset_hash);
+        // dataset_elset_current.addEventListener('click', open_elset_menu);
+        // dataset_elset_current.setAttribute('data-name', that.dataset_hash);
+        // dataset_elset_current.innerHTML = 'PLACEHOLDER';
 
-        var dataset_elset_menu_padding_container = document.createElement('div');
-        dataset_elset_menu_padding_container.setAttribute('class', 'dataset_field_menu_padding_container');
-        dataset_elset_menu_padding_container.setAttribute('id', 'dataset_elset_menu_padding_container_'+that.dataset_hash);
+        // var dataset_elset_menu_padding_container = document.createElement('div');
+        // dataset_elset_menu_padding_container.setAttribute('class', 'dataset_field_menu_padding_container');
+        // dataset_elset_menu_padding_container.setAttribute('id', 'dataset_elset_menu_padding_container_'+that.dataset_hash);
 
-        var dataset_elset_menu = document.createElement('div');
-        dataset_elset_menu.setAttribute('class', 'dataset_elset_menu');
-        dataset_elset_menu.setAttribute('id', 'dataset_elset_menu_'+that.dataset_hash);
+        // var dataset_elset_menu = document.createElement('div');
+        // dataset_elset_menu.setAttribute('class', 'dataset_elset_menu');
+        // dataset_elset_menu.setAttribute('id', 'dataset_elset_menu_'+that.dataset_hash);
 
-        dataset_elset_controls_container.appendChild(dataset_elset_current);
+        // dataset_elset_controls_container.appendChild(dataset_elset_current);
 
-        dataset_elset_menu_padding_container.appendChild(dataset_elset_menu);
-        dataset_elset_controls_container.appendChild(dataset_elset_menu_padding_container);
+        // dataset_elset_menu_padding_container.appendChild(dataset_elset_menu);
+        // dataset_elset_controls_container.appendChild(dataset_elset_menu_padding_container);
 
-        dataset_elset_container.appendChild(dataset_elset_heading);
-        dataset_elset_container.appendChild(dataset_elset_controls_container);
+        // dataset_elset_container.appendChild(dataset_elset_heading);
+        // dataset_elset_container.appendChild(dataset_elset_controls_container);
 
         var dataset_orientation_container = document.createElement('div');
         dataset_orientation_container.setAttribute('class', 'dataset_function_container');
@@ -778,7 +778,7 @@ function DatasetMenu(basePath, scene_hash, new_dataset) {
 
         dataset_functions.appendChild(dataset_timestep_container);
         dataset_functions.appendChild(dataset_field_container);
-        dataset_functions.appendChild(dataset_elset_container);
+        // dataset_functions.appendChild(dataset_elset_container);
         dataset_functions.appendChild(dataset_orientation_container);
 
         // attach heading and display to dataset
