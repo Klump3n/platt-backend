@@ -209,9 +209,15 @@ and doing things with the downloaded data from the gateway.
 
 ## Classification of data ##
 
+Data comes in the form of a binary file. The naming convention is as follows.
+
+`universe.fo`.`type_1`.`type_2`.`fieldname`\[.`elemtype`\]@`timestep`
+
+
 There are several types of data that can be processed.
 
 Geometry data (the mesh) Field data (data on the mesh).
+
 
 
 ## Mesh types supported ##
