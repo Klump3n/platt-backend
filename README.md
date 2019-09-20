@@ -227,18 +227,40 @@ files is as follows:
   `elemental`.
 * `timestep` is the timestep for which this mesh information is valid. 
 
+The naming convention for mesh files differs a little bit. Before we list them
+please note that `type_1` and `type_2` are used in the same manner as in the
+field value files.
 
-Mesh files for different timesteps usually do not change. There is however the
+* Mesh nodes: `universe.fo.type_1.nodes@timestep`
+* Mesh element definitions for each element type:
+  `universe.fo.type_1.elements.type_2@timestep`
+* Mesh surface per element type:
+  `universe.fo.type_1.skin.surface.type_2@timestep`
+* Mesh element activation bitmap:
+  `universe.fo.type_1.elementactivationbitmap.type_2@timestep`
+* Mesh element set definitions per element type:
+  `universe.fo.type_1.elset.elsetname.type_2@timestep`
+* Mesh node set definitions: `universe.fo.type_1.nset.nsetname@timestep`
+* Mesh edges per element type (not the element edges):
+  `universe.fo.type_1.skin.edges.type_2@timestep`
+* Mesh bounding box: `universe.fo.type_1.boundingbox@timestep`
+
+Mesh files for different timesteps _usually_ do not change. There is however the
 option of adaptive meshing.
 
+Valid element types for `ta` are `c3d4`, `c3d5`, `c3d6` and `c3d8`.
+Valid element types for `ma` are `c3d10`, `c3d13`, `c3d15` and `c3d20`.
 
-Geometry data (the mesh) Field data (data on the mesh).
+Elememy types can be found in D'Hondt (book about finite element calculations).
 
+Warning: however, meshes that contain `c3d4` or `c3d5` elements will not be
+displayed properly.
 
 
 ## Mesh types supported ##
 
-TODO: add system matrix calculator to some contrib folder.
+Currently, only meshes that contain elements of either `c3d6` or `c3d8` type can
+be displayed.
 
 
 ## Not actively maintained ##
