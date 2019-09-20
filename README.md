@@ -24,13 +24,12 @@ is rather incomplete.
 
 ## Terminology ##
 
-Scenes
+This should serve as a little glossary about terms I use in the following.
 
-Datasets
-
-Fields
-
-Timestep
+* **Dataset**. A dataset is the collection of all files in a simulation. This
+  involves the mesh files (the geometry, surfaces, etc.) as well as the fields
+  on the geometry, for each and every timestep in the simulation.
+* **Scene**. A scene is a collection of one or more datasets.
 
 
 ## Running ##
@@ -127,16 +126,19 @@ and doing things with the downloaded data from the gateway.
 ## Frontend ##
 
 The `frontend/` directory contains the part of the project that is being handled
-by the web browser. Warning: HTTPS is not being used. This is intended for use
-in a closed environment with no exposition to the internet. If you would like to
-use it online, it would be wise to add support for HTTPS. The `cherrypy` web
-server should support it.
+by the web browser. It is written in plain JavaScript, WebGL, HTML and CSS. For
+reducing the number of boilerplate lines that normally occurs when writing WebGL
+(or any form of OpenGL), the [`twgl` library](https://twgljs.org/) is used.
 
-JavaScript
-
-Documentation
+Warning: HTTPS is not being used. This is intended for use in a closed
+environment with no exposition to the internet. If you would like to use it
+online, it would be wise to add support for HTTPS. The `cherrypy` web server
+should support it.
 
 Controlling the viewport/dataset.
+
+![A first glance at a fresh scene.](doc/readme_stuff/first_view.png)
+
 
 
 ## Use in conjunction with the `platt-ceph-gateway` ##
