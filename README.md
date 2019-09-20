@@ -7,16 +7,30 @@ browser. The data is hosted on a ceph cluster and provided by the
 
 ## Requirements ##
 
-This program relies on the CherryPy web server and the WebSocket4py packages
-(`conda install cherrypy ws4py`).
+This program uses Python3 (3.6 and 3.7 at the time of writing) and relies on the
+CherryPy web server and the WebSocket4py packages. An easy way to fulfill these
+requirements is to use the anaconda distribution for python. Installing of the
+required packages is then done via `conda install cherrypy ws4py`.
 
-To obtain data to be displayed it relies on a running running
+To obtain data to be displayed it relies on a running
 [platt-ceph-gateway](https://github.com/Klump3n/platt-ceph-gateway). This in
 turn requires a properly set up Ceph storage.
 
 To build the documentation you will also need `sphinx` and `sphinx-js`. The
 latter is not available via conda but must be pulled via pip, `pip install
-sphinx-js`. `sphinx` will be pulled as a dependency.
+sphinx-js`. `sphinx` will be pulled as a dependency. The `sphinx` documentation
+is rather incomplete.
+
+
+## Terminology ##
+
+Scenes
+
+Datasets
+
+Fields
+
+Timestep
 
 
 ## Running ##
@@ -32,14 +46,76 @@ $(PORT)`. For more logging output `-l debug` may be appended to.
 
 Loading of displayed simulations is done via the command line utility.
 
-Start he command line tool by typing `./command_line.py`. The address and port
-of the backend can be specified by appending `--host $(HOST)` and `--port
-$(PORT)`. The default is `localhost` on port `8008`.
+When the backend is running, start he command line tool by typing
+`./command_line.py`. The address and port of the backend can be specified by
+appending `--host $(HOST)` and `--port $(PORT)`. The default is `localhost` on
+port `8008`. You are greeted with a terminal prompt.
 
+There are two commands apart from `quit`/`exit` and `help`: `datasets` and
+`scenes`.
+* `datasets` gives a list of stored simulations on the ceph cluster.
+* `scenes` controls which simulations are to be displayed at a given moment.
+  There are followup commands for `scenes`.
+  * `scenes create` creates a scene. It has to be supplied with one (or, as an
+    experimental feature, more) dataset(s) that will then be loaded and can be
+    viewed under a given URL. It may take some time for the simulation to be
+    viewable, there is a default timeout after 3.5 seconds. If you see a
+    timeout, do not be alarmed.
+  * `scenes list` lists all the scenes that are created via `scenes create ...`.
+    You are also presented with a link under which you can view the scene.
+  * `scenes select` lets you select a scene. From here you can set the fields
+    for each dataset in a scene, although this can also be done via the web
+    browser.
+  * `scenes delete` lets you delete a scene.
 
+Tab completion works for every command.
 
+Starting the tool, listing the datasets and creating a scene with one dataset,
+then setting a field and finally deleting the scene again could look like this:
 
-TODO: Commands.
+```
+USER@HOST ~/platt-backend/client ±master » ./command_line.py
+Welcome to platt command line interface version 1.0-1-gHASH.
+To leave type 'exit' or 'quit'.
+>> datasets
+A list of valid datasets is:
+
+  'some_dataset_in_the_ceph_pool'
+
+>> scenes create some_dataset_in_the_ceph_pool
+Created scene 1cd0a3027d7c83c2b65ff31c1a018c40f26d0ee5
+
+Scene 1cd0a3027d7c83c2b65ff31c1a018c40f26d0ee5 can be found at
+  http://localhost:8008/scenes/1cd0a3027d7c83c2b65ff31c1a018c40f26d0ee5
+--------------------------------------------------------------------------------
+  cd6d3debf6a29edfdf3082d56402d8f605f730e0 / some_dataset_in_the_ceph_pool
+================================================================================
+>> scenes select 1cd0a3027d7c83c2b65ff31c1a018c40f26d0ee5
+(1cd0a30) >> 
+exit    fields  help    list    quit    
+(1cd0a30) >> fields cd6d3debf6a29edfdf3082d56402d8f605f730e0 
+get  set  
+(1cd0a30) >> fields cd6d3debf6a29edfdf3082d56402d8f605f730e0 set 
+elemental  nodal      none       
+(1cd0a30) >> fields cd6d3debf6a29edfdf3082d56402d8f605f730e0 set nodal 
+T    lhs  rhs  
+(1cd0a30) >> fields cd6d3debf6a29edfdf3082d56402d8f605f730e0 set nodal T
+Set nodal field T
+(1cd0a30) >> quit
+>> scenes 
+create  delete  list    select  
+>> scenes list
+
+Scene 1cd0a3027d7c83c2b65ff31c1a018c40f26d0ee5 can be found at
+  http://localhost:8008/scenes/1cd0a3027d7c83c2b65ff31c1a018c40f26d0ee5
+--------------------------------------------------------------------------------
+  cd6d3debf6a29edfdf3082d56402d8f605f730e0 / some_dataset_in_the_ceph_pool
+================================================================================
+>> scenes delete 1cd0a3027d7c83c2b65ff31c1a018c40f26d0ee5
+>> quit
+Bye.
+USER@HOST ~/platt-backend/client ±master » 
+```
 
 
 ## Backend ##
@@ -59,6 +135,8 @@ server should support it.
 JavaScript
 
 Documentation
+
+Controlling the viewport/dataset.
 
 
 ## Use in conjunction with the `platt-ceph-gateway` ##
