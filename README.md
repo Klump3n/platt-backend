@@ -19,9 +19,25 @@ latter is not available via conda but must be pulled via pip, `pip install
 sphinx-js`. `sphinx` will be pulled as a dependency.
 
 
+## Running ##
+
+Assume the [platt-ceph-gateway](https://github.com/Klump3n/platt-ceph-gateway)
+is running on `$(HOST):$(PORT)` and has parsed the index completely (this can
+take upwards of 20 minutes if there are a lot of files to be indexed). The platt
+backend can be started by typing `./platt.py --gw_address $(HOST) --gw_port
+$(PORT)`. For more logging output `-l debug` may be appended to.
+
+
 ## Client ##
 
 Loading of displayed simulations is done via the command line utility.
+
+Start he command line tool by typing `./command_line.py`. The address and port
+of the backend can be specified by appending `--host $(HOST)` and `--port
+$(PORT)`. The default is `localhost` on port `8008`.
+
+
+
 
 TODO: Commands.
 

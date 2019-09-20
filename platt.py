@@ -202,7 +202,6 @@ def start_backend(port, ext_addr, ext_port):
                        port_text=port,
                        frontend_dir_text=frontend_dir
                    )
-
     welcome_msg += 'Serving data from external source at '\
                    '{ext_addr_text}:{ext_port_text}\n'.format(
                        ext_addr_text=ext_addr,
