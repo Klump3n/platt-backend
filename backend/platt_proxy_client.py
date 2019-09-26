@@ -31,8 +31,6 @@ class Client(object):
             new_file_receive_queue,
             get_index_event,
             index_data_queue,
-            # index_avail_event,
-            # index_pipe_remote,
             file_name_request_client_queue,
             file_contents_name_hash_client_queue,
             shutdown_client_event
@@ -47,8 +45,6 @@ class Client(object):
         self._new_file_receive_queue = new_file_receive_queue
         self._get_index_event = get_index_event
         self._index_data_queue = index_data_queue
-        # self._index_avail_event = index_avail_event
-        # self._index_pipe_remote = index_pipe_remote
         self._file_name_request_client_queue = file_name_request_client_queue
         self._file_contents_name_hash_client_queue = file_contents_name_hash_client_queue
         self._shutdown_client_event = shutdown_client_event
